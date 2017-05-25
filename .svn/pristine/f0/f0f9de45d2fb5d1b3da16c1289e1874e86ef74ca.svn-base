@@ -1,0 +1,160 @@
+package com.callke8.system.org;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import com.callke8.common.IController;
+import com.callke8.system.operator.Operator;
+import com.callke8.system.role.Role;
+import com.callke8.utils.BlankUtils;
+import com.callke8.utils.DateFormatUtils;
+import com.callke8.utils.DwzRenderJson;
+import com.callke8.utils.RenderJson;
+import com.callke8.utils.TreeHelper;
+import com.callke8.utils.TreeJson;
+import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Record;
+
+public class OrgController extends Controller implements IController {
+	
+	TreeHelper th = null;
+	
+	public void index() {
+		render("list.jsp");
+	}
+	
+	public void tree() {
+		List<Record> orgList = Org.dao.getAllOrg();   //查询得到所有的组织
+		List<TreeJson> tjs = new ArrayList<TreeJson>();   //定义一个TreeJson 的 list
+		
+		int rootIndex = 0;
+		int i = 0;
+		
+		for(Record r:orgList) {
+			
+			TreeJson tj = new TreeJson();
+			tj.setId(r.get("ORG_CODE").toString());
+			tj.setText(r.get("ORG_NAME").toString());
+			tj.setPid(r.get("PARENT_ORG_CODE").toString());
+			tj.setDesc(r.get("ORG_DESC").toString());
+			
+			//tj.setState("closed");
+			if(r.get("PARENT_ORG_CODE").toString().equalsIgnoreCase("-1")) {
+				rootIndex = i;
+				//tj.setChecked(true);
+			}
+			tjs.add(tj);
+			
+			i++;
+		}
+		
+		if(rootIndex != 0) {
+			
+			TreeJson firstNode = tjs.get(0);
+			TreeJson rootNode = tjs.get(rootIndex);
+			
+			tjs.set(0, rootNode);
+			tjs.set(rootIndex, firstNode);
+		}
+		
+		List<TreeJson> results = TreeJson.formatTree(tjs);
+		
+		JSONArray jsonArray = JSONArray.fromObject(results);
+		//System.out.println("----" + jsonArray.toString());
+		renderJson(jsonArray.toString());
+	}
+	
+	public void show(){
+		String moduleCode = getPara("moduleCode");  //得到组织代码
+		//System.out.println("得到参数代码：" + moduleCode);
+		
+		if(BlankUtils.isBlank(moduleCode)) {        //如果为空时,将查询以 parentOrgCode 为 -1 的 orgCode 
+			
+			moduleCode = th.getRootModuleCode();
+			
+		}
+		//System.out.println("得到参数代码：" + moduleCode);
+		
+		//查询子组织
+		List<Record> orgs = Org.dao.getOrgByParentOrgCode(moduleCode);
+		Map map = new HashMap();
+		map.put("total", orgs.size());
+		map.put("rows", orgs);
+		
+		renderJson(map);
+	}
+	
+	public void update() {
+		Org org = getModel(Org.class,"org");
+		
+		//System.out.println("修改时提交的orgCode = " + org.get("ORG_CODE"));
+		
+		boolean b = Org.dao.update(org);
+		
+		
+		if(b) {
+			render(RenderJson.success("组织修改成功!"));
+			return;
+		}else {
+			render(RenderJson.error("组织修改失败"));
+			return;
+		}
+	}
+	
+	public void add() {
+		Org org = getModel(Org.class,"org");
+		org.set("ORG_TYPE_CODE", "1");
+		
+		//判断是否有相同的组织代码
+		String orgCode = org.get("ORG_CODE");
+		Record chkOrg = Org.dao.getOrgByOrgCode(orgCode);
+		
+		if(!BlankUtils.isBlank(chkOrg)) {    /** 如果根据角色代码查询结果不为空，返回错误 */
+			render(RenderJson.warn("添加失败:已经存在相同的组织代码！"));
+			return;
+		}
+		
+		Org.dao.add(org);
+		
+		render(RenderJson.success("组织保存成功!"));
+		
+	}
+	
+	public void delete() {
+		
+		String orgCode = getPara("orgCode");
+		
+		//得到需要删除的 OrgCode 
+		//System.out.println("得到需要删除的OrgCode:" + orgCode);
+		
+		//先判断当前 orgCode 下，是否有其他的子组织，如果有子组织，则禁止删除
+		List<Record> list = Org.dao.getOrgByParentOrgCode(orgCode);
+		if(list.size()>0) {   //即是如果有子组织，则禁止删除
+			render(RenderJson.warn("删除失败，该组织下还有子组织，不允许删除!"));
+			return;
+		}
+		
+		//再判断该组织下，是否还有操作员，如果有操作员，也不允许删除
+		boolean b = Operator.dao.isHasOperatorByOrgCode(orgCode);
+		if(b) {
+			render(RenderJson.warn("删除失败，该组织下有操作员，不允许删除!"));
+			return;
+		}
+		
+		Org.dao.deleteByOrgCode(orgCode);
+		
+		render(RenderJson.success("删除组织成功!"));
+		
+	}
+
+	@Override
+	public void datagrid() {
+		
+	}
+	
+}

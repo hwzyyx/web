@@ -1,0 +1,58 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<div id="dialpanel" class="easyui-dialog" title="外呼面板" data-options="modal:true,closed:true,iconCls:'icon-dial'" style="width:1200px;height:500px;padding:1px;">
+	
+	<div class="easyui-layout" data-options="fit:true">
+			<div data-options="region:'west',split:true" title="客户基本信息" style="width:250px">
+				<table id="clientPg" class="easyui-propertygrid" dataoptions="fit:true" ></table>
+				<a href="#" style="margin-top:10px;" class="easyui-linkbutton" data-options="iconCls:'icon-dial',width:'243px'">&nbsp;&nbsp;&nbsp;拨&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号</a>											
+				<a href="#" style="margin-top:3px;" class="easyui-linkbutton" data-options="iconCls:'icon-dial',width:'243px'">&nbsp;&nbsp;&nbsp;加&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;拨&nbsp;&nbsp;&nbsp;&nbsp;号</a>											
+				<a href="#" style="margin-top:3px;" class="easyui-linkbutton" data-options="iconCls:'icon-hangup',width:'243px'">&nbsp;&nbsp;&nbsp;挂&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;机</a>											
+			</div>
+			<div data-options="region:'center'" style="padding:1px;">
+				<div class="easyui-layout" data-options="fit:true">
+					<!-- 编辑区上半部分 -->
+					<div data-options="region:'north',split:true,border:false" style="height:200px">
+						<div class="easyui-panel" title="通话记录" data-options="fit:true">
+							<table id="clientTouchRecordDg">
+								<thead>  
+									<tr style="height:12px;">                
+										<th data-options="field:'TOUCH_TYPE',width:70,align:'center',formatter:touchTypeFormatter">通话方式</th>                
+										<th data-options="field:'AGENT',width:130,align:'center'">主叫号码</th>                
+										<th data-options="field:'CLIENT_TELEPHONE',width:130,align:'center'">被叫号码</th>
+										<th data-options="field:'TOUCH_TIME',width:150,align:'center'">通话时间</th>                
+										<th data-options="field:'TOUCH_OPERATOR',width:100,align:'center'">操作工号</th>                
+										<th data-options="field:'TOUCH_NOTE',width:300,align:'center'">通话备注</th>                
+									</tr>        
+								</thead>
+							</table>
+						</div>
+					</div>
+					<!-- 编辑区下半部分列表 -->
+					<div data-options="region:'center',split:true,border:false">
+						<form id="touchrecordresultform" type="POST">
+						<input type="hidden" id="telId" name="telId"/>
+						<input type="hidden" id="taskId" name="taskId"/>
+						<div class="easyui-panel" title="本次通话资料登记">
+							<div>
+								<table width="100%" class="zl_main_center03" border="0" cellspacing="0" cellpadding="0" >
+		                           <tr align="center" height="27">
+							           <td width="60px">外呼结果:</td>
+						               <td align="left">
+                                      	   <input  type="radio"  name="touchresult" id="result1"  value="1"   onclick="checkresult('1')"/>
+																	<label for="result1">接触失败</label>    
+				                           <input  type="radio"  name="touchresult" id="result2"  value="2"   onclick="checkresult('2')"/>     
+																	<label for="result2">接触成功</label>    
+                                       </td>
+		                           </tr>
+                                 </table>
+							</div>
+						</div>
+						 <!-- 将登录本次通话信息的表单包含进来 -->
+						 <%@ include file="/_touchrecordresultform.jsp"%>
+						</form>
+					</div>
+				</div>
+			</div>
+	</div>	
+</div>

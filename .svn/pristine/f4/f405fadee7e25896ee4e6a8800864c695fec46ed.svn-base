@@ -1,0 +1,160 @@
+package com.callke8.common;
+
+import java.util.ArrayList;
+
+import com.callke8.call.calltask.CallTask;
+import com.callke8.call.calltelephone.CallTelephone;
+import com.callke8.call.calltelephone.CallerLocation;
+import com.callke8.call.common.CallRoute;
+import com.callke8.fastagi.blacklist.BlackList;
+import com.callke8.fastagi.blacklist.BlackListInterceptRecord;
+import com.callke8.fastagi.common.FastagiRoute;
+import com.callke8.fastagi.transfer.Transfer;
+import com.callke8.fastagi.transfer.TransferRecord;
+import com.callke8.report.cdr.Cdr;
+import com.callke8.report.clientinfo.ClientInfo;
+import com.callke8.report.clienttouch.ClientTouchRecord;
+import com.callke8.report.common.ReportRoute;
+import com.callke8.system.common.SystemRoute;
+import com.callke8.system.dict.DictGroup;
+import com.callke8.system.dict.DictItem;
+import com.callke8.system.loginlog.LoginLog;
+import com.callke8.system.module.Module;
+import com.callke8.system.operationlog.OperationLog;
+import com.callke8.system.operator.OperRole;
+import com.callke8.system.operator.Operator;
+import com.callke8.system.org.Org;
+import com.callke8.system.role.Role;
+import com.callke8.system.rolegroup.RoleGroup;
+import com.callke8.system.rolemodule.RoleModule;
+import com.callke8.utils.AstMonitor;
+import com.callke8.utils.BlankUtils;
+import com.callke8.utils.MemoryVariableUtil;
+import com.jfinal.config.Constants;
+import com.jfinal.config.Handlers;
+import com.jfinal.config.Interceptors;
+import com.jfinal.config.JFinalConfig;
+import com.jfinal.config.Plugins;
+import com.jfinal.config.Routes;
+import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
+import com.jfinal.plugin.c3p0.C3p0Plugin;
+import com.jfinal.render.ViewType;
+
+public class CommonConfig extends JFinalConfig {
+
+	@Override
+	public void configConstant(Constants me) {
+		me.setDevMode(true);
+		me.setViewType(ViewType.JSP);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void configHandler(Handlers me) {
+		//先判断数据字典的内容是否为空，如果为空时，则需要加载一下数据字典到内存
+		if(BlankUtils.isBlank(MemoryVariableUtil.dictMap)) {    //如果为空时，则将数据字典的内容写入内存变量
+			MemoryVariableUtil.dictMap = DictGroup.dao.loadDictInfo();
+			System.out.println("执行数据字典数据初始化到内存变量!");
+		}
+		
+		//先判断内存数据菜单数据是否为空，如果为空，则需要加载菜单数据到内存
+		if(BlankUtils.isBlank(MemoryVariableUtil.moduleMap)) {
+			MemoryVariableUtil.moduleMap = Module.dao.loadModuleInfo();
+			System.out.println("执行菜单数据初始化到内存变量!");
+		}
+		
+		//先判断内存数据操作员数据是否为空，如果为空，则需要加载操作员数据到内存
+		if(BlankUtils.isBlank(MemoryVariableUtil.operatorMap)) {
+			MemoryVariableUtil.operatorMap = Operator.dao.loadOperatorInfo();
+			System.out.println("执行操作员数据初始化到内存变量!");
+		}
+		
+	}
+
+	@Override
+	public void configInterceptor(Interceptors me) {
+		me.add(new CommonInterceptor());
+	}
+
+	@Override
+	public void configPlugin(Plugins me) {
+		loadPropertyFile("commonconfig.properties");
+		//顺便将 AstMonitor的属性设置了一下
+		AstMonitor.setAstHost(getProperty("asthost"));
+		AstMonitor.setAstPort(getPropertyToInt("astport"));
+		AstMonitor.setAstUser(getProperty("astuser"));
+		AstMonitor.setAstPass(getProperty("astpass"));
+		
+		C3p0Plugin c3p0Plugin = new C3p0Plugin(getProperty("dburl"),getProperty("dbuser"),getProperty("dbpassword"));
+		me.add(c3p0Plugin);
+		
+		ActiveRecordPlugin arp = new ActiveRecordPlugin(c3p0Plugin);
+		me.add(arp);
+		
+		//表映射
+		//系统管理表映射
+		arp.addMapping("sys_role",Role.class);
+		arp.addMapping("sys_role_group", RoleGroup.class);
+		arp.addMapping("sys_org", Org.class);
+		arp.addMapping("sys_operator",Operator.class);
+		arp.addMapping("sys_oper_role",OperRole.class);
+		arp.addMapping("sys_module",Module.class);
+		arp.addMapping("sys_role_module",RoleModule.class);
+		arp.addMapping("sys_login_log", LoginLog.class);
+		arp.addMapping("sys_dict_item", DictItem.class);
+		arp.addMapping("sys_dict_group", DictGroup.class);
+		arp.addMapping("sys_operation_log", OperationLog.class);
+		
+		//外呼管理表映射
+		arp.addMapping("call_task", CallTask.class);
+		arp.addMapping("call_telephone", CallTelephone.class);
+		arp.addMapping("callerloc", CallerLocation.class);
+		
+		//报表管理表映射
+		arp.addMapping("cdr",Cdr.class);
+		arp.addMapping("client_info", ClientInfo.class);
+		arp.addMapping("client_touch_record", ClientTouchRecord.class);
+		
+		//话务功能
+		arp.addMapping("sys_transfer", Transfer.class);
+		arp.addMapping("sys_transfer_record", TransferRecord.class);
+		arp.addMapping("sys_blacklist", BlackList.class);
+		arp.addMapping("sys_blacklist_intercept_record", BlackListInterceptRecord.class);
+		
+	}
+
+	@Override
+	public void configRoute(Routes me) {
+		me.add("/",CommonController.class);
+		//添加路由组，即是 controller组
+		me.add(new SystemRoute());
+		me.add(new CallRoute());
+		me.add(new ReportRoute());
+		me.add(new FastagiRoute());
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

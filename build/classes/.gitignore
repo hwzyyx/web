@@ -1,0 +1,14 @@
+/AtxferAgi.class
+/AutoCallTaskAgi.class
+/BlackListAgi.class
+/TransferAgi.class
+/app_en_US.properties
+/app_zh_CN.properties
+/app_zh_TW.properties
+/com/
+/commons-logging.properties
+/fastagi-mapping.properties
+/fastagi.properties
+/log4j.properties
+/quartz.properties
+/quartz_job.xml

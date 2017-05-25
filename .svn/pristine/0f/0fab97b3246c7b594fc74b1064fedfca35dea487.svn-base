@@ -1,0 +1,39 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<table>
+			<tr>
+				<td>菜单编码</td>
+				<td>
+					<input name="module.MODULE_CODE" id="MODULE_CODE" class="easyui-validatebox" required="true" missingMessage="菜单编码不能为空!"/>
+				</td>
+				<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					菜单名称</td>
+				<td>
+					<input name="module.MODULE_NAME" id="MODULE_NAME" class="easyui-validatebox" required="true" missingMessage="菜单名称不能为空"/>
+				</td>
+				<td>
+				</td>
+				<td>
+				</td>
+			</tr>
+			
+			<tr>
+				<td>菜单链接</td>
+				<td>
+					<input name="module.MODULE_URI" id="MODULE_URI">
+				</td>
+				<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					菜单描述</td>
+				<td>
+					<input name="module.MODULE_DESC" id="MODULE_DESC">
+				</td>
+				<td colspan="2">
+					<input type="hidden" name="module.PARENT_CODE" id="PARENT_CODE">
+					<div id="addOrgDlgBtn">
+						<a href="#" id="saveBtn" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveAdd()">保存</a>
+						<a href="#" id="" class="easyui-linkbutton" iconCls="icon-cancel" onclick="add_cancel()">取消</a>
+					</div>  
+				</td>
+			</tr>
+		</table>
+		

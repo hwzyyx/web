@@ -1,0 +1,233 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge"/>
+	<title>Client Side Pagination in DataGrid - jQuery EasyUI Demo</title>
+	<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="demo.css">
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="locale/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript">
+		
+		var currSelectNodeId = null;
+		$(function(){
+			$("#treeUl").tree({
+				checkbox:false,
+				url:'org/tree',
+				lines:true,
+				onSelect:function(node) {
+					//alert("onSelect" + node.text + "," + node.id + "," + node.pid);
+					currSelectNodeId = node.id;
+					$("#orgCode").val(node.id);
+					$("#orgName").val(node.text);
+					$("#orgDesc").val(node.desc);
+					$("#parentOrgCode").val(node.pid);
+					$("#parentOrg-edit").attr("onclick","orgEdit(\"" + node.id + "\",\"" + node.text +"\",\"" + node.desc +"\")");
+					
+					$('#orgDg').datagrid({url:'org/show?moduleCode=' + node.id});//实现Datagrid重新刷新效果
+				},
+				onLoadSuccess:function(node,data) {
+					if(currSelectNodeId==null || currSelectNodeId=="") {
+						var n2 = $("#treeUl").tree("getRoot");
+						$("#treeUl").tree("select",n2.target);
+					}else {
+						var currNode = $("#treeUl").tree('find',currSelectNodeId);
+						$("#treeUl").tree("select",currNode.target);
+					}
+				}
+			});
+
+			$("#orgDg").datagrid({
+				pageSize:10,
+				//pagination:true,      
+				fit:true,
+				singleSelect:true,
+				toolbar:"#searchtool2",
+				rowrap:true,
+				striped: true,
+				rownumbers: true,
+				pageList:[10,15,20]
+				//url:'org/show?moduleCode=' + $("#orgCode").val() 
+			});
+
+
+			//用于关闭弹出窗时的操作，用于清理表单数据
+			$("#addOrgDlg").dialog({
+				onClose:function() {
+					$("#orgForm").form("clear");
+				}
+			});
+			
+		});
+
+		function orgAdd() {
+			$("#addOrgDlg").dialog("open").dialog("setTitle","添加组织");
+
+			$("#ORG_CODE").removeAttr("readonly");
+			
+			$("#PARENT_ORG_CODE").val($("#orgCode").val());
+			$("#saveBtn").removeAttr("onclick");
+			$("#saveBtn").attr("onclick","saveAdd()");
+		}
+
+		//修改组织
+		function orgEdit(orgCode,orgName,orgDesc) {
+			$("#addOrgDlg").dialog("open").dialog("setTitle","修改组织");
+
+			$("#saveBtn").removeAttr("onclick");
+			$("#saveBtn").attr("onclick","saveEdit()");
+			
+			//组织编码不允许编辑
+			$("#ORG_CODE").attr("readonly","readonly"); 
+			  
+			$("#ORG_CODE").val(orgCode);
+			$("#ORG_NAME").val(orgName);
+			$("#ORG_DESC").val(orgDesc);
+		}
+		
+		function add_cancel() {
+			$("#addOrgDlg").dialog("close");
+		}
+		
+		//修改删除
+		function orgDel(orgCode) {
+			if(orgCode == null) {
+				$.messager.alert('提示', '删除记录失败，请选择要删除的行！','info');
+			};
+
+			$.messager.confirm('提示','你确定要删除这条信息吗?',function(r){
+				if(r) {
+					$("#orgForm").form('submit',{
+						url:"org/delete?orgCode=" + orgCode,
+						onSubmit:function(){
+						
+						},
+						success:function(data) {
+	
+							var result = JSON.parse(data);    //解析Json 数据
+	
+							var statusCode = result.statusCode; //返回的结果类型
+							var message = result.message;       //返回执行的信息
+
+							window.parent.showMessage(message,statusCode);
+							if(statusCode == 'success') {         //删除成功时
+								$('#treeUl').tree({url:'org/tree'});//实现数重新刷新效果
+							}
+						}
+					});
+				}
+			});
+		}
+
+		//格式化：在每行输出 修改及删除
+		function rowformater(value,data,index) {
+			return "<a href='#' onclick='javascript:orgEdit(\"" + data.ORG_CODE +"\",\""+ data.ORG_NAME +"\",\"" + data.ORG_DESC + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>" + 
+			"<a href='#' onclick='javascript:orgDel(\"" + data.ORG_CODE +"\")'><img src='themes/icons/pencil.png' border='0'>删除</a>";
+		}
+
+		function saveAdd() {
+
+			$("#orgForm").form('submit',{
+				url:"org/add",
+				onSubmit:function(){
+					return $(this).form('validate');
+				},
+				success:function(data) {
+
+					var result = JSON.parse(data);    //解析Json 数据
+
+					var statusCode = result.statusCode; //返回的结果类型
+					var message = result.message;       //返回执行的信息
+
+					window.parent.showMessage(message,statusCode);
+					if(statusCode == 'success'){          //添加成功时，关闭窗口，并重加载树
+						$('#addOrgDlg').dialog('close');//关闭对话框
+						$('#treeUl').tree({url:'org/tree'});//实现数重新刷新效果
+					}
+				}
+			});
+			
+		}
+
+		function saveEdit() {
+			$("#orgForm").form('submit',{
+				url:"org/update",
+				onSubmit:function(){
+					return $(this).form('validate');
+				},
+				success:function(data) {
+	
+					var result = JSON.parse(data);    //解析Json 数据
+	
+					var statusCode = result.statusCode; //返回的结果类型
+					var message = result.message;       //返回执行的信息
+					
+					window.parent.showMessage(message,statusCode);
+					if(statusCode == 'success') {         //失败
+						$('#addOrgDlg').dialog('close');//关闭对话框
+						$('#treeUl').tree({url:'org/tree'});//实现tree重新刷新效果();
+					}
+				}
+			});
+
+		}
+
+	</script>
+</head>
+<body id="orgBody" style="margin-top:1px;margin-left:1px;">
+	<div class="easyui-panel" title="组织管理" data-options="fit:true" style="padding:1px;">
+		<div data-options="fit:true" class="easyui-layout">
+			<!-- 左侧的树形 -->
+			<div data-options="region:'west',split:true" style="width:220px;padding:10px">
+				<ul id="treeUl" class="easyui-tree">
+				</ul>
+			</div>
+
+			<!-- 显示区 -->
+			<div data-options="region:'center'" style="padding:1px">
+					
+				<table id="orgDg">
+						<thead>  
+							<tr style="height:12px;">                
+								<th data-options="field:'ORG_CODE',width:100,align:'center'">角色编码</th>                
+								<th data-options="field:'ORG_NAME',width:100,align:'center'">角色名称</th>                
+								<th data-options="field:'ORG_DESC',width:200,align:'center'">角色描述</th>                
+								<th data-options="field:'CREATETIME',width:150,align:'center',formatter:rowformater">操作</th>
+							</tr>        
+						</thead>
+				</table>
+
+				<div id="searchtool2" style="padding:5px">  
+						<div style="background-color: #fff;">
+					        <span style="font-weight: bold;">组织代码:</span><input type="text" id="orgCode" size=15 />  
+					        <span style="font-weight: bold;">组织名称:</span><input type="text" id="orgName" size=15 />
+					        <span style="font-weight: bold;">组织描述:</span><input type="text" id="orgDesc" size=15 />
+					        <span style="font-weight: bold; display:none;">父组织:</span><input style="display:none;" type="text" id="parentOrgCode" size=15 />
+					        &nbsp;&nbsp;<a href="#" id="parentOrg-edit" class="easyui-linkbutton" data-options="iconCls:'icon-edit'">编辑</a>
+						</div>
+
+						<div class="datagrid-toolbar"></div>
+						<div>	
+							<a href="#" id="easyui-add" onclick="orgAdd()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+						</div>  
+				 <div>	
+			</div>
+		</div>
+		
+	</div>
+
+	<div id="addOrgDlg" class="easyui-dialog" style="width:580px;height:250px;padding:10px 20px;" modal="true" closed="true" buttons="#addOrgDlgBtn">
+		<form id="orgForm" method="post">
+			<!-- 包含表单 -->
+			<%@ include file="/system/org/_form.jsp"%>
+		</form>	
+	</div>	
+
+
+</body>
+</html>
+

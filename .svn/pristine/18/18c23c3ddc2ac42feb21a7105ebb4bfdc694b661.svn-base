@@ -1,0 +1,78 @@
+package com.callke8.call.calltelephone;
+
+import java.io.File;
+
+import com.callke8.call.calltask.CallTask;
+import com.callke8.common.IController;
+import com.callke8.utils.RenderJson;
+import com.jfinal.core.Controller;
+import com.jfinal.kit.PathKit;
+
+public class CallTelephoneController extends Controller implements IController {
+
+	public void datagrid() {
+		
+		String taskId = getPara("taskId");   //得到 taskId
+		String telephone = getPara("telephone");   //得到 taskId
+		String clientName = getPara("clientName");  
+		String state = getPara("state");   //得到 taskId
+		String startTime = getPara("telephoneStartTime");
+		String endTime = getPara("telephoneEndTime");
+		
+		int rows = Integer.valueOf(getPara("rows"));
+		int page = Integer.valueOf(getPara("page"));
+		if(page==0) {
+			page=1;
+		}
+		
+		renderJson(CallTelephone.dao.getCallTelephoneByPaginateToMap(page, rows, taskId,telephone,clientName,state,startTime,endTime));
+	}
+	
+	/**
+	 * 下载模板
+	 */
+	public void template() {
+		
+		String uploadDir = File.separator + "upload" + File.separator;    //保存路径
+		
+		String path_tmp = PathKit.getWebRootPath() + uploadDir;
+		
+		File file = new File(path_tmp + "demo.xls");
+		
+		renderFile(file);
+		
+	}
+	
+	public void delete() {
+		String taskId = getPara("taskId");    //收集传入的任务ID
+		String ids = getPara("ids");          //要删除的号码的ID
+		int distributeCount = Integer.valueOf(getPara("distributeCount"));    //上传的要删除号码中已经分配的数量
+		int successCount = Integer.valueOf(getPara("successCount"));    //上传的要删除号码中呼叫成功的数量
+		int failureCount = Integer.valueOf(getPara("failureCount"));    //上传的要删除号码中呼叫失败的数量
+		
+		
+		int count = CallTelephone.dao.batchDelete(ids);
+		
+		if(count>0) {   //即当有删除成功时，那肯定任务的号码的数量是有变化的，包括号码总数，已分配数量，呼叫成功，呼叫失败  这些都需要重新统计
+			CallTask.dao.refreshTaskCountByDelTelephone(taskId, count,distributeCount,successCount,failureCount);    //重新更新号码总数、成功数、失败数    
+		}
+		
+		render(RenderJson.success("成功删除数据量为:" + count));
+	}
+
+	@Override
+	public void add() {
+		
+	}
+
+	@Override
+	public void index() {
+		
+	}
+
+	@Override
+	public void update() {
+		
+	}
+	
+}	

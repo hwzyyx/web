@@ -1,0 +1,433 @@
+package com.callke8.call.calltask;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.callke8.call.calltelephone.CallTelephone;
+import com.callke8.common.IController;
+import com.callke8.report.clientinfo.ClientInfo;
+import com.callke8.report.clienttouch.ClientTouchRecord;
+import com.callke8.utils.BlankUtils;
+import com.callke8.utils.DateFormatUtils;
+import com.callke8.utils.MemoryVariableUtil;
+import com.callke8.utils.RenderJson;
+import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Record;
+
+public class TaskExecuteController extends Controller implements IController{
+	
+	public void index() {
+		render("list.jsp");
+	}
+	
+	public void datagrid() {
+		
+		String operId = getSession().getAttribute("currOperId").toString();
+		
+		String taskName = getPara("taskName");
+		String taskType = getPara("taskType");
+		String taskState = "1";              //状态一定是为已经启动状态
+		String startTime = getPara("startTime");
+		String endTime = getPara("endTime");
+		
+		int rows = Integer.valueOf(getPara("rows"));
+		int page = Integer.valueOf(getPara("page"));
+		
+		renderJson(CallTask.dao.getCallTaskByPaginateToMap4Auth(page, rows, taskName, taskType, taskState, startTime, endTime,operId));
+	}
+	
+	/**
+	 * 弹屏或是点外呼时，在弹屏的左侧显示的客户属性在这里处理
+	 */
+	public void propertygrid() {
+		
+		String telephone = getPara("telephone");    //得到参数号码
+		String telId = getPara("telId");            //得到当前号码所在任务的id
+		
+		Record clientInfo = ClientInfo.dao.getClientInfoByTelephone(telephone);    //先根据号码，将客户的信息查询出来
+		
+		if(BlankUtils.isBlank(clientInfo)) {        //如果得到的客户为空时，则需要先将当前客户信息插入客户信息表
+			//先组织一个clientInfo,组织之前，先判断telId是否为空，如果不为空时，则组织clientInfo就以 call_telephone表为主
+			Record callTelephone = CallTelephone.dao.getCallTelephoneById(telId);
+			
+			Record clientInfo4Save = new Record();
+			clientInfo4Save.set("CLIENT_TELEPHONE", telephone);
+			if(!BlankUtils.isBlank(callTelephone)) {       //如果号码信息为空时
+				clientInfo4Save.set("CLIENT_NAME", callTelephone.get("CLIENT_NAME"));
+				clientInfo4Save.set("CLIENT_SEX", callTelephone.get("CLIENT_SEX")==null?"1":callTelephone.get("CLIENT_SEX").toString());
+			}
+			
+			boolean b = ClientInfo.dao.add(clientInfo4Save);    //先保存客户信息
+			
+			if(b) {
+				clientInfo = clientInfo4Save;
+			}
+		}
+		Map m = assemblePropertyGrid(clientInfo);
+		
+		//System.out.println("-------------------------" + m);
+		
+		renderJson(m);
+	}
+	
+	/**
+	 * 根据客户的信息，组织一个 propertyGrid，并以 Map 返回
+	 * @param clientInfo
+	 * @return
+	 */
+	public Map assemblePropertyGrid(Record record) {
+		Map m = new HashMap();
+		if(BlankUtils.isBlank(record)) {
+			return null;
+		}
+		
+		int clientNo = Integer.valueOf(record.get("CLIENT_NO").toString());    //客户编号
+		String clientTelephone = record.get("CLIENT_TELEPHONE");
+		String clientTelephone2 = record.get("CLIENT_TELEPHONE2");
+		String clientName = record.get("CLIENT_NAME");
+		String clientLevel = record.get("CLIENT_LEVEL");
+		String clientSex = record.get("CLIENT_SEX");
+		String clientEmail = record.get("CLIENT_EMAIL");
+		String clientCompany = record.get("CLIENT_COMPANY");
+		String clientQQ = record.get("CLIENT_QQ");
+		String clientAddress = record.get("CLIENT_ADDRESS");
+		String createTime = record.get("CREATE_TIME")==null?"":record.get("CREATE_TIME").toString();
+		
+		m.put("total", "11");
+		
+		List<Record> list = new ArrayList<Record>();
+		
+		list.add(createRecord4PropertyGrid("客户编号",clientNo,"clientInfo","disabled:true"));
+		list.add(createRecord4PropertyGrid("客户号码",clientTelephone,"clientInfo","disabled:true"));
+		list.add(createRecord4PropertyGrid("备用号码",clientTelephone2,"clientInfo","numberbox"));
+		list.add(createRecord4PropertyGrid("客户名称",clientName,"clientInfo","text"));
+		list.add(createLevelRecord(clientLevel,"clientInfo"));
+		list.add(createSexRecord(clientSex,"clientInfo"));
+		list.add(createRecord4PropertyGrid("客户QQ",clientQQ,"clientInfo","numberbox"));
+		list.add(createRecord4PropertyGrid("电子邮箱",clientEmail,"clientInfo","text"));
+		list.add(createRecord4PropertyGrid("公司信息",clientCompany,"clientInfo","text"));
+		list.add(createRecord4PropertyGrid("地址信息",clientAddress,"clientInfo","text"));
+		list.add(createRecord4PropertyGrid("添加时间",createTime,"clientInfo","disabled:true"));
+		
+		
+		m.put("rows",list);
+		
+		return m;
+	}
+	
+	/**
+	 * 创建record 
+	 * 
+	 * @param name
+	 * @param value
+	 * @param group
+	 * @param edit
+	 * @return
+	 */
+	public Record createRecord4PropertyGrid(String name,Object value,String group,String edit) {
+		Record record = new Record();
+		
+		record.set("name", name);
+		record.set("value", value);
+		record.set("group", group);
+		record.set("editor",edit);
+		return record;
+	}
+	
+	public Record createSexRecord(String clientSex,String group) {
+		
+		Record sexRecord = new Record();
+		sexRecord.set("name", "客户性别");
+		sexRecord.set("value",clientSex);
+		sexRecord.set("group", group);
+		
+		List<Record> list = new ArrayList<Record>();
+		
+		Record r1 = new Record();
+		r1.set("value", "1");
+		r1.set("text", "男");
+		list.add(r1);
+		Record r2 = new Record();
+		r2.set("value", "0");
+		r2.set("text", "女");
+		list.add(r2);
+		
+		
+		Record r3 = new Record();
+		r3.set("data", list);
+		
+		Record r4 = new Record();
+		r4.set("type", "combobox");
+		r4.set("options",r3);
+		
+		
+		sexRecord.set("editor",r4);
+		
+		return sexRecord;
+	}
+	
+	
+	public Record createLevelRecord(String clientLevel,String group) {
+		Record levelRecord = new Record();
+		levelRecord.set("name", "客户级别");
+		levelRecord.set("value",clientLevel);
+		levelRecord.set("group", group);
+		
+		List<Record> list = new ArrayList<Record>();
+		
+		//先从内存中取出数据字典数据，groupCode为 CLIENT_LEVEL的数据
+		List<Record> clientLevelList = MemoryVariableUtil.dictMap.get("CLIENT_LEVEL");
+		
+		for(Record record:clientLevelList) {
+			
+			Record r = new Record();
+			
+			r.set("value",record.get("DICT_CODE").toString());
+			r.set("text",record.get("DICT_NAME").toString());
+			
+			list.add(r);
+		}
+		
+		Record record2 = new Record();
+		record2.set("data", list);
+		
+		Record record3 = new Record();
+		record3.set("type", "combobox");
+		record3.set("options",record2);
+		
+		levelRecord.set("editor",record3);
+		
+		return levelRecord;
+	}
+	
+	/**
+	 * 执行外呼号码列表
+	 */
+	public void telephoneDatagrid() {
+		
+		String operId = getSession().getAttribute("currOperId").toString();
+		
+		String taskId = getPara("taskId");
+		
+		int rows = Integer.valueOf(getPara("rows"));
+		int page = Integer.valueOf(getPara("page"));
+		
+		if(page<=0) {page=1;}
+		
+		//查询已经分配的号码
+		renderJson(CallTelephone.dao.getCallTelephoneByPaginateToMap(page, rows, taskId, null, null, "1", null, null));
+	}
+	
+	/**
+	 * 请求外呼数据
+	 */
+	public void reqCallDatas() {
+		
+		String operId = getSession().getAttribute("currOperId").toString();
+		String taskId = getPara("taskId");    
+		int reqCount = Integer.valueOf(getPara("reqCount"));    //当次请求数量
+		
+		//先判断当前是否已经登录，如果未登录时
+		if(BlankUtils.isBlank(operId)) {          
+			render(RenderJson.error("登录工号已失效，无法请求数据，请重新登录工号!"));
+			return;
+		}
+		
+		//再判断当前任务的状态是否处于开启状态
+		String taskState = CallTask.dao.getTaskStateByTaskId(taskId);
+		if(BlankUtils.isBlank(taskState)){
+			render(RenderJson.error("当前任务的状态不正确!"));
+			return;
+		}
+		if(!taskState.equalsIgnoreCase("1")) {   //如果状态不为1,即非启动状态时
+			if(taskState.equalsIgnoreCase("2")) {
+				render(RenderJson.error("请求数据失败，当前任务已经暂停!"));
+				return;
+			}
+			if(taskState.equalsIgnoreCase("3")) {
+				render(RenderJson.error("请求数据失败，当前任务已经停止!"));
+				return;
+			}
+		}
+		
+		
+		int activeCount = CallTelephone.dao.getCountByTaskIdState(taskId, "0");    //先查看当前任务，是否还有未分配的号码，如果没有则返回错误
+		
+		if(activeCount <= 0) {
+			render(RenderJson.error("任务暂无可请求的数据，请联系管理员添加数据后再请求!"));
+			return;
+		}
+		
+		int count = CallTelephone.dao.reqCallData(taskId, operId, reqCount);
+		
+		if(count>0) {      //如果请求成功的数据量大于0时，要更改任务的已经分配的量
+			CallTask.dao.addtoTaskCountByType(taskId, count, 1);    //增加已经分配的量
+		}
+		
+		render(RenderJson.success("成功请求数据 <span style='color:red;font-weight:bold;'>" + count + "</span> 条"));
+	}
+	
+	public void touchRecordDatagrid() {
+		
+		String telephone = getPara("telephone");   //先得到参数：号码
+		if(BlankUtils.isBlank(telephone)) {        //如果号码为空时，返回空的列表
+			Map m = new HashMap();
+			m.put("total",0);
+			m.put("rows",new ArrayList<Record>());
+			renderJson(m);
+		}
+		
+		int rows = Integer.valueOf(getPara("rows"));
+		int page = Integer.valueOf(getPara("page"));
+		if(page==0) {
+			page=1;
+		}
+		
+		renderJson(ClientTouchRecord.dao.getClientTouchRecordByPaginateToMap(page, rows, telephone,null,null,null,null,null));
+	}
+	
+	/**
+	 * 保存外呼结果
+	 */
+	public void add(){
+		
+		try {
+			//客户信息
+			String clientNo = getPara("clientNo");
+			String clientTelephone = getPara("clientTelephone");
+			String clientTelephone2 = getPara("clientTelephone2");
+			String clientName = URLDecoder.decode(getPara("clientName").toString(),"UTF-8");
+			String clientLevel = getPara("clientLevel");
+			String clientSex = getPara("clientSex");
+			String clientQq = getPara("clientQq");
+			String clientEmail = URLDecoder.decode(getPara("clientEmail"),"UTF-8");
+			String clientCompany = URLDecoder.decode(getPara("clientCompany"),"UTF-8");
+			String clientAddress = URLDecoder.decode(getPara("clientAddress"),"UTF-8");
+			
+			ClientInfo clientInfo = new ClientInfo();
+			clientInfo.set("CLIENT_NO", clientNo);
+			clientInfo.set("CLIENT_NAME",clientName);
+			clientInfo.set("CLIENT_TELEPHONE",clientTelephone);
+			clientInfo.set("CLIENT_TELEPHONE2", clientTelephone2);
+			clientInfo.set("CLIENT_LEVEL", clientLevel);
+			clientInfo.set("CLIENT_SEX",clientSex);
+			clientInfo.set("CLIENT_QQ", clientQq);
+			clientInfo.set("CLIENT_EMAIL",clientEmail);
+			clientInfo.set("CLIENT_COMPANY", clientCompany);
+			clientInfo.set("CLIENT_ADDRESS", clientAddress);
+			
+			boolean b = ClientInfo.dao.update(clientInfo);  //修改客户信息
+			
+			if(!b) {
+				render(RenderJson.error("客户信息修改失败!"));
+				return;
+			}
+			
+			//本次接触的信息
+			String flg = getPara("flg");
+			int telId = Integer.valueOf(getPara("telId"));            		//号码 Id
+			int taskId = Integer.valueOf(getPara("taskId"));          		//任务 Id
+			String touchFailureReason = getPara("touchFailureReason");		//接触失败原因
+			String recallTime = getPara("recallTime");						//再次外呼的时间
+			String note = URLDecoder.decode(getPara("note"),"UTF-8");		//备注
+			
+			if(!BlankUtils.isBlank(flg) && flg.equalsIgnoreCase("1")) {    //即表示，接触失败
+				
+				//创建一个接触对象
+				Record touch = new Record();
+				touch.set("CLIENT_NO",String.valueOf(clientNo));
+				touch.set("AGENT", getSession().getAttribute("currCallNumber"));   //座席号
+				touch.set("CLIENT_TELEPHONE",clientTelephone);
+				touch.set("TOUCH_CHANNEL","");
+				touch.set("TOUCH_TYPE","1");
+				touch.set("TOUCH_TIME",DateFormatUtils.getCurrentDate());
+				touch.set("TOUCH_OPERATOR",getSession().getAttribute("currOperId"));	//当前操作员
+				touch.set("TOUCH_NOTE",note);
+				touch.set("VOICES_FILE","");
+				touch.set("CALL_RESULT",flg);
+				touch.set("FAILURE_REASON",touchFailureReason);
+				if(!BlankUtils.isBlank(recallTime)){
+					touch.set("RECALL_TIME",recallTime);
+				}
+				touch.set("TASK_ID", taskId);
+				
+				//保存接触记录的结果
+				
+				//修改call_telephone中的结果
+				CallTelephone telephone = new CallTelephone();
+				telephone.set("TEL_ID",telId);
+				telephone.set("CLIENT_NAME",clientName);
+				telephone.set("CLIENT_SEX",clientSex);
+				if(!BlankUtils.isBlank(recallTime)) {    //如果重呼时间不为空时，表示这是接触失败需要继续跟进的
+					telephone.set("STATE","5");          //接触失败跟进中
+				}else {
+					telephone.set("STATE","3");          //接触失败
+				}
+				telephone.set("NEXT_CALLOUT_TIME",recallTime);
+				telephone.set("OP_TIME",DateFormatUtils.getCurrentDate());
+				telephone.set("OPER_ID",getSession().getAttribute("currOperId"));
+				telephone.set("NOTE",note);
+				
+				boolean b1 = ClientTouchRecord.dao.add(touch);
+				if(!b1) {
+					render(RenderJson.error("客户接触信息插入失败"));
+					return ;
+				}
+				boolean b2 = CallTelephone.dao.updateCallTelephone(telephone);
+				
+				if(!b2) {
+					render(RenderJson.error("修改号码信息失败"));
+					return ;
+				}
+				
+				render(RenderJson.success("提交成功!"));
+				
+			}else {		//接触成功
+				
+			}
+		
+		}catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	@Override
+	public void delete() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void update() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

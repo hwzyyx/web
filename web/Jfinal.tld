@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE taglib PUBLIC "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN" "http://java.sun.com/j2ee/dtds/web-jsptaglibrary_1_1.dtd">
+<tablib>
+	<tlibversion>1.0</tlibversion>    
+	<jspversion>1.1</jspversion>    
+	<shortname>bean</shortname>    
+	<uri>http://www.jfinal.com/tag</uri>    
+	<tag>        
+		<name>i18n</name>        
+		<tagclass>com.callke8.common.I18nTag</tagclass>        
+		<bodycontent>JSP</bodycontent>        
+		<attribute>            
+			<name>key</name>            
+			<required>true</required>            
+			<rtexprvalue></rtexprvalue>        
+		</attribute>        
+		<attribute>            
+			<name>defaultValue</name>            
+			<required>false</required>            
+			<rtexprvalue></rtexprvalue>        
+		</attribute>        
+		<attribute>            
+			<name>paras</name>            
+			<required>false</required>            
+			<rtexprvalue></rtexprvalue>        
+		</attribute>        
+		<attribute>            
+			<name>locale</name>            
+			<required>false</required>            
+			<rtexprvalue></rtexprvalue>        
+		</attribute>    
+	</tag>
+</tablib>
