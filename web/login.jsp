@@ -37,7 +37,7 @@
 		function doLogin() {
 			var operId = $.trim($("#OPER_ID").val());
 			var password = $.trim($("#PASSWORD").val());
-			var callNumber = $.trim($("#CALL_NUMBER").val());
+			//var callNumber = $.trim($("#CALL_NUMBER").val());
 			//alert(isNaN(callNumber));
 
 			//alert("OPERID:" + operId + ",password:" + password + ",callNumber=:" + callNumber);
@@ -48,7 +48,8 @@
 				$.messager.alert("提示",'座席号只能为数字!',"error");
 			}else {
 				$.ajax({
-					url:'doLogin?operId=' + operId + '&password=' + password + '&callNumber=' + callNumber,
+					//url:'doLogin?operId=' + operId + '&password=' + password + '&callNumber=' + callNumber,
+					url:'doLogin?operId=' + operId + '&password=' + password,
 					method:'POST',
 					dataType:'json',
 					success:function(rs) {
@@ -70,9 +71,9 @@
 	<div style="position: absolute;top:120px;left:350px;">
 		<span style="color:white;font-weight: bold;font-size: 30px;">呼叫中心系统</span>
 	</div>
-	<input name="operator.OPER_ID" id="OPER_ID" style="position:absolute;top:225px;left:755px;width:175px;border:0px;"/>
-	<input type="password" name="operator.PASSWORD" id="PASSWORD" style="position:absolute;top:262px;left:755px;width:175px;border:0px;"/>
-	<input name="operator.CALL_NUMBER" id="CALL_NUMBER" style="position:absolute;top:300px;left:755px;width:104px;border:0px;"/>
+	<input name="operator.OPER_ID" id="OPER_ID" style="position:absolute;top:245px;left:755px;width:175px;border:0px;"/>
+	<input type="password" name="operator.PASSWORD" id="PASSWORD" style="position:absolute;top:295px;left:755px;width:175px;border:0px;"/>
+	<!-- input name="operator.CALL_NUMBER" id="CALL_NUMBER" style="position:absolute;top:300px;left:755px;width:104px;border:0px;"/ -->
 	</div>		
 	<div style="position:absolute;top:342px;left:732px;width:177px;heigth:26px;text-align: left;" onclick="doLogin();">
 		<span style="color:#4D90FE">|</span>

@@ -89,7 +89,7 @@ public class CommonController extends Controller {
 		
 		String operId = getPara("operId");
 		String password = getPara("password");
-		String callNumber = getPara("callNumber");
+		//String callNumber = getPara("callNumber");
 		
 		//
 		if(!BlankUtils.isBlank(operId)&& !BlankUtils.isBlank(password)) {
@@ -110,7 +110,7 @@ public class CommonController extends Controller {
 			}else {
 				//登录正确
 				getSession().setAttribute("currOperId",operId);
-				getSession().setAttribute("currAgentNumber",callNumber);
+				//getSession().setAttribute("currAgentNumber",callNumber);
 				getSession().setAttribute("currOrgCode", operator.get("ORG_CODE").toString());   //当前登录用户所在的组织
 				getSession().setAttribute("currOperName",operator.get("OPER_NAME").toString());
 				
