@@ -40,10 +40,44 @@ public class CommonController extends Controller {
 			//render("login.jsp");
 			redirect("/login");
 		}else {
+			//当前座席号码
+			String currAgentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?null:getSession().getAttribute("currAgentNumber").toString();
 			
 			setAttr("menuAccordionData",ModuleController.getMenuToString(getSession().getAttribute("currOperId").toString()));
+			
+			setAttr("loginInfo",getLoginInfo());      //显示登录信息
+			
+			setAttr("currAgentNumber",currAgentNumber);
+			
 			render("index.jsp");
 		}
+	}
+	
+	public String getLoginInfo() {
+		
+		String currOperId = BlankUtils.isBlank(getSession().getAttribute("currOperId"))?"":getSession().getAttribute("currOperId").toString();
+		String currOperName = BlankUtils.isBlank(getSession().getAttribute("currOperName"))?"":getSession().getAttribute("currOperName").toString();
+		String currAgentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
+		
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("工号：");
+		sb.append(currOperId);
+		sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+		sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+		
+		sb.append("操作员：");
+		sb.append(currOperName);
+		sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+		sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+		
+		sb.append("座席号：");
+		sb.append(currAgentNumber);
+		sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+		sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+		
+		return sb.toString();
+		
 	}
 	
 	
@@ -694,28 +728,153 @@ public class CommonController extends Controller {
 	/**
 	 * 话务集成操作：外呼，通道保持，呼叫转移，示忙，示闲，挂机等等操作
 	 * 
+	 * 动作描述：
+	 * 
+	 * 	     signIn: 签入
+	 *      signOut: 签出
+	 *      callOut: 呼出
+	 * 		 holdOn: 保持
+	 * cancelHoldOn: 取消保持
+	 *  callForward: 呼叫转移
+	 *         busy: 示忙
+	 *         free: 示闲
+	 *       hangUp: 挂机
+	 * 
 	 */
 	public void doCti() {
 		
-		//标识：1 外呼; 2 通话保持; 3 呼叫转移; 4 示忙; 5 挂机
-		String flg = getPara("flg");
+		String msg = "";              //处理结果
 		
-		String msg = null;
+		//获取cti 动作
+		/*
+		* 	     signIn: 签入
+		 *      signOut: 签出
+		 *      callOut: 呼出
+		 * 		 holdOn: 保持
+		 * cancelHoldOn: 取消保持
+		 *  callForward: 呼叫转移
+		 *         busy: 示忙
+		 *         free: 示闲
+		 *       hangUp: 挂机
+		 */
 		
-		if(flg.equals("1")) {
-			msg = "外呼执行成功";
-		}else if(flg.equals("2")) {
-			msg = "通话保持执行成功";
-		}else if(flg.equals("3")) {
-			msg = "呼叫转移执行成功";
-		}else if(flg.equals("4")) {
-			msg = "示忙执行成功";
-		}else if(flg.equals("5")) {
-			msg = "挂机执行成功";
+		
+		String actionName = getPara("actionName");
+		
+
+		if(actionName.equalsIgnoreCase("signIn")) {    				//签入
+			
+			String agentNumber = getPara("agentNumber");   //获取座席号码
+			
+			System.out.println("actionName:" + actionName + ";agentNumber：" + agentNumber);
+			
+			//一、先检查填写签入座席号码是否为空
+			if(BlankUtils.isBlank(agentNumber)) {
+				 render(RenderJson.error("签入失败,签入座席号码为空!"));
+				 return;
+			}
+			
+			//二、检查 PBX 连接状态
+			//boolean connState = CtiUtils.getConnectionState();
+			boolean connState = true;
+			
+			if(!connState) {
+				render(RenderJson.error("签入失败,话务服务器连接状态异常!"));
+				return;
+			}
+			
+			//三、检查座席号码是否在线
+			boolean isOnLine = true;
+			
+			if(!isOnLine) {   
+				render(RenderJson.error("签入失败,座席号码 " + agentNumber + " 掉线,请检查话机状态后再进行签入!"));
+				return;
+			}
+			
+			//四、执行绑定
+			getSession().setAttribute("currAgentNumber", agentNumber);
+			
+			//更新登录信息
+			String loginInfo = getLoginInfo();
+			
+			render(RenderJson.success("座席签入成功!",loginInfo,agentNumber));
+			return;
+		}else if(actionName.equalsIgnoreCase("signOff")) {			//签出
+			
+			String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
+			
+			if(BlankUtils.isBlank(agentNumber)) {                   //先查看当前账号是否已经签入了座席，如果无签入座席，返回提示信息
+				
+				render(RenderJson.error("当前登录账号并未签入座席,忽略签出操作!",getLoginInfo()));
+				return;
+			}
+			
+			getSession().removeAttribute("currAgentNumber");    //从 session 去除 currAgentNumber
+			render(RenderJson.success("签出操作成功!",getLoginInfo()));
+			return;
+			
+		}else if(actionName.equalsIgnoreCase("callOut")) {          //呼出
+			
+			//取得输入客户外呼号码
+			String clientNumber = getPara("clientNumber"); 
+			String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
+			
+			//一 检查客户号码
+			if(BlankUtils.isBlank(clientNumber)) {
+				render(RenderJson.error("执行外呼失败,输入的客户号码为空!"));
+				return;
+			}
+			
+			//二 检查座席号码是否为空
+			if(BlankUtils.isBlank(agentNumber)) {
+				render(RenderJson.error("执行外呼失败,当前账号未关联座席!"));
+				return;
+			}
+			
+			//三、检查 PBX 连接状态
+			//boolean connState = CtiUtils.getConnectionState();
+			boolean connState = true;
+			
+			if(!connState) {
+				render(RenderJson.error("签入失败,话务服务器连接状态异常!"));
+				return;
+			}
+			
+			//四 检查座席号码的状态
+			boolean isOnLine = true;
+			
+			if(!isOnLine) {   
+				render(RenderJson.error("签入失败,座席号码 " + agentNumber + " 掉线,请检查话机状态后再进行签入!"));
+				return;
+			}
+			
+			//五 执行外呼
+			//CtiUtils.doCallOutByAgent(agentNumber, channel, context, exten, priority, timeout, callerId, variables, cb);
+			
+			render(RenderJson.success("系统正在执行呼叫..."));
+			return;
+			
+		}else if(actionName.equalsIgnoreCase("holdOn")) {           //保持
+			
+			
+			
+		}else if(actionName.equalsIgnoreCase("cancelHoldOn")) {     //取消保持
+			
+		}else if(actionName.equalsIgnoreCase("callForward")) {      //呼叫转移
+			
+		}else if(actionName.equalsIgnoreCase("busy")) {             //示忙
+			
+		}else if(actionName.equalsIgnoreCase("free")) {             //示闲
+			
+		}else if(actionName.equalsIgnoreCase("hangup")) {           //挂机
+			
 		}
 		
 		render(RenderJson.success(msg));
 		
 	}
+	
+	
+	
 	
 }

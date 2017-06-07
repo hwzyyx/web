@@ -45,6 +45,8 @@
 		
 
 		var menuAccordionData = eval('${menuAccordionData}');
+		var loginInfo = '${loginInfo}';
+		var currAgentNumber = '${currAgentNumber}';
 		
 		function addTab(title, url){
 			if ($('#layout_center_tabs').tabs('exists', title)){
@@ -92,6 +94,16 @@
 	$(function(){
 
 		initSystemResourceChart();       //初始化系统资源
+		
+		$("#loginInfoDiv").html(loginInfo);    //赋值登录信息
+		
+		if(currAgentNumber == null || currAgentNumber == '') {    //当前座席号为空时
+			$("#signInDiv").css('display','');
+			$("#signOffDiv").css('display','none');
+		}else {
+			$("#signInDiv").css('display','none');
+			$("#signOffDiv").css('display','');
+		}
 		
 		$('#layout_center_tabsMenu').menu({
 			onClick : function(item) {
@@ -1220,7 +1232,8 @@
 	<!-- 底部 start -->
 	<div data-options="region:'south',border:false" style="height:25px;background:#dddddd;">
 		<a href="#" class="easyui-linkbutton" data-options="fit:true" style="text-align: left;">
-			<span style="font-weight: bold;">工号：${currOperId} 　　　　　操作员：${currOperName}     　　　　　 座席号：${currAgentNumber}  </span>
+			<span style="font-weight: bold;"> <div id="loginInfoDiv"></div> </span>
+			 
 			<div style="display: inline" id="currentTime"></div>
 		</a>
 		
@@ -1249,7 +1262,7 @@
 	</div>	
 	
 	<!-- 将修改密码的窗口包含进来，在点击修改密码时，可以显示该窗口 -->
-	<div id="changepasswordpanel" class="easyui-dialog" title="添加数据字典" data-options="width:300,height:200" modal="true" closed="true" buttons="#changePasswordBtn">
+	<div id="changepasswordpanel" class="easyui-dialog" title="修改密码" data-options="width:300,height:200" modal="true" closed="true" buttons="#changePasswordBtn">
 		<form id="changepasswordform">
 				<!-- %@ include file="/_changepasswordform.jsp"% -->
 				<table>
