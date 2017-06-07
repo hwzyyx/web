@@ -17,6 +17,7 @@ public class RenderJson extends Render {
 	private String statusCode;
 	private String message;
 	private String extraMessage;   //额外信息,如返回添加生成的ID
+	private String extraMessage2;  //额外信息2
 	
 	public RenderJson() {
 
@@ -36,6 +37,15 @@ public class RenderJson extends Render {
 		renderJson.setExtraMessage(extraMessage);
 		return renderJson;
 	}
+	
+	public static RenderJson success(String message,String extraMessage,String extraMessage2) {
+		RenderJson renderJson = new RenderJson();
+		renderJson.setStatusCode("success");
+		renderJson.setMessage(message);
+		renderJson.setExtraMessage(extraMessage);
+		renderJson.setExtraMessage2(extraMessage2);
+		return renderJson;
+	}
 
 	public static RenderJson error(String message) {
 		RenderJson renderJson = new RenderJson();
@@ -49,6 +59,15 @@ public class RenderJson extends Render {
 		renderJson.setStatusCode("error");
 		renderJson.setMessage(message);
 		renderJson.setExtraMessage(extraMessage);
+		return renderJson;
+	}
+	
+	public static RenderJson error(String message,String extraMessage,String extraMessage2) {
+		RenderJson renderJson = new RenderJson();
+		renderJson.setStatusCode("error");
+		renderJson.setMessage(message);
+		renderJson.setExtraMessage(extraMessage);
+		renderJson.setExtraMessage2(extraMessage2);
 		return renderJson;
 	}
 	
@@ -67,6 +86,15 @@ public class RenderJson extends Render {
 		return renderJson;
 	}
 	
+	public static RenderJson warn(String message,String extraMessage,String extraMessage2) {
+		RenderJson renderJson = new RenderJson();
+		renderJson.setStatusCode("warn");
+		renderJson.setMessage(message);
+		renderJson.setExtraMessage(extraMessage);
+		renderJson.setExtraMessage2(extraMessage2);
+		return renderJson;
+	}
+	
 
 	@Override
 	public void render() {
@@ -75,10 +103,11 @@ public class RenderJson extends Render {
 		m.put("statusCode", statusCode);
 		m.put("message", message);
 		m.put("extraMessage",extraMessage);
+		m.put("extraMessage2", extraMessage2);
 		JSONArray ja = JSONArray.fromObject(m);
 		
 //		String result = "\"result\":[{\"statusCode\":\"" + statusCode + "\",\"message\":\"" + message + "\"}]"; 
-		String result = "{\"statusCode\":\"" + statusCode + "\",\"message\":\"" + message + "\",\"extraMessage\":\"" + extraMessage + "\"}"; 
+		String result = "{\"statusCode\":\"" + statusCode + "\",\"message\":\"" + message + "\",\"extraMessage\":\"" + extraMessage + "\",\"extraMessage2\":\"" + extraMessage2 + "\"}"; 
 		
 		try {
 			response.setHeader("Pragma", "no-cache"); // HTTP/1.0 caches might
@@ -123,5 +152,15 @@ public class RenderJson extends Render {
 	public void setExtraMessage(String extraMessage) {
 		this.extraMessage = extraMessage;
 	}
+
+	public String getExtraMessage2() {
+		return extraMessage2;
+	}
+
+	public void setExtraMessage2(String extraMessage2) {
+		this.extraMessage2 = extraMessage2;
+	}
+	
+	
 	
 }
