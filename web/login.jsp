@@ -37,15 +37,9 @@
 		function doLogin() {
 			var operId = $.trim($("#OPER_ID").val());
 			var password = $.trim($("#PASSWORD").val());
-			//var callNumber = $.trim($("#CALL_NUMBER").val());
-			//alert(isNaN(callNumber));
-
-			//alert("OPERID:" + operId + ",password:" + password + ",callNumber=:" + callNumber);
 			
 			if(operId.length==0 || password.length==0) {
 				$.messager.alert("提示",'工号及密码不能为空，请重新填写登录信息!',"error");
-			}else if(isNaN(callNumber)){
-				$.messager.alert("提示",'座席号只能为数字!',"error");
 			}else {
 				$.ajax({
 					//url:'doLogin?operId=' + operId + '&password=' + password + '&callNumber=' + callNumber,
