@@ -1,5 +1,6 @@
 package com.callke8.utils;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,8 @@ public class MemoryVariableUtil {
 	public static Map<String,String> autoContactMap;   //储存于内存中的自动接触配置，数据来源于 commonconfig.properties 文件
 	public static Map<String,String> voicePathMap;     //储存于内存中的语音路径，主要是用于试听语音和上传语音（及转换格式）文件时用
 	public static Map<String,String> autoCallTaskMap;  //储存于内存中的自动外呼任务的配置
-	public static Map<String,String> ttsParamMap;         //储存于内存中 TTS 的参数情况
+	public static Map<String,String> ttsParamMap;      //储存于内存中 TTS 的参数情况
+	public static Map<String,String> agentStateMap = new HashMap<String,String>();    //储存于内存中的座席状态
 	
 	/**
 	 * 
