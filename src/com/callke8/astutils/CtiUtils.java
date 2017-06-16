@@ -19,8 +19,6 @@ public class CtiUtils {
 		
 		Map rs = new HashMap();
 		
-		
-		
 		return rs;
 	}
 	
@@ -336,6 +334,41 @@ public class CtiUtils {
 	}
 	
 	/**
+	 * 针对通话中的座席号码,取得源通道及目标通道
+	 * 
+	 * 主要是用于通话保持及取消通话保持
+	 * 
+	 * @param agentNumber
+	 * @return
+	 */
+	public static Map<String,String> getSrcChannelAndDstChannelByAgentNumber(String agentNumber) {
+		
+		AsteriskUtils au = new AsteriskUtils();
+		
+		Map<String,String> channelMap = au.getSrcChannelAndDstChannelByAgentNumber(agentNumber);
+		
+		return channelMap;
+	}
+	
+	
+	/**
+	 * 根据座席号码，取得与座席号码通道的目标通道
+	 * 
+	 * @param agentNumber
+	 * @return
+	 */
+	public static String getDstChannelByAgentNumber(String agentNumber) {
+		
+		AsteriskUtils au = new AsteriskUtils();
+		
+		String dstChannel = au.getDstChannelByAgentNumber(agentNumber);
+		
+		return dstChannel;
+		
+	}
+	
+	
+	/**
 	 * 通话保持
 	 * 
 	 * @param agentNumber
@@ -343,20 +376,25 @@ public class CtiUtils {
 	 * @return
 	 * 		  Map
 	 */
-	public static Map doHoldOn(String agentNumber) {
-		Map rs = new HashMap();
+	public static void doHoldOn(String srcChannel,String dstChannel) {
 		
-		return rs;
+		AsteriskUtils au = new AsteriskUtils();
+		
+		au.doHoldOn(srcChannel, dstChannel);
+		
 	}
 	
 	/**
 	 * 
 	 * @return
 	 */
-	public static Map doTransfer() {
-		Map rs = new HashMap();
+	public static void doTransfer(String dstChannel,String forwardNumber) {
 		
-		return rs;
+		
+		AsteriskUtils au = new AsteriskUtils();
+		
+		au.doTransfer(dstChannel, forwardNumber);
+		
 	}
 
 }

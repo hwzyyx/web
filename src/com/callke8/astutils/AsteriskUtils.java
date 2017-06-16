@@ -1,7 +1,10 @@
 package com.callke8.astutils;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.ws.Response;
 
 import org.asteriskjava.live.CallerId;
 import org.asteriskjava.live.DefaultAsteriskServer;
@@ -10,12 +13,15 @@ import org.asteriskjava.manager.AuthenticationFailedException;
 import org.asteriskjava.manager.DefaultManagerConnection;
 import org.asteriskjava.manager.ManagerConnection;
 import org.asteriskjava.manager.TimeoutException;
+import org.asteriskjava.manager.action.AtxferAction;
 import org.asteriskjava.manager.action.CommandAction;
 import org.asteriskjava.manager.action.HangupAction;
+import org.asteriskjava.manager.action.RedirectAction;
 import org.asteriskjava.manager.response.CommandResponse;
 import org.asteriskjava.manager.response.ManagerResponse;
 
 import com.callke8.utils.BlankUtils;
+import com.callke8.utils.MemoryVariableUtil;
 import com.callke8.utils.StringUtil;
 
 /**
@@ -110,13 +116,33 @@ public class AsteriskUtils {
 	 * 			转移到目标号码
 	 * @return
 	 */
-	public boolean doTransfer(String targetNumber) {
+	public void doTransfer(String dstChannel,String forwardNumber) {
 		
-		boolean b = false;
+		AtxferAction action  = new AtxferAction(dstChannel, AstMonitor.getAstCallOutContext(),forwardNumber, 1);
 		
+		try {
+			ManagerResponse response = conn.sendAction(action,3000);
+			
+			System.out.println("执行转移返回的 Response: " + response);
+			
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}finally {
+			conn.logoff();
+		}
 		
-		
-		return b;
 	}
 	
 	/**
@@ -197,6 +223,218 @@ public class AsteriskUtils {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+	/**
+	 * 针对通话中的座席号码,取得源通道及目标通道
+	 * 
+	 * 主要是用于通话保持及取消通话保持
+	 * 
+	 * @param agentNumber
+	 * @return
+	 */
+	public Map<String,String> getSrcChannelAndDstChannelByAgentNumber(String agentNumber) {
+		
+		Map<String,String> channelMap = new HashMap<String,String>();
+		
+		try {
+			
+			CommandAction action  = new CommandAction();
+			
+			action.setCommand("core show channels concise");
+			
+			ManagerResponse response = conn.sendAction(action,500);
+			
+			/**
+			 * 发送 Action 后，返回的数据大概如下：
+			 * 
+			 localhost*CLI> core show channels concise
+			 	
+			 	（1）座席直接对呼的情况
+			 	SIP/8003-0000002f!from-internal!!1!Up!AppDial!(Outgoing Line)!8003!!!3!24!SIP/8004-0000002e!1497344055.47
+				SIP/8004-0000002e!macro-dial-one!s!37!Up!Dial!SIP/8003,"",tr!8004!!!3!24!SIP/8003-0000002f!1497344054.46
+				
+				（2）座席呼叫外线号码时
+				SIP/JM-Trunk-00000031!from-trunk-sip-JM-Trunk!!1!Up!AppDial!(Outgoing Line)!013512771995!!!3!22!SIP/8004-00000030!1497344139.49
+				SIP/8004-00000030!macro-dialout-trunk!s!19!Up!Dial!SIP/JM-Trunk/013512771995,300,!3282114!!!3!22!SIP/JM-Trunk-00000031!1497344139.48
+			 
+			 	（3）外线来电通过拨打队列号分配给座席接听的情况
+				SIP/8002-0000002e!from-exten-sip!!1!Up!AppDial!(Outgoing Line)!8002!!3!9!Local/8002@sub-queuefindnumber-bb88,2
+				Local/8002@sub-queuefindnumber-bb88,2!sub-queuefindnumber!8002!5!Up!Dial!sip/8002|40|t!13512771995!!3!9!SIP/8002-0000002e
+				Local/8002@sub-queuefindnumber-bb88,1!sub-queuefindnumber!83811599!1!Up!AppQueue!(Outgoing Line)!13512771995!0!3!9!DAHDI/1-1
+				DAHDI/1-1!from-trunk-dahdi!83811599!11!Up!Queue!401|t|||100|agi://127.0.0.1/queue_answeragent?saymember=0!13512771995!0!3!19!Local/8002@sub-queuefindnumber-bb88,1
+				
+				（4）座席通过拨打队列号分配给其他座席接听的情况
+				SIP/8003-00000008!from-internal!401!9!Up!Queue!401,t,,!8003!!!3!22!Local/8004@from-queue-00000000;1!1497598151.11
+				SIP/8004-00000009!macro-dial-one!s!1!Up!AppDial!(Outgoing Line)!8004!!!3!21!Local/8004@from-queue-00000000;2!1497598152.14
+				Local/8004@from-queue-00000000;1!from-queue!401!1!Up!AppQueue!(Outgoing Line)!8004!!!3!21!SIP/8003-00000008!1497598152.12
+				Local/8004@from-queue-00000000;2!macro-dial-one!s!37!Up!Dial!SIP/8004,"",trM(auto-blkvm)!8003!!!3!21!SIP/8004-00000009!1497598152.13
+			 
+			 * 我们要找的，就是根据上面三种情况，分别进行分析：
+			 * 
+			 * 第一种情况（座席对呼）：以  SIP/座席号码  开头进行分析，得到源通道和目标通道
+			 * 第二种情况（座席外呼）：以 SIP/座席号码  开头进行分析,目标通道为  SIP/JM-Trunk-00000031
+			 * 第三种情况（队列号）：座席主要是以 Local/座席号码 得到目标通道，这里要注意，目标通道可能会得到相同座席的，需要进行筛选
+			 * 第四种情况（队列号2）：座席
+			 * 
+			 * 综上所述：
+			 * 必须即使得到源通道和目标通道，还需要通过通道取出座席号码，查看是否相同，只有不同时，才算是真正找到了两个通道。
+			 * 
+			 */
+			
+			if(!BlankUtils.isBlank(response)) {
+				
+				CommandResponse res = (CommandResponse)response;
+				
+				String searchStr = "SIP/" + agentNumber;
+				String searchStrForLocal = "Local/" + agentNumber;
+				
+				//遍历返回的结果
+				for(String line:res.getResult()) {
+					
+					if(line.startsWith(searchStr)) {      //如果判断返回的结果中是以 SIP/8002 开头
+						
+						String[] elements = line.split("!");
+						
+						if(elements.length == 14) {
+							
+							channelMap = new HashMap<String,String>();
+							
+							String srcChannel = elements[0];
+							String dstChannel = elements[12];
+							
+							//得到了源通道及目标通道,针对以上四种情况
+							//源通道为：SIP/8003-0000002f
+							//目标通道可能为：
+							/*
+							 * （1）SIP/8003-0000002e
+							 * （2）SIP/JM-Trunk-00000031
+							 * （3）Local/8002@sub-queuefindnumber-bb88
+							 * （4）Local/8002@from-queue-00000000
+							 */
+							
+							//主要对目标通道进行判断，看看目标通道是否是以     SIP/座席   或  Local/座席 ,如果是，表示目标通道是不对的
+							if(!BlankUtils.isBlank(srcChannel) && !BlankUtils.isBlank(dstChannel)) {
+								
+								//为了避免因版本不同,返回目标通道不在第13位,先要判断目标通道包含 /
+								if(dstChannel.contains("/")) {
+									
+									//以 "/" 分解目标通道,分解目标通道后,查看是否以座席号开始
+									if(!dstChannel.split("/")[1].startsWith(agentNumber)) {
+										channelMap.put("srcChannel", srcChannel);
+										channelMap.put("dstChannel", dstChannel);
+									}
+									
+								}
+								
+							}
+							
+						}
+						
+					}else if(line.startsWith(searchStrForLocal)) {      //如果判断返回的结果中是以 Local/8002 开头
+						
+						String[] elements = line.split("!");
+						
+						if(elements.length == 14) {
+							
+							channelMap = new HashMap<String,String>();
+							
+							String srcChannel = elements[0];
+							String dstChannel = elements[12];
+							
+							//得到了源通道及目标通道,针对以上四种情况
+							//源通道为：Local/8002@sub-queuefindnumber-bb88
+							//目标通道可能为：
+							/*
+							 * （1）SIP/8002-0000002e
+							 * （2）DAHDI/1-1
+							 *  (3)SIP/8003-00000008
+							 */
+							
+							//主要对目标通道进行判断，看看目标通道是否是以     SIP/座席   或  Local/座席 ,如果是，表示目标通道是不对的
+							if(!BlankUtils.isBlank(srcChannel) && !BlankUtils.isBlank(dstChannel)) {
+								
+								//为了避免因版本不同,返回目标通道不在第13位,先要判断目标通道包含 /
+								if(dstChannel.contains("/")) {
+									
+									//以 "/" 分解目标通道,分解目标通道后,查看是否以座席号开始
+									if(!dstChannel.split("/")[1].startsWith(agentNumber)) {
+										channelMap.put("srcChannel", srcChannel);
+										channelMap.put("dstChannel", dstChannel);
+									}
+									
+								}
+								
+							}
+							
+							
+						}
+						
+					}
+					
+				}
+				
+			}
+			
+			
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		
+		
+		return channelMap;
+		
+	}
+	
+	
+	/**
+	 * 根据座席号码,取出与座席通话的目标通道，无论是来电或是去电
+	 * 
+	 * @param agentNumber
+	 * @return
+	 */
+	public String getDstChannelByAgentNumber(String agentNumber) {
+		
+		String dstChannel = null;
+		
+		Map<String,String> channelMap = getSrcChannelAndDstChannelByAgentNumber(agentNumber);
+		
+		if(!BlankUtils.isBlank(channelMap)) {
+			
+			dstChannel = channelMap.get("dstChannel");
+			
+		}
+		
+		return dstChannel;
+		
+	}
+	
+	
+	public void doHoldOn(String srcChannel,String dstChannel) {
+		
+		try {
+		
+			RedirectAction action  = new RedirectAction(srcChannel, dstChannel,AstMonitor.getAstHoldOnContext(),"s",1);
+			
+			ManagerResponse response = conn.sendAction(action,500);
 			
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
