@@ -7,14 +7,17 @@ import java.util.List;
 import java.util.Map;
 
 import net.sf.json.JSONArray;
+import sun.management.resources.agent;
 
 import org.asteriskjava.live.AsteriskChannel;
 import org.asteriskjava.live.CallerId;
 import org.asteriskjava.live.LiveException;
 import org.asteriskjava.live.OriginateCallback;
+import org.eclipse.jetty.util.log.Log;
 
 import com.callke8.astutils.AstMonitor;
 import com.callke8.astutils.CtiUtils;
+import com.callke8.astutils.LaunchCtiService;
 import com.callke8.call.incoming.InComing;
 import com.callke8.system.loginlog.LoginLog;
 import com.callke8.system.module.ModuleController;
@@ -28,12 +31,16 @@ import com.callke8.utils.Md5Utils;
 import com.callke8.utils.MemoryVariableUtil;
 import com.callke8.utils.RenderJson;
 import com.callke8.utils.TreeJson;
+import com.google.common.util.concurrent.Monitor;
 import com.jfinal.aop.ClearInterceptor;
 import com.jfinal.core.Controller;
+import com.jfinal.log.Logger;
 import com.jfinal.plugin.activerecord.Record;
 
 @ClearInterceptor
 public class CommonController extends Controller {
+	
+	Logger log = Logger.getLogger(CommonController.class);
 	
 	public void index() {
 		if(BlankUtils.isBlank(getSession().getAttribute("currOperId"))) {
@@ -743,6 +750,10 @@ public class CommonController extends Controller {
 	 */
 	public void doCti() {
 		
+		String content_type = getRequest().getContentType();
+		
+		System.out.println("我得到的 content_type" + content_type);
+		
 		String msg = "";              //处理结果
 		
 		//获取cti 动作
@@ -775,8 +786,8 @@ public class CommonController extends Controller {
 			}
 			
 			//二、检查 PBX 连接状态
-			//boolean connState = CtiUtils.getConnectionState();
-			boolean connState = true;
+			boolean connState = CtiUtils.getConnectionState();
+			//boolean connState = true;
 			
 			if(!connState) {
 				render(RenderJson.error("签入失败,话务服务器连接状态异常!"));
@@ -784,7 +795,16 @@ public class CommonController extends Controller {
 			}
 			
 			//三、检查座席号码是否在线
-			boolean isOnLine = true;
+			//从内存数据中取出座席的状态
+			boolean isOnLine = false;
+
+			String agentState = MemoryVariableUtil.agentStateMap.get(agentNumber);   //取出状态
+			
+			if(!BlankUtils.isBlank(agentState)) {
+				if(!(agentState.equalsIgnoreCase("Unknown") || agentState.equalsIgnoreCase("Invalid") || agentState.equalsIgnoreCase("Unavailable"))) {
+					isOnLine = true;
+				}
+			}
 			
 			if(!isOnLine) {   
 				render(RenderJson.error("签入失败,座席号码 " + agentNumber + " 掉线,请检查话机状态后再进行签入!"));
@@ -794,7 +814,7 @@ public class CommonController extends Controller {
 			//四、执行绑定
 			getSession().setAttribute("currAgentNumber", agentNumber);
 			
-			//更新登录信息
+			//更新登录信息,用于前端显示
 			String loginInfo = getLoginInfo();
 			
 			render(RenderJson.success("座席签入成功!",loginInfo,agentNumber));
@@ -817,7 +837,7 @@ public class CommonController extends Controller {
 			
 			//取得输入客户外呼号码
 			String clientNumber = getPara("clientNumber"); 
-			String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
+			final String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
 			
 			//一 检查客户号码
 			if(BlankUtils.isBlank(clientNumber)) {
@@ -832,42 +852,289 @@ public class CommonController extends Controller {
 			}
 			
 			//三、检查 PBX 连接状态
-			//boolean connState = CtiUtils.getConnectionState();
-			boolean connState = true;
+			boolean connState = CtiUtils.getConnectionState();
 			
 			if(!connState) {
-				render(RenderJson.error("签入失败,话务服务器连接状态异常!"));
+				render(RenderJson.error("执行外呼失败,话务服务器连接状态异常!"));
 				return;
 			}
 			
 			//四 检查座席号码的状态
-			boolean isOnLine = true;
+			String agentState = MemoryVariableUtil.agentStateMap.get(agentNumber);
 			
-			if(!isOnLine) {   
-				render(RenderJson.error("签入失败,座席号码 " + agentNumber + " 掉线,请检查话机状态后再进行签入!"));
+			boolean isFree = false; 
+			
+			if(!BlankUtils.isBlank(agentState) && (agentState.equalsIgnoreCase("idle") || agentState.equalsIgnoreCase("NOT_INUSE"))) {     //如果号码的状态为 idle或是 not_inuse 即是空闲状态
+				isFree = true;
+			}
+			
+			if(!isFree) {   
+				render(RenderJson.error("执行呼叫失败,座席号码 " + agentNumber + " 非空闲状态,请检查话机状态后再进行签入!"));
 				return;
 			}
 			
 			//五 执行外呼
-			//CtiUtils.doCallOutByAgent(agentNumber, channel, context, exten, priority, timeout, callerId, variables, cb);
+			//(组织相关参数)
+			
+			LaunchCtiService ctiService = new LaunchCtiService("doCallOutByAgent", agentNumber, clientNumber);
+			
+			Thread ctiThread = new Thread(ctiService);
+			
+			ctiThread.start();
 			
 			render(RenderJson.success("系统正在执行呼叫..."));
 			return;
 			
 		}else if(actionName.equalsIgnoreCase("holdOn")) {           //保持
 			
+			String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
+			
+			//一、检查是否已签入 座席号码
+			if(BlankUtils.isBlank(agentNumber)) {
+				render(RenderJson.error("执行外呼失败,当前账号未关联座席!"));
+				return;
+			}
+			
+			//二、检查 PBX 连接状态
+			boolean connState = CtiUtils.getConnectionState();
+			
+			if(!connState) {
+				render(RenderJson.error("执行通话保持失败,话务服务器连接状态异常!"));
+				return;
+			}
+			
+			//三、检查当前座席是否在通话中
+			boolean isInUse = false;
+			
+			String agentState = MemoryVariableUtil.agentStateMap.get(agentNumber);
+			
+			
+			if(!BlankUtils.isBlank(agentState) && agentState.equalsIgnoreCase("InUse")) {
+				isInUse = true;
+			}
+			
+			if(!isInUse) {     //如果话机没有在通话中时，返回错误
+				render(RenderJson.error("座席号码：" + agentNumber + " 未在通话中, 无法执行通话保持!"));
+				return;
+			}
+			
+			//四、执行通话保持
+			Map<String,String> channelMap = CtiUtils.getSrcChannelAndDstChannelByAgentNumber(agentNumber);     //在执行通话保持之前,先取出通话中的座席对应的源通道和目标通道
+			
+			if(!BlankUtils.isBlank(channelMap)) {
+				
+				String srcChannel = channelMap.get("srcChannel");
+				String dstChannel = channelMap.get("dstChannel");
+				
+				log.info("准备执行通话保持,获取到的源通道为: " + srcChannel + ",目标通道为:" + dstChannel);
+				
+				if(!BlankUtils.isBlank(srcChannel) && !BlankUtils.isBlank(dstChannel)) {
+					CtiUtils.doHoldOn(srcChannel,dstChannel);
+					render(RenderJson.success("执行通话保持成功!"));
+					return;
+				}else {
+					
+					render(RenderJson.error("执行通话保持失败,无法获取座席的源通道和目标通道!估计座席不在通话中."));
+					return;
+				}
+				
+				
+				
+			}else {
+				render(RenderJson.error("执行通话保持失败,无法获取座席的源通道和目标通道!估计座席不在通话中."));
+				return;
+			}
 			
 			
 		}else if(actionName.equalsIgnoreCase("cancelHoldOn")) {     //取消保持
 			
+			String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
+			
+			//一、检查是否已签入 座席号码
+			if(BlankUtils.isBlank(agentNumber)) {
+				render(RenderJson.error("执行恢复通话失败,当前账号未关联座席!"));
+				return;
+			}
+			
+			//二、检查 PBX 连接状态
+			//boolean connState = CtiUtils.getConnectionState();
+			boolean connState = true;
+			
+			if(!connState) {
+				render(RenderJson.error("执行通话保持失败,话务服务器连接状态异常!"));
+				return;
+			}
+			
+			//三、检查当前座席是否处于通话保持中
+			boolean isOnHold = true;
+			
+			if(!isOnHold) {
+				render(RenderJson.error("当前座席并非处于通话保持中,取消通话保持失败!"));
+				return;
+			}
+			
+			//四、恢复通话
+			render(RenderJson.success("座席已经恢复通话..."));
+			return;
+			
 		}else if(actionName.equalsIgnoreCase("callForward")) {      //呼叫转移
+			
+			//取得转移的目标号码
+			String forwardNumber = getPara("forwardNumber");
+			String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
+			
+			//一、检查客户号码
+			if(BlankUtils.isBlank(forwardNumber)) {
+				render(RenderJson.error("执行呼叫转移失败,输入的目标号码为空!"));
+				return;
+			}
+			
+			//二、检查座席号码是否为空
+			if(BlankUtils.isBlank(agentNumber)) {
+				render(RenderJson.error("执行呼叫转移失败,当前账号未关联座席!"));
+				return;
+			}
+			
+			//三、检查 PBX 连接状态
+			boolean connState = CtiUtils.getConnectionState();
+			
+			if(!connState) {
+				render(RenderJson.error("执行外呼转移失败,话务服务器连接状态异常!"));
+				return;
+			}
+			
+			//四 检查座席号码的状态
+			boolean isInUse = false;
+			
+			String agentState = MemoryVariableUtil.agentStateMap.get(agentNumber);
+			
+			if(!BlankUtils.isBlank(agentState) && agentState.equalsIgnoreCase("InUse")) {
+				isInUse = true;
+			}
+			
+			if(!isInUse) {   
+				render(RenderJson.error("执行呼叫转移失败,座席号码 " + agentNumber + " 未在通话中!"));
+				return;
+			}
+			
+			//五 执行呼叫转移
+			
+			//先取出目标通道
+			String dstChannel = CtiUtils.getDstChannelByAgentNumber(agentNumber);
+			
+			log.info("执行呼叫转移的目标通道为 : " + dstChannel);
+			if(BlankUtils.isBlank(dstChannel)) {
+				render(RenderJson.error("执行呼叫转移失败,系统无法取得目标通道!请检查后再执行呼叫转移."));
+				return;
+			}
+			
+			//执行呼叫转移操作
+			CtiUtils.doTransfer(dstChannel, forwardNumber);
+			
+			render(RenderJson.success("呼叫转移已经执行!"));
+			return;
 			
 		}else if(actionName.equalsIgnoreCase("busy")) {             //示忙
 			
+			//取出座席号码
+			String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
+			
+			//一、检查座席号码是否为空
+			if(BlankUtils.isBlank(agentNumber)) {
+				render(RenderJson.error("执行示忙失败,当前账号未关联座席!"));
+				return;
+			}
+			
+			//二、检查 PBX 连接状态
+			//boolean connState = CtiUtils.getConnectionState();
+			boolean connState = true;
+			
+			if(!connState) {
+				render(RenderJson.error("执行示忙失败,话务服务器连接状态异常!"));
+				return;
+			}
+			
+			//三、检查座席状态是否已经登录 
+			boolean isOnLine = true;
+			
+			if(!isOnLine) {
+				render(RenderJson.error("执行示忙失败,当前座席号码 " + agentNumber + " 已经掉线!"));
+				return;
+			}
+			
+			//四、 执行示忙操作
+			
+			render(RenderJson.success("示忙成功!"));
+			
+			return;
+			
 		}else if(actionName.equalsIgnoreCase("free")) {             //示闲
+			
+			//取出座席号码
+			String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
+			
+			//一、检查座席号码是否为空
+			if(BlankUtils.isBlank(agentNumber)) {
+				render(RenderJson.error("执行示闲失败,当前账号未关联座席!"));
+				return;
+			}
+			
+			//二、检查 PBX 连接状态
+			//boolean connState = CtiUtils.getConnectionState();
+			boolean connState = true;
+			
+			if(!connState) {
+				render(RenderJson.error("执行示闲失败,话务服务器连接状态异常!"));
+				return;
+			}
+			
+			//三、检查座席状态是否已经登录 
+			boolean isOnLine = true;
+			
+			if(!isOnLine) {
+				render(RenderJson.error("执行示闲失败,当前座席号码 " + agentNumber + " 已经掉线!"));
+				return;
+			}
+			
+			//四、检查座席状态二，当前座席是否处于示忙中
+			
+			
+			//四、 执行示闲操作
+			
+			render(RenderJson.success("示闲成功!"));
+			return;
 			
 		}else if(actionName.equalsIgnoreCase("hangup")) {           //挂机
 			
+			//取出座席号码
+			String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
+			
+			//一、检查座席号码是否为空
+			if(BlankUtils.isBlank(agentNumber)) {
+				render(RenderJson.error("执行挂机失败,当前账号未关联座席!"));
+				return;
+			}
+			
+			//二、检查 PBX 连接状态
+			//boolean connState = CtiUtils.getConnectionState();
+			boolean connState = true;
+			
+			if(!connState) {
+				render(RenderJson.error("执行挂机失败,话务服务器连接状态异常!"));
+				return;
+			}
+			
+			//三、检查当前座席是否在通话中
+			boolean isInUse = true;
+			
+			if(!isInUse) {
+				render(RenderJson.error("执行挂机失败,当前座席 " + agentNumber + " 未在通话中!"));
+				return;
+			}
+			
+			//四、执行挂机操作
+			render(RenderJson.success("挂机成功!"));
+			return;
 		}
 		
 		render(RenderJson.success(msg));

@@ -145,6 +145,13 @@
 	//执行外呼的过程
 	function doCallOut() {
 		
+		var clientNumber = $("#clientNumber").textbox('getValue')
+		
+		if(isNaN(clientNumber)) {
+			window.parent.showMessage("输入的客户号码非数字号码,请重新检查!",'error');
+			return;
+		}
+		
 		$("#callOutForm").form('submit',{
 			url:'doCti',
 			
@@ -174,6 +181,10 @@
 
 				window.parent.showMessage(message,statusCode);
 				
+				if(statusCode=='success') {
+					$("#callOutDialog").dialog('close');
+				}
+				
 			}
 		});
 		
@@ -182,13 +193,17 @@
 	//执行通话保持
 	function execHoldOn() {
 		//alert("执行通话保持");
+		if(currAgentNumber == null || currAgentNumber == '') {
+			window.parent.showMessage("当前登录账户暂未签入座席,无法执行保持!",'error');
+			return;
+		}
 		
 		$.messager.progress({
 			msg:'系统正在处理,请稍候...'
 		});
 		
 		$.ajax({
-			url:'',
+			url:'doCti?actionName=holdOn',
 			method:'POST',
 			dataType:'json',
 			success:function(rs) {
@@ -197,6 +212,11 @@
 				var statusCode = rs.statusCode;    //返回结果类型
 				var message = rs.message;          //返回执行信息
 				window.parent.showMessage(message,statusCode);
+				
+				if(statusCode == 'success') {      //如果执行通话保持成功
+					$("#holdOnDiv").css("display","none");
+					$("#cancelHoldOnDiv").css("display","");
+				}
 				
 			}
 		});
@@ -207,12 +227,21 @@
 	function execCancelHoldOn() {
 		//alert("执行通话保持");
 		
+		if(currAgentNumber == null || currAgentNumber == '') {
+			
+			$("#holdOnDiv").css("display","");
+			$("#cancelHoldOnDiv").css("display","none");
+			
+			window.parent.showMessage("当前登录账户暂未签入座席,恢复通话失败!",'error');
+			return;
+		}
+		
 		$.messager.progress({
 			msg:'系统正在处理,请稍候...'
 		});
 		
 		$.ajax({
-			url:'',
+			url:'doCti?actionName=cancelHoldOn',
 			method:'POST',
 			dataType:'json',
 			success:function(rs) {
@@ -221,6 +250,11 @@
 				var statusCode = rs.statusCode;    //返回结果类型
 				var message = rs.message;          //返回执行信息
 				window.parent.showMessage(message,statusCode);
+				
+				if(statusCode == 'success') {
+					$("#holdOnDiv").css("display","");
+					$("#cancelHoldOnDiv").css("display","none");
+				}
 				
 			}
 		});
@@ -231,6 +265,11 @@
 	function execCallForward() {
 		//alert("执行呼叫转移");
 		
+		if(currAgentNumber == null || currAgentNumber == '') {
+			window.parent.showMessage("当前登录账户暂未签入座席,无法执行转移!",'error');
+			return;
+		}
+		
 		$("#callForwardDialog").dialog('setTitle',"呼叫转移").dialog('open');
 		
 		
@@ -239,9 +278,18 @@
 	//执行呼叫转移操作
 	function doCallForward() {
 		
+		var forwardNumber = $("#forwardNumber").textbox('getValue')
+		
+		if(isNaN(forwardNumber)) {
+			window.parent.showMessage("输入的转移号码非数字号码,请重新检查!",'error');
+			return;
+		}	
+		
 		$("#callForwardForm").form('submit',{
-			url:'',
-			onSubmit:function() {
+			url:'doCti',
+			onSubmit:function(param) {
+				
+				param.actionName = "callForward";
 				
 				var v = $(this).form('validate');
 				
@@ -264,6 +312,13 @@
 				var message = result.message;
 
 				window.parent.showMessage(message,statusCode);
+				
+				if(statusCode == 'success') {
+					
+					$("#callForwardDialog").dialog('close');
+					
+				}
+				
 			}
 		});
 		
@@ -272,6 +327,11 @@
 	
 	function execBusy() {
 		//alert("执行示忙");
+		
+		if(currAgentNumber == null || currAgentNumber == '') {
+			window.parent.showMessage("当前登录账户暂未签入座席,无法执行示忙!",'error');
+			return;
+		}
 		
 		$.messager.confirm('提示','您确定要将座席示忙吗？示忙后,座席将无法接听所有来电!',function(r) {
 			
@@ -282,7 +342,7 @@
 				});
 				
 				$.ajax({
-					url:'',
+					url:'doCti?actionName=busy',
 					method:'POST',
 					dataType:'json',
 					success:function(rs) {
@@ -292,6 +352,12 @@
 						var statusCode = rs.statusCode;    //返回结果类型
 						var message = rs.message;          //返回执行信息
 						window.parent.showMessage(message,statusCode);
+						
+						if(statusCode == 'success') {
+							
+							$("#busyDiv").css('display','none');
+							$("#freeDiv").css('display','');
+						}
 						
 					}
 				});
@@ -304,12 +370,17 @@
 	
 	function execFree() {
 		
+		if(currAgentNumber == null || currAgentNumber == '') {
+			window.parent.showMessage("当前登录账户暂未签入座席,无法执行示闲!",'error');
+			return;
+		}
+		
 		$.messager.progress({
 			msg:'系统正在处理,请稍候...'
 		});
 		
 		$.ajax({
-			url:'',
+			url:'doCti?actionName=free',
 			method:'POST',
 			dataType:'json',
 			success:function(rs) {
@@ -320,6 +391,12 @@
 				var message = rs.message;          //返回执行信息
 				window.parent.showMessage(message,statusCode);
 				
+				if(statusCode == 'success') {
+					
+					$("#busyDiv").css('display','');
+					$("#freeDiv").css('display','none');
+				}
+				
 			}
 		});
 		
@@ -327,13 +404,19 @@
 	
 	function execHangup() {
 		
+		if(currAgentNumber == null || currAgentNumber == '') {
+			window.parent.showMessage("当前登录账户暂未签入座席,无法挂机!",'error');
+			return;
+		}
+		
 		$.messager.progress({
 			msg:'系统正在处理,请稍候...'
 		});
 		
 		$.ajax({
-			url:'doCti?action=hangup',
+			url:'doCti?actionName=hangup',
 			method:'POST',
+			contentType:'hangup-getAgentState',
 			dataType:'json',
 			success:function(rs) {
 				$.messager.progress('close');
@@ -376,11 +459,11 @@
 	 </div>
 	 
 	 <!-- 保持 -->
-	 <div id="holdonDiv" style="float:left;">
+	 <div id="holdOnDiv" style="float:left;">
 		 <i class="iconfont icon-yellow" id="holdIcon" onclick="execHoldOn()">&#xe67b;</i><span style="color:#ffffff;font-size: 14px;">&nbsp;保持&nbsp;</span>
 	 </div>
 	 <!-- 取消保持 -->
-	 <div id="cancelHoldonDiv" style="float:left;">
+	 <div id="cancelHoldOnDiv" style="display:none;float:left;">
 	 	<i class="iconfont icon-green" id="cancelHoldIcon" onclick="execCancelHoldOn()">&#xe633;</i><span style="color:#ffffff;font-size: 14px;">&nbsp;恢复&nbsp;</span>
 	 </div>	 
 	 
@@ -390,11 +473,11 @@
 	 </div>
 	 
 	 <!-- 示忙 -->
-	 <div style="float:left;">
+	 <div id="busyDiv" style="float:left;">
 		 <i class="iconfont icon-red" id="busyIcon" onclick="execBusy()">&#xe60f;</i><span style="color:#ffffff;font-size: 14px;">&nbsp;示忙&nbsp;</span>
 	 </div>
 	 <!-- 示闲 -->
-	 <div style="float:left;">
+	 <div id="freeDiv" style="display:none;float:left;">
 	 	<i class="iconfont icon-green" id="freeIcon" onclick="execFree()">&#xe6a4;</i><span style="color:#ffffff;font-size: 14px;">示闲</span>
 	 </div>
 	
@@ -433,7 +516,7 @@
 	<form id="callOutForm">
 		<table>
 			<tr>
-				<td style="height:100px;width:200px;padding-left:20px;">客户号码：<input name="clientNumber" id="clientNumber" class="easyui-numberbox" type="text" required="true" missingMessage="请输入客户号码（客户手机号码、电话号码或是其他座席号码）"></td>
+				<td style="height:100px;width:200px;padding-left:20px;">客户号码：<input name="clientNumber" id="clientNumber" class="easyui-textbox" type="text" required="true" missingMessage="请输入客户号码（客户手机号码、电话号码或是其他座席号码）"></td>
 			</tr>
 		</table>
 	</form>
@@ -452,7 +535,7 @@
 	<form id="callForwardForm">
 		<table>
 			<tr>
-				<td style="height:100px;width:200px;padding-left:20px;">目标号码：<input name="forwardNumber" id="forwardNumber" class="easyui-numberbox" type="text" required="true" missingMessage="请输入客户号码（客户手机号码、电话号码或是其他座席号码）"></td>
+				<td style="height:100px;width:200px;padding-left:20px;">目标号码：<input name="forwardNumber" id="forwardNumber" class="easyui-textbox" type="text" required="true" missingMessage="请输入客户号码（客户手机号码、电话号码或是其他座席号码）"></td>
 			</tr>
 		</table>
 	</form>

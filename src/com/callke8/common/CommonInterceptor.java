@@ -23,7 +23,7 @@ public class CommonInterceptor implements Interceptor {
 	@Override
 	public void intercept(ActionInvocation ai) {
 		Controller controller = ai.getController();
-		
+ 		
 		//登录用户的检查
 		String currOperId = controller.getSessionAttr("currOperId");
 		if(!BlankUtils.isBlank(currOperId)) {     //登录信息有效...

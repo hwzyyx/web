@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import com.callke8.astutils.AgentStateMonitor;
 import com.callke8.astutils.AstMonitor;
 import com.callke8.astutils.AstMonitor;
 import com.callke8.astutils.AutoContactMonitor;
@@ -152,6 +153,9 @@ public class CommonConfig extends JFinalConfig {
 		AstMonitor.setAstPort(getPropertyToInt("astport"));
 		AstMonitor.setAstUser(getProperty("astuser"));
 		AstMonitor.setAstPass(getProperty("astpass"));
+		AstMonitor.setAstCallOutContext(getProperty("astcalloutcontext"));
+		AstMonitor.setAstCallerId(getProperty("astcallerid"));
+		AstMonitor.setAstHoldOnContext(getProperty("astholdoncontext"));
 		
 		C3p0Plugin c3p0Plugin = new C3p0Plugin(getProperty("dburl"),getProperty("dbuser"),getProperty("dbpassword"));
 		me.add(c3p0Plugin);
@@ -210,21 +214,29 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("auto_contact", AutoContact.class);
 		arp.addMapping("auto_contact_record",AutoContactRecord.class);
 		
-		//用于启动事件监控线程，用于监控来电信息，用于前端弹屏
+		//--------以下为自动执行的守护进程------------
+		
+		//一、用于启动事件监控线程，用于监控来电信息，用于前端弹屏
 		//AstMonitor amt = new AstMonitor();
 		//Thread monitorThread = new Thread(amt); 
 		//monitorThread.start();
 		
-		//用于启动自动接触守护程序，用于定时扫描 auto_contact_record 表
+		//二、用于启动自动接触守护程序，用于定时扫描 auto_contact_record 表
 		/*System.out.println("准备加载自动接触记录!");
 		AutoContactMonitor acm = new AutoContactMonitor();
 		Thread acmMonitorThread = new Thread(acm);
 		acmMonitorThread.start();
 		System.out.println("加载自动接触结束!");*/
 		
-		//用于启动自动外呼任务扫描,并执行自动外呼操作
-		Predial predial = new Predial();
-		predial.execDial();
+		//三、用于启动时,定时获取座席的状态,主要是根据 core show hints 命令返回的信息
+		
+		AgentStateMonitor agentStateMonitor = new AgentStateMonitor();
+		
+		agentStateMonitor.start();
+		
+		//四、用于启动自动外呼任务扫描,并执行自动外呼操作
+		//Predial predial = new Predial();
+		//predial.execDial();
 		
 	}
 
