@@ -39,6 +39,9 @@ public class AstMonitor implements Runnable,ManagerEventListener {
 	private static String astUser;
 	private static String astPass;
 	private static String state;  //连接状态
+	private static String astCallOutContext;     	   //正常外呼的 context
+	private static String astHoldOnContext;    //系统执行呼叫保持的 context
+	private static String astCallerId;    //外呼时设置的主叫号码（主要用于话务接续按钮中使用）
 	private static Map<String,InComing> inComingMap = new HashMap<String,InComing>();      //当客户来电被接通时，存入该变量，用于前端扫描并弹屏用
 	//private static DefaultAgiServer agiServer;
 	
@@ -343,6 +346,30 @@ public class AstMonitor implements Runnable,ManagerEventListener {
 		AstMonitor.astPass = astPass;
 	}
 	
+	public static String getAstCallOutContext() {
+		return astCallOutContext;
+	}
+
+	public static void setAstCallOutContext(String astCallOutContext) {
+		AstMonitor.astCallOutContext = astCallOutContext;
+	}
+
+	public static String getAstCallerId() {
+		return astCallerId;
+	}
+
+	public static void setAstCallerId(String astCallerId) {
+		AstMonitor.astCallerId = astCallerId;
+	}
+	
+	public static String getAstHoldOnContext() {
+		return astHoldOnContext;
+	}
+
+	public static void setAstHoldOnContext(String astHoldOnContext) {
+		AstMonitor.astHoldOnContext = astHoldOnContext;
+	}
+
 	/**
 	 * 根据座席号，取出是否有可用于弹屏的记录
 	 * @param agentNumber
