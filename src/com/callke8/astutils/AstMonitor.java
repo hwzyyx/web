@@ -391,9 +391,9 @@ public class AstMonitor implements Runnable,ManagerEventListener {
 		
 		String channel = inComing.getStr("CHANNEL");    //取出通道名称
 		//检查通道是否还在通话中
-		Map m = CtiUtils.isExistChannel(channel);
+		boolean exist = CtiUtils.isExistChannel(channel);
 		
-		if(m.get("result").equals("1")) {               //如果通道还在通话中，则可以返回并进行弹屏
+		if(exist) {               //如果通道还在通话中，则可以返回并进行弹屏
 			return inComing;
 		}else {
 			return null;

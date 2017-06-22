@@ -191,7 +191,7 @@
 	}
 	
 	//执行通话保持
-	function execHoldOn() {
+	function execPark() {
 		//alert("执行通话保持");
 		if(currAgentNumber == null || currAgentNumber == '') {
 			window.parent.showMessage("当前登录账户暂未签入座席,无法执行保持!",'error');
@@ -203,7 +203,7 @@
 		});
 		
 		$.ajax({
-			url:'doCti?actionName=holdOn',
+			url:'doCti?actionName=park',
 			method:'POST',
 			dataType:'json',
 			success:function(rs) {
@@ -214,8 +214,8 @@
 				window.parent.showMessage(message,statusCode);
 				
 				if(statusCode == 'success') {      //如果执行通话保持成功
-					$("#holdOnDiv").css("display","none");
-					$("#cancelHoldOnDiv").css("display","");
+					$("#parkDiv").css("display","none");
+					$("#backParkDiv").css("display","");
 				}
 				
 			}
@@ -224,13 +224,13 @@
 	}
 	
 	//执行取消通话保持
-	function execCancelHoldOn() {
+	function execBackPark() {
 		//alert("执行通话保持");
 		
 		if(currAgentNumber == null || currAgentNumber == '') {
 			
-			$("#holdOnDiv").css("display","");
-			$("#cancelHoldOnDiv").css("display","none");
+			$("#parkDiv").css("display","");
+			$("#backParkDiv").css("display","none");
 			
 			window.parent.showMessage("当前登录账户暂未签入座席,恢复通话失败!",'error');
 			return;
@@ -241,7 +241,7 @@
 		});
 		
 		$.ajax({
-			url:'doCti?actionName=cancelHoldOn',
+			url:'doCti?actionName=backPark',
 			method:'POST',
 			dataType:'json',
 			success:function(rs) {
@@ -251,10 +251,10 @@
 				var message = rs.message;          //返回执行信息
 				window.parent.showMessage(message,statusCode);
 				
-				if(statusCode == 'success') {
-					$("#holdOnDiv").css("display","");
-					$("#cancelHoldOnDiv").css("display","none");
-				}
+				//if(statusCode == 'success') {
+					$("#parkDiv").css("display","");
+					$("#backParkDiv").css("display","none");
+				//}
 				
 			}
 		});
@@ -459,12 +459,12 @@
 	 </div>
 	 
 	 <!-- 保持 -->
-	 <div id="holdOnDiv" style="float:left;">
-		 <i class="iconfont icon-yellow" id="holdIcon" onclick="execHoldOn()">&#xe67b;</i><span style="color:#ffffff;font-size: 14px;">&nbsp;保持&nbsp;</span>
+	 <div id="parkDiv" style="float:left;">
+		 <i class="iconfont icon-yellow" id="parkIcon" onclick="execPark()">&#xe67b;</i><span style="color:#ffffff;font-size: 14px;">&nbsp;保持&nbsp;</span>
 	 </div>
 	 <!-- 取消保持 -->
-	 <div id="cancelHoldOnDiv" style="display:none;float:left;">
-	 	<i class="iconfont icon-green" id="cancelHoldIcon" onclick="execCancelHoldOn()">&#xe633;</i><span style="color:#ffffff;font-size: 14px;">&nbsp;恢复&nbsp;</span>
+	 <div id="backParkDiv" style="display:none;float:left;">
+	 	<i class="iconfont icon-green" id="backParkIcon" onclick="execBackPark()">&#xe633;</i><span style="color:#ffffff;font-size: 14px;">&nbsp;恢复&nbsp;</span>
 	 </div>	 
 	 
 	 <!-- 转移 -->

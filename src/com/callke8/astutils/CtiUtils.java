@@ -9,6 +9,9 @@ import org.asteriskjava.live.OriginateCallback;
 import com.callke8.utils.BlankUtils;
 
 public class CtiUtils {
+	
+	//定义一个Map,用于储存通话保持（park） 时的记录, 键值对：座席号码 -> 目标通道
+	public static Map<String,String> parkMap = new HashMap<String,String>();  
 
 	/**
 	 * 示闲
@@ -299,38 +302,13 @@ public class CtiUtils {
 	 * 			通道名称
 	 * @return
 	 */
-	public static Map isExistChannel(String channel) {
-		
-		Map<String,String> rs = new HashMap<String,String>();
-		
-		if(BlankUtils.isBlank(channel)) {    //如果通道为空时，返回false
-			rs.put("result", "0");
-			rs.put("str", "传入的通道为空!");
-			return rs;
-		}
+	public static boolean isExistChannel(String channel) {
 		
 		AsteriskUtils au = new AsteriskUtils();
 		
-		if(!au.getConnectionState()) {    //如果得到的 Asterisk 的连接状态为失败时返回
-			rs.put("result", "0");
-			rs.put("str", "连接 asterisk 服务器失败，请检查连接参数或是网络问题!");
-			return rs;
-		}
-		
 		boolean b = au.isExistChannel(channel);
 		
-		if(b) {
-			rs.put("result", "1");
-			rs.put("str", "通道 " + channel + " 存在");
-			au.logoff();
-			return rs;
-		}else {
-			rs.put("result", "0");
-			rs.put("str", "通道" + channel + "被挂断或是不存在");
-			au.logoff();
-			return rs;
-		}
-		
+		return b;
 	}
 	
 	/**
@@ -376,12 +354,19 @@ public class CtiUtils {
 	 * @return
 	 * 		  Map
 	 */
-	public static void doHoldOn(String srcChannel,String dstChannel) {
+	public static void doPark(String srcChannel,String dstChannel) {
 		
 		AsteriskUtils au = new AsteriskUtils();
 		
-		au.doHoldOn(srcChannel, dstChannel);
+		au.doPark(srcChannel, dstChannel);
 		
+	}
+	
+	public static void doBackPark(String agentNumber,String dstChannel) {
+		
+		AsteriskUtils au = new AsteriskUtils();
+		
+		au.doBackPark(agentNumber, dstChannel);
 	}
 	
 	/**

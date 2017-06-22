@@ -16,6 +16,8 @@ import org.asteriskjava.manager.TimeoutException;
 import org.asteriskjava.manager.action.AtxferAction;
 import org.asteriskjava.manager.action.CommandAction;
 import org.asteriskjava.manager.action.HangupAction;
+import org.asteriskjava.manager.action.OriginateAction;
+import org.asteriskjava.manager.action.ParkAction;
 import org.asteriskjava.manager.action.RedirectAction;
 import org.asteriskjava.manager.response.CommandResponse;
 import org.asteriskjava.manager.response.ManagerResponse;
@@ -335,6 +337,7 @@ public class AsteriskUtils {
 									if(!dstChannel.split("/")[1].startsWith(agentNumber)) {
 										channelMap.put("srcChannel", srcChannel);
 										channelMap.put("dstChannel", dstChannel);
+										break;
 									}
 									
 								}
@@ -373,6 +376,7 @@ public class AsteriskUtils {
 									if(!dstChannel.split("/")[1].startsWith(agentNumber)) {
 										channelMap.put("srcChannel", srcChannel);
 										channelMap.put("dstChannel", dstChannel);
+										break;
 									}
 									
 								}
@@ -427,14 +431,46 @@ public class AsteriskUtils {
 		
 	}
 	
-	
-	public void doHoldOn(String srcChannel,String dstChannel) {
+	//通话保持
+	public void doPark(String srcChannel,String dstChannel) {
 		
 		try {
 		
-			RedirectAction action  = new RedirectAction(srcChannel, dstChannel,AstMonitor.getAstHoldOnContext(),"s",1);
+			ParkAction action = new ParkAction(dstChannel,srcChannel,24 * 60 * 60 * 1000);
 			
-			ManagerResponse response = conn.sendAction(action,500);
+			ManagerResponse response = conn.sendAction(action);
+			
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	//取消保持
+	public void doBackPark(String agentNumber,String dstChannel) {
+		
+		
+		try {
+			
+			OriginateAction action  = new OriginateAction();
+			
+			action.setActionId("originateAction " + agentNumber + " actionId ");
+			
+			action.setChannel("SIP/" + agentNumber);
+			
+			action.setApplication("Bridge");
+			
+			action.setData(dstChannel);
+			
+			action.setAsync(true);
+			
+			ManagerResponse response =  conn.sendAction(action);
 			
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();

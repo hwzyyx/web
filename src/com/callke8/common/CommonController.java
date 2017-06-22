@@ -885,7 +885,7 @@ public class CommonController extends Controller {
 			render(RenderJson.success("系统正在执行呼叫..."));
 			return;
 			
-		}else if(actionName.equalsIgnoreCase("holdOn")) {           //保持
+		}else if(actionName.equalsIgnoreCase("park")) {           //保持
 			
 			String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
 			
@@ -920,7 +920,7 @@ public class CommonController extends Controller {
 			
 			//四、执行通话保持
 			Map<String,String> channelMap = CtiUtils.getSrcChannelAndDstChannelByAgentNumber(agentNumber);     //在执行通话保持之前,先取出通话中的座席对应的源通道和目标通道
-			
+			System.out.println("得到的 channelMap: " + channelMap);
 			if(!BlankUtils.isBlank(channelMap)) {
 				
 				String srcChannel = channelMap.get("srcChannel");
@@ -929,7 +929,11 @@ public class CommonController extends Controller {
 				log.info("准备执行通话保持,获取到的源通道为: " + srcChannel + ",目标通道为:" + dstChannel);
 				
 				if(!BlankUtils.isBlank(srcChannel) && !BlankUtils.isBlank(dstChannel)) {
-					CtiUtils.doHoldOn(srcChannel,dstChannel);
+					
+					//在执行通话保持之前,将保持的记录进行储存
+					CtiUtils.parkMap.put(agentNumber, dstChannel);
+					
+					CtiUtils.doPark(srcChannel,dstChannel);
 					render(RenderJson.success("执行通话保持成功!"));
 					return;
 				}else {
@@ -946,35 +950,56 @@ public class CommonController extends Controller {
 			}
 			
 			
-		}else if(actionName.equalsIgnoreCase("cancelHoldOn")) {     //取消保持
+		}else if(actionName.equalsIgnoreCase("backPark")) {     //取消保持
 			
 			String agentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?"":getSession().getAttribute("currAgentNumber").toString();
 			
 			//一、检查是否已签入 座席号码
 			if(BlankUtils.isBlank(agentNumber)) {
+				CtiUtils.parkMap.remove(agentNumber);
 				render(RenderJson.error("执行恢复通话失败,当前账号未关联座席!"));
 				return;
 			}
 			
 			//二、检查 PBX 连接状态
-			//boolean connState = CtiUtils.getConnectionState();
-			boolean connState = true;
+			boolean connState = CtiUtils.getConnectionState();
 			
 			if(!connState) {
+				CtiUtils.parkMap.remove(agentNumber);
 				render(RenderJson.error("执行通话保持失败,话务服务器连接状态异常!"));
 				return;
 			}
 			
 			//三、检查当前座席是否处于通话保持中
-			boolean isOnHold = true;
+			boolean isParked = false;
 			
-			if(!isOnHold) {
+			//取出保持的目标通道
+			String dstChannel = CtiUtils.parkMap.get(agentNumber);
+			
+			if(!BlankUtils.isBlank(dstChannel)) {
+				isParked = true;
+			}
+			
+			if(!isParked) {
+				CtiUtils.parkMap.remove(agentNumber);
 				render(RenderJson.error("当前座席并非处于通话保持中,取消通话保持失败!"));
 				return;
 			}
 			
-			//四、恢复通话
-			render(RenderJson.success("座席已经恢复通话..."));
+			//四、查看该目标通道是否还存在
+			boolean b = CtiUtils.isExistChannel(dstChannel);
+			if(!b) {
+				CtiUtils.parkMap.remove(agentNumber);
+				render(RenderJson.error("恢复通话失败,目标通道已经不存在,可能对方已挂机!"));
+				return;
+			}
+			
+			
+			//五、恢复通话
+			CtiUtils.doBackPark(agentNumber, dstChannel);
+			CtiUtils.parkMap.remove(agentNumber);
+			
+			render(RenderJson.success("座席恢复通话中..."));
 			return;
 			
 		}else if(actionName.equalsIgnoreCase("callForward")) {      //呼叫转移
