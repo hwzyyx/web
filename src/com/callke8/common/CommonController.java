@@ -129,7 +129,7 @@ public class CommonController extends Controller {
 	public void doLogin() {
 		
 		String operId = getPara("operId");
-		String password = getPara("password");
+		String password = getPara("password");    //上传的密码，在前端已经过 Md5 加密,故收到密码后无须再加密
 		//String callNumber = getPara("callNumber");
 		
 		//
@@ -142,11 +142,8 @@ public class CommonController extends Controller {
 				return;
 			}
 			
-			//先将 password 先进行 md5 加密
-			String password2Md5 = Md5Utils.Md5(password);
-			
 			//判断密码是否相等
-			if(!password2Md5.equalsIgnoreCase(operator.get("PASSWORD").toString())) {
+			if(!password.equalsIgnoreCase(operator.get("PASSWORD").toString())) {
 				render(RenderJson.error("用户名或密码不正确!"));
 			}else {
 				//登录正确
@@ -638,16 +635,9 @@ public class CommonController extends Controller {
 		
 		System.out.println("准备执行挂机，座席号码为:" + agentNumber);
 		
-		Map rs = CtiUtils.doHangup(agentNumber);
+		String channel = CtiUtils.getSrcChannelByAgentNumber(agentNumber);
 		
-		String result = (String) rs.get("result");
-		String str = (String) rs.get("str");
-		
-		if(!BlankUtils.isBlank(result)&&result.equalsIgnoreCase("1")) {    //表示执行成功
-			render(RenderJson.success(str));
-		}else {
-			render(RenderJson.error(str));
-		}
+		CtiUtils.doHangup(channel);
 		
 	}
 	
@@ -1087,10 +1077,11 @@ public class CommonController extends Controller {
 				return;
 			}
 			
-			//四、 执行示忙操作
+			//四、暂时没有必要检查当前座席是否已经示忙，即使现在已经处于示忙中时,再次示忙时，也不会导致执行命令错误。
+			
+			CtiUtils.doDNDOn(agentNumber);
 			
 			render(RenderJson.success("示忙成功!"));
-			
 			return;
 			
 		}else if(actionName.equalsIgnoreCase("free")) {             //示闲
@@ -1126,6 +1117,8 @@ public class CommonController extends Controller {
 			
 			//四、 执行示闲操作
 			
+			CtiUtils.doDNDOff(agentNumber);
+			
 			render(RenderJson.success("示闲成功!"));
 			return;
 			
@@ -1152,17 +1145,32 @@ public class CommonController extends Controller {
 			//三、检查当前座席是否在通话中
 			boolean isInUse = true;
 			
+			String agentState = MemoryVariableUtil.agentStateMap.get(agentNumber);
+			
+			if(!BlankUtils.isBlank(agentState) && agentState.equalsIgnoreCase("InUse")) {
+				isInUse = true;
+			}
+			
 			if(!isInUse) {
 				render(RenderJson.error("执行挂机失败,当前座席 " + agentNumber + " 未在通话中!"));
 				return;
 			}
 			
 			//四、执行挂机操作
-			render(RenderJson.success("挂机成功!"));
+			String channel = CtiUtils.getSrcChannelByAgentNumber(agentNumber);
+			
+			System.out.println("准备执行挂机的通道为: " + channel);
+			
+			if(BlankUtils.isBlank(channel)) {
+				render(RenderJson.error("执行挂机失败,当前座席 " + agentNumber + " 无法取得通话通道!"));
+				return;
+			}
+			
+			CtiUtils.doHangup(channel);
+			
+			render(RenderJson.success("系统正在执行挂机操作!"));
 			return;
 		}
-		
-		render(RenderJson.success(msg));
 		
 	}
 	

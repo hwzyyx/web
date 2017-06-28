@@ -10,6 +10,7 @@
 	<link rel="stylesheet" type="text/css" href="demo.css">
 	<script type="text/javascript" src="jquery.min.js"></script>
 	<script type="text/javascript" src="jquery.easyui.min.js"></script>
+	<script type="text/javascript" scr="md5.min.js"></script>
 	<script type="text/javascript" src="locale/easyui-lang-zh_CN.js"></script>
 	<script type="text/javascript">
 
@@ -41,9 +42,12 @@
 			if(operId.length==0 || password.length==0) {
 				$.messager.alert("提示",'工号及密码不能为空，请重新填写登录信息!',"error");
 			}else {
+				
+				var md5_password = md5(password);
+				
 				$.ajax({
 					//url:'doLogin?operId=' + operId + '&password=' + password + '&callNumber=' + callNumber,
-					url:'doLogin?operId=' + operId + '&password=' + password,
+					url:'doLogin?operId=' + operId + '&password=' + md5_password,
 					method:'POST',
 					dataType:'json',
 					success:function(rs) {
