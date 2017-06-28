@@ -2,9 +2,8 @@ package com.callke8.astutils;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import javax.xml.ws.Response;
 
 import org.asteriskjava.live.CallerId;
 import org.asteriskjava.live.DefaultAsteriskServer;
@@ -13,8 +12,9 @@ import org.asteriskjava.manager.AuthenticationFailedException;
 import org.asteriskjava.manager.DefaultManagerConnection;
 import org.asteriskjava.manager.ManagerConnection;
 import org.asteriskjava.manager.TimeoutException;
-import org.asteriskjava.manager.action.AtxferAction;
 import org.asteriskjava.manager.action.CommandAction;
+import org.asteriskjava.manager.action.DbDelAction;
+import org.asteriskjava.manager.action.DbPutAction;
 import org.asteriskjava.manager.action.HangupAction;
 import org.asteriskjava.manager.action.OriginateAction;
 import org.asteriskjava.manager.action.ParkAction;
@@ -23,7 +23,6 @@ import org.asteriskjava.manager.response.CommandResponse;
 import org.asteriskjava.manager.response.ManagerResponse;
 
 import com.callke8.utils.BlankUtils;
-import com.callke8.utils.MemoryVariableUtil;
 import com.callke8.utils.StringUtil;
 
 /**
@@ -120,7 +119,8 @@ public class AsteriskUtils {
 	 */
 	public void doTransfer(String dstChannel,String forwardNumber) {
 		
-		AtxferAction action  = new AtxferAction(dstChannel, AstMonitor.getAstCallOutContext(),forwardNumber, 1);
+		//AtxferAction action  = new AtxferAction(dstChannel, AstMonitor.getAstCallOutContext(),forwardNumber, 1);
+		RedirectAction action  = new RedirectAction(dstChannel,AstMonitor.getAstCallOutContext(),forwardNumber,1);
 		
 		try {
 			ManagerResponse response = conn.sendAction(action,3000);
@@ -495,69 +495,17 @@ public class AsteriskUtils {
 	 */
 	public String getChannelByAgentNumber (String agentNumber) {
 		
-		String channelName =  null;
+		String srcChannel = null;
 		
-		try { //发送指令，分析返回的结果
+		Map<String,String> channelMap = getSrcChannelAndDstChannelByAgentNumber(agentNumber);
+		
+		if(!BlankUtils.isBlank(channelMap)) {
 			
-			CommandAction action = new CommandAction();
+			srcChannel = channelMap.get("srcChannel");
 			
-			action.setCommand("core show channels concise");
-			
-			ManagerResponse response = conn.sendAction(action,500);
-			
-			/**
-			 * 发送 Action 后，返回的数据大概如下：
-			 * 
-			 localhost*CLI> core show channels concise
-				SIP/8002-0000002e!from-exten-sip!!1!Up!AppDial!(Outgoing Line)!8002!!3!9!Local/8002@sub-queuefindnumber-bb88,2
-				Local/8002@sub-queuefindnumber-bb88,2!sub-queuefindnumber!8002!5!Up!Dial!sip/8002|40|t!13512771995!!3!9!SIP/8002-0000002e
-				Local/8002@sub-queuefindnumber-bb88,1!sub-queuefindnumber!83811599!1!Up!AppQueue!(Outgoing Line)!13512771995!0!3!9!DAHDI/1-1
-				DAHDI/1-1!from-trunk-dahdi!83811599!11!Up!Queue!401|t|||100|agi://127.0.0.1/queue_answeragent?saymember=0!13512771995!0!3!19!Local/8002@sub-queuefindnumber-bb88,1
-			 
-			 * 我们要找的，就是与agentNumber对应的正在通话的通道,而我们要得到的就是 SIP/8002-0000002e通道号码
-			 * 
-			 */
-			
-			if(!BlankUtils.isBlank(response)) {
-				
-				CommandResponse res = (CommandResponse)response;
-				
-				res.getAttributes();
-				
-				String searchStr = "SIP/" + agentNumber;
-				
-				for(String line:res.getResult()) {
-					
-					if(line.startsWith(searchStr)) {     //如果判断返回的结果中是以 SIP/8002 开头, 即可得到通道号
-						
-						String[] elements = line.split("!");
-						
-						channelName = elements[0];
-						
-					}
-					
-				}
-				
-			}
-			
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-			
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (TimeoutException e) {
-			e.printStackTrace();
 		}
 		
-		return channelName;
+		return srcChannel;
 	}
 	
 	/**
@@ -639,6 +587,114 @@ public class AsteriskUtils {
 		return rs;
 		
 	}
+	
+	/**
+	 * 根据座席号码,查看当前座席的示忙示闲状态
+	 * 
+	 * @param agentNumber
+	 * @return
+	 */
+	public boolean getDNDValue(String agentNumber) {
+		
+		boolean agentDNDState = false;
+		
+		CommandAction action = new CommandAction("database get DND " + agentNumber);
+		
+		try {
+			
+			ManagerResponse response = conn.sendAction(action, 500);
+			
+			if(response instanceof CommandResponse) {
+				
+				CommandResponse res = (CommandResponse)response;
+				
+				List<String> results = res.getResult();
+				
+				if(!BlankUtils.isBlank(results)) {
+					
+					for(String line:results) {
+						
+						if(!BlankUtils.isBlank(line)) {
+							
+							if(line.contains("Value") && line.contains("yes")) {
+								agentDNDState = true;
+								break;
+							}
+							
+						}
+						
+					}
+					
+				}
+				
+			}
+			
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		
+		
+		return agentDNDState;
+		
+	}
+	
+	
+	/**
+	 * 示忙
+	 * 
+	 * @param agentNumber
+	 */
+	public void doDNDOn(String agentNumber) {
+		
+		DbPutAction action = new DbPutAction("DND",agentNumber,"yes");
+		
+		try {
+			ManagerResponse response = conn.sendAction(action);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+	
+	/**
+	 * 示闲
+	 * 
+	 * @param agentNumber
+	 */
+	public void doDNDOff(String agentNumber) {
+		
+		DbDelAction action = new DbDelAction("DND",agentNumber);
+		
+		try {
+			ManagerResponse response  = conn.sendAction(action);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	
 	
 	/**
 	 * 得到连接的状态

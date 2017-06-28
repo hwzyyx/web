@@ -18,11 +18,12 @@ public class CtiUtils {
 	 * @param agentNumber
 	 * 			座席号
 	 */
-	public static Map doDNDOff(String agentNumber) {
+	public static void doDNDOff(String agentNumber) {
 		
-		Map rs = new HashMap();
+		AsteriskUtils au = new AsteriskUtils();
 		
-		return rs;
+		au.doDNDOff(agentNumber);
+		
 	}
 	
 	/**
@@ -30,11 +31,12 @@ public class CtiUtils {
 	 * @param agentNumber
 	 * 			座席号
 	 */
-	public static Map doDNDOn(String agentNumber) {
+	public static void doDNDOn(String agentNumber) {
 		
-		Map rs = new HashMap();
+		AsteriskUtils au = new AsteriskUtils();
 		
-		return rs;
+		au.doDNDOn(agentNumber);
+		
 	}
 	
 	/**
@@ -242,41 +244,14 @@ public class CtiUtils {
 	 * @param agentNumber
 	 */
 	@SuppressWarnings("unchecked")
-	public static Map<String,String> doHangup(String agentNumber) {
-		
-		Map<String,String> rs = new HashMap<String,String>();
-		
-		if(BlankUtils.isBlank(agentNumber)) {
-			rs.put("result", "0");
-			rs.put("str", "挂机失败，传入的座席号为空!");
-			return rs;
-		}
+	public static void doHangup(String channel) {
 		
 		AsteriskUtils au = new AsteriskUtils();   
 		
-		if(!au.getConnectionState()) {    //如果得到的 Asterisk 的连接状态为失败时返回
-			rs.put("result", "0");
-			rs.put("str", "挂机失败，连接 asterisk 服务器失败，请检查连接参数或是网络问题!");
-			return rs;
-		}
-		
-		String channelName = au.getChannelByAgentNumber(agentNumber);    //根据座席得到当关座席的通话通道
-		
-		if(BlankUtils.isBlank(channelName)) {                            //如果返回的通话通道为空时，则返回失败
-			rs.put("result", "0");
-			rs.put("str", "挂机失败，座席 " + agentNumber + " 暂时没有进行通话!");
-			au.logoff();
-			return rs;
-		}
-		
-		au.hangupByChannel(channelName);   //执行挂断通道
+		au.hangupByChannel(channel);   //执行挂断通道
 		
 		au.logoff();                       //退出连接，返回结果
 		
-		rs.put("result", "1");
-		rs.put("str","挂机成功");
-		
-		return rs;
 	}
 	
 	/**
@@ -342,6 +317,22 @@ public class CtiUtils {
 		String dstChannel = au.getDstChannelByAgentNumber(agentNumber);
 		
 		return dstChannel;
+		
+	}
+	
+	/**
+	 * 根据座席号码，取得与座席号码通道的源通道
+	 * 
+	 * @param agentNumber
+	 * @return
+	 */
+	public static String getSrcChannelByAgentNumber(String agentNumber) {
+		
+		AsteriskUtils au = new AsteriskUtils();
+		
+		String srcChannel = au.getChannelByAgentNumber(agentNumber);
+		
+		return srcChannel;
 		
 	}
 	
