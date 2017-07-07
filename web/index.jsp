@@ -10,7 +10,17 @@
 	<link rel="stylesheet" type="text/css" href="demo.css">
 	<style type="text/css">
 		
-		
+		.icon {
+          /* 通过设置 font-size 来改变图标大小 */
+          width: 3em; height: 3em;
+          /* 图标和文字相邻时，垂直对齐 */
+          vertical-align: -2em;
+          /* 通过设置 color 来改变 SVG 的颜色/fill */
+          fill: currentColor;
+          /* path 和 stroke 溢出 viewBox 部分在 IE 下会显示
+             normalize.css 中也包含这行 */
+          overflow: hidden;
+        }
 		
 		.myStyle{
 			text-decoration:none;
@@ -1213,11 +1223,21 @@
 
 		<img src="themes/icons/large_logo.png" />
 		<div><%@ include file="/_cti_icons.jsp"%></div>
-		<div style="vertical-align: bottom;position:absolute;right:30px;bottom:3px;">
+		<div style="vertical-align: bottom;position:absolute;right:120px;bottom:3px;">
+			
 			<a href="#" onClick="modifyPassword()" class="myStyle" style="width:120px;text-decoration: none;color: 14AFFF;">修改密码</a>&nbsp;&nbsp;
-			<a href="#" onClick="logout()" class="myStyle" style="width:120px;text-decoration: none;">退出系统</a>
+			<a href="#" onClick="logout()" class="myStyle" style="width:120px;text-decoration: none;">退出系统</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<a href="#" class="myStyle" style="width:120px;text-decoration: none;color:#00ff00;">座席状态：</a>&nbsp;&nbsp;
 		</div>
-
+		<!-- 座席状态图标 -->
+		<div style="vertical-align: bottom;position:absolute;right:100px;top:20px;">
+			<svg class="icon" aria-hidden="true">
+             	<use id="agentStateIcon" xlink:href="#icon-zhuangtai1"></use>
+         	</svg>
+		</div>
+		<div style="vertical-align: bottom;position:absolute;right:50px;bottom:3px;">
+			<a href="#" id="agentStateDesc" class="myStyle" style="width:120px;text-decoration: none;">未知状态</a>
+		</div>
 	</div>
 	<!-- Bannel end -->
 	

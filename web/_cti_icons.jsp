@@ -2,6 +2,7 @@
     pageEncoding="UTF-8"%>
 
 <link rel="stylesheet" type="text/css" href="iconfont/iconfont.css">
+<script src="iconfont/iconfont.js"></script>
 
 <style type="text/css">
 
@@ -24,7 +25,6 @@
 .busyFreeCss:hover{
 	
 }
-
 
 </style>
 
@@ -430,12 +430,70 @@
 	}
 	
 	
-	
+	//定时请求座席状态
+	setInterval(function(){
+		
+		
+		$.ajax({
+			url:'getAgentState?agentNumber=' + currAgentNumber,
+			method:'post',
+			dataType:'json',
+			success:function(rs) {
+				
+				//var statusCode = rs.statusCode;    //返回结果类型
+				var message = rs.message;          //返回执行信息,这里存储的就是座席的状态,然后根据返回的座席状态进行分析
+				
+				/*
+				 * 空值 ：表示未获取到座席状态
+				 * Unavailable：未注册（已掉线）
+				 * Idle: 空闲
+				 * Ringing: 响铃中
+				 * InUse: 通话中
+				 * DND: 示忙
+				 */
+				if(message=='' || message == null) {
+					$("#agentStateDesc").text("未知状态");
+					$("#agentStateIcon").attr("xlink:href","#icon-off");
+				}else if(message == 'unavailable') {
+					$("#agentStateDesc").text("离线状态");
+					$("#agentStateIcon").attr("xlink:href","#icon-off");
+				}else if(message == 'idle') {
+					$("#agentStateDesc").text("空闲状态");
+					$("#agentStateIcon").attr("xlink:href","#icon-normal");
+				}else if(message == 'ringing') {
+					$("#agentStateDesc").text("响铃状态");
+					$("#agentStateIcon").attr("xlink:href","#icon-zhuangtai");
+				}else if(message == 'inuse') {
+					$("#agentStateDesc").text("通话状态");
+					$("#agentStateIcon").attr("xlink:href","#icon-zhuangtai11");
+				}else if(message == 'dnd') {
+					$("#agentStateDesc").text("示忙状态");
+					$("#agentStateIcon").attr("xlink:href","#icon-error");
+				}
+			
+				//为了确保示忙示闲的图标可根据返回的状态进行操作需要单独判断返回的状态
+				if(message == 'dnd') {
+					//当状态处于示忙时,需要将示闲的操作图标显示
+					$("#busyDiv").css('display','none');
+					$("#freeDiv").css('display','');
+				}else {
+					//否则,需要将图标的示忙状态处于反方向
+					$("#busyDiv").css('display','');
+					$("#freeDiv").css('display','none');
+				}
+				
+				
+			} 
+			
+			
+		});
+		
+	}, 3 * 1000);
 	
 	
 </script>
 
-<div style="vertical-align: bottom;position:absolute;right:200px;bottom:3px;">
+<div style="vertical-align: bottom;position:absolute;right:340px;bottom:3px;">
 	<!-- 
 	<img src="themes/ctiicons/dialout.png" style="width:30px;height:30px" onclick="doCti(1)" /><span style="color:#62C7FB">外呼</span>
 	<img src="themes/ctiicons/holdon.png" style="width:30px;height:30px" onclick="doCti(2)" /><span style="color:#62C7FB">保持</span>
@@ -443,7 +501,6 @@
 	<img src="themes/ctiicons/busy.png" style="width:30px;height:30px" onclick="doCti(4)" /><span style="color:#62C7FB">示忙</span>
 	<img src="themes/ctiicons/hangup.png" style="width:30px;height:30px" onclick="doCti(5)" class="cti_hangup" onmouseover="this.src='themes/ctiicons/hangup_red.png'" onmouseout="this.src='themes/ctiicons/hangup.png'" /><span style="color:#62C7FB">挂机</span>
 	 -->
-	 
 	 <!-- 签入 -->
 	 <div id="signInDiv" style="float:left;">
 		 <i class="iconfont icon-green" id="calloutIcon" onclick="execSignIn()">&#xe844;</i><span style="color:#ffffff;font-size: 14px;">&nbsp;签入&nbsp;</span>

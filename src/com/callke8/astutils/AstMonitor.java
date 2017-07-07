@@ -14,6 +14,7 @@ import org.asteriskjava.manager.ManagerEventListener;
 import org.asteriskjava.manager.TimeoutException;
 import org.asteriskjava.manager.event.BridgeEvent;
 import org.asteriskjava.manager.event.DialEvent;
+import org.asteriskjava.manager.event.DndStateEvent;
 import org.asteriskjava.manager.event.HangupEvent;
 import org.asteriskjava.manager.event.ManagerEvent;
 
@@ -292,6 +293,12 @@ public class AstMonitor implements Runnable,ManagerEventListener {
 				}
 				
 			}
+			
+		}else if(event instanceof DndStateEvent) {
+			
+			DndStateEvent dndEvent = (DndStateEvent)event;
+			
+			System.out.println("获取到座席状态的DND变化 : " + dndEvent);
 			
 		}
 		

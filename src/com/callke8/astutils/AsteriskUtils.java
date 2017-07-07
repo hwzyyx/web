@@ -594,9 +594,9 @@ public class AsteriskUtils {
 	 * @param agentNumber
 	 * @return
 	 */
-	public boolean getDNDValue(String agentNumber) {
+	public String getDNDValue(String agentNumber) {
 		
-		boolean agentDNDState = false;
+		String agentDNDState = "NO";
 		
 		CommandAction action = new CommandAction("database get DND " + agentNumber);
 		
@@ -617,7 +617,7 @@ public class AsteriskUtils {
 						if(!BlankUtils.isBlank(line)) {
 							
 							if(line.contains("Value") && line.contains("yes")) {
-								agentDNDState = true;
+								agentDNDState = "YES";
 								break;
 							}
 							
@@ -713,8 +713,19 @@ public class AsteriskUtils {
 		return false;
 	}
 	
+	
+	/**
+	 * 关闭连接,先判断 conn 是否非空且连接状态为 CONNECTED
+	 */
 	public void logoff() {
-		conn.logoff();
+		
+		if(!BlankUtils.isBlank(conn)) {
+
+			if(getConnectionState()) {
+				conn.logoff();
+			}
+		}
+		
 	}
 	
 }

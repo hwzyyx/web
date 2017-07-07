@@ -24,6 +24,8 @@ public class CtiUtils {
 		
 		au.doDNDOff(agentNumber);
 		
+		au.logoff();
+		
 	}
 	
 	/**
@@ -37,7 +39,16 @@ public class CtiUtils {
 		
 		au.doDNDOn(agentNumber);
 		
+		au.logoff();
+		
 	}
+	
+	public static String getAgentDNDValue(String agentNumber) {
+		
+		//AsteriskUtils au = new 
+		return null;
+	}
+	
 	
 	/**
 	 * 执行外呼,由座席发起呼叫,座席号码必填
@@ -82,6 +93,8 @@ public class CtiUtils {
 		//如果可以满足拨号条件时，执行呼出操作
 		au.doCallOut(channel, context, exten, priority, timeout, callerId, variables, cb);
 		
+		au.logoff();
+		
 		rs.put("result", "1");
 		rs.put("str", "执行外呼");
 		return rs;
@@ -119,6 +132,8 @@ public class CtiUtils {
 		}
 		
 		au.doCallOutToApplication(channel,application,data,timeout,callerId,variables,cb);
+		
+		au.logoff();
 		
 		rs.put("result", "1");
 		rs.put("str", "执行外呼");
@@ -187,6 +202,8 @@ public class CtiUtils {
 		//如果可以满足拨号条件时，执行呼出操作
 		au.doCallOut(channel, context, exten, priority, timeout, callerId, variables, cb);
 		
+		au.logoff();
+		
 		rs.put("result", "1");
 		rs.put("str", "执行外呼");
 		return rs;
@@ -234,6 +251,8 @@ public class CtiUtils {
 		//如果可以满足拨号条件时，执行呼出操作
 		au.doCallOut(channel, context, exten, priority, timeout, callerId, variables, cb);
 		
+		au.logoff();
+		
 		rs.put("result", "1");
 		rs.put("str", "执行外呼");
 		return rs;
@@ -267,6 +286,8 @@ public class CtiUtils {
 		
 		b = au.getConnectionState();
 		
+		au.logoff();
+		
 		return b;
 	}
 	
@@ -282,6 +303,8 @@ public class CtiUtils {
 		AsteriskUtils au = new AsteriskUtils();
 		
 		boolean b = au.isExistChannel(channel);
+		
+		au.logoff();
 		
 		return b;
 	}
@@ -300,6 +323,8 @@ public class CtiUtils {
 		
 		Map<String,String> channelMap = au.getSrcChannelAndDstChannelByAgentNumber(agentNumber);
 		
+		au.logoff();
+		
 		return channelMap;
 	}
 	
@@ -316,6 +341,8 @@ public class CtiUtils {
 		
 		String dstChannel = au.getDstChannelByAgentNumber(agentNumber);
 		
+		au.logoff();
+		
 		return dstChannel;
 		
 	}
@@ -331,6 +358,8 @@ public class CtiUtils {
 		AsteriskUtils au = new AsteriskUtils();
 		
 		String srcChannel = au.getChannelByAgentNumber(agentNumber);
+		
+		au.logoff();
 		
 		return srcChannel;
 		
@@ -351,6 +380,8 @@ public class CtiUtils {
 		
 		au.doPark(srcChannel, dstChannel);
 		
+		au.logoff();
+		
 	}
 	
 	public static void doBackPark(String agentNumber,String dstChannel) {
@@ -358,6 +389,9 @@ public class CtiUtils {
 		AsteriskUtils au = new AsteriskUtils();
 		
 		au.doBackPark(agentNumber, dstChannel);
+		
+		
+		au.logoff();
 	}
 	
 	/**
@@ -370,6 +404,8 @@ public class CtiUtils {
 		AsteriskUtils au = new AsteriskUtils();
 		
 		au.doTransfer(dstChannel, forwardNumber);
+		
+		au.logoff();
 		
 	}
 

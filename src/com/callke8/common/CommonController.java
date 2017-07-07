@@ -791,6 +791,7 @@ public class CommonController extends Controller {
 			String agentState = MemoryVariableUtil.agentStateMap.get(agentNumber);   //取出状态
 			
 			if(!BlankUtils.isBlank(agentState)) {
+				System.out.println("要签入的座席当前的状态为:" + agentState);
 				if(!(agentState.equalsIgnoreCase("Unknown") || agentState.equalsIgnoreCase("Invalid") || agentState.equalsIgnoreCase("Unavailable"))) {
 					isOnLine = true;
 				}
@@ -1174,6 +1175,39 @@ public class CommonController extends Controller {
 		
 	}
 	
+	
+	/**
+	 * 根据传入的座席号码,取得座席的状态
+	 * 
+	 * 状态值主要从 AgentStateMonitor 中定义扫描的结果取得
+	 * 
+	 * 状态值可能如下：
+	 * 
+	 * 空值 ：表示未获取到座席状态
+	 * Unavailable：未注册（已掉线）
+	 * Idle: 空闲
+	 * Ringing: 响铃中
+	 * InUse: 通话中
+	 * DND: 示忙
+	 * 
+	 * 不过为了前端使用的方便, 都转化为小写
+	 * 
+	 */
+	public void getAgentState() {
+		
+		String agentNumber = getPara("agentNumber");
+		
+		if(BlankUtils.isBlank(agentNumber)) {
+			//System.out.println("当前账户未关联座席,暂时无法取得座席状态!");
+			render(RenderJson.success(""));
+			return;
+		}
+		
+		String state = MemoryVariableUtil.agentStateMap.get(agentNumber);
+		//System.out.println("座席: " + agentNumber + " 的当前状态为: " + state);
+		render(RenderJson.success(state));
+		
+	}
 	
 	
 	

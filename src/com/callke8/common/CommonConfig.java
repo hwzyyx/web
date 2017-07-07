@@ -217,9 +217,9 @@ public class CommonConfig extends JFinalConfig {
 		//--------以下为自动执行的守护进程------------
 		
 		//一、用于启动事件监控线程，用于监控来电信息，用于前端弹屏
-		//AstMonitor amt = new AstMonitor();
-		//Thread monitorThread = new Thread(amt); 
-		//monitorThread.start();
+		/*AstMonitor amt = new AstMonitor();
+		Thread monitorThread = new Thread(amt); 
+		monitorThread.start();*/
 		
 		//二、用于启动自动接触守护程序，用于定时扫描 auto_contact_record 表
 		/*System.out.println("准备加载自动接触记录!");
