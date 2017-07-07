@@ -10,7 +10,7 @@
 	<link rel="stylesheet" type="text/css" href="demo.css">
 	<script type="text/javascript" src="jquery.min.js"></script>
 	<script type="text/javascript" src="jquery.easyui.min.js"></script>
-	<script type="text/javascript" scr="md5.min.js"></script>
+	<script type="text/javascript" src="md5.min.js"></script>
 	<script type="text/javascript" src="locale/easyui-lang-zh_CN.js"></script>
 	<script type="text/javascript">
 
