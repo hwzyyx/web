@@ -158,11 +158,6 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/custom_lib">
-		<attributes>
-			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="E:/JAVA/jfinal-1.8-lib/jfinal-ext及其所需要依赖包/guava-18.0.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
@@ -178,10 +173,6 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/custom-libs">
-		<attributes>
-			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/custom-libs"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
