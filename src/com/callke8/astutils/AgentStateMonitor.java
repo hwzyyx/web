@@ -1,6 +1,8 @@
 package com.callke8.astutils;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -29,7 +31,9 @@ public class AgentStateMonitor extends Thread {
 	
 	ManagerConnectionFactory factory;     //定义一个 asterisk 的连接工厂
 	ManagerConnection conn;
+	List<String> dndList;                 //定义一个 List,用于储存 已经示忙的座席数据
 	String connState;                     //Asterisk 连接状态 
+	
 	
 	Log log = LogFactory.getLog(AgentStateMonitor.class);
 	
@@ -51,6 +55,11 @@ public class AgentStateMonitor extends Thread {
 		int i = 1;
 		
 		while(true) {
+			
+			dndList = null;    //先置空 dndList 
+			dndList = new ArrayList<String>();    //重新创建实例
+			
+			MemoryVariableUtil.agentStateMap = new HashMap<String,String>();
 			
 			connState = BlankUtils.isBlank(conn)?null:conn.getState().toString();
 			
@@ -77,11 +86,75 @@ public class AgentStateMonitor extends Thread {
 				}
 			}else {
 				
-				log.info("Asterisk(PBX)连接状态正常");
+				//log.info("Asterisk(PBX)连接状态正常");
 				
 				CommandAction action = new CommandAction("core show hints");
+				CommandAction dndAction = new CommandAction("database show DND");
 				
 				try {
+					
+					
+					
+					//(1) 查看 database show DND 情况
+					//在发送 DND 查询之前,先要将内存中关于座席DND状态的 LIST 清空
+					try {
+						
+						ManagerResponse response = conn.sendAction(dndAction, 2 * 1000);
+						CommandResponse cr = (CommandResponse)response;
+						
+						
+						 // 取出执行的结果,将结果返回到 listRs 字串组中, listRs 的数据格式如下
+						  
+						 // 4WAN_1LAN_IPSec_VPN_Router*CLI> database show DND
+						//	/DND/8004                                         : yes
+						//	/DND/8005                                         : yes
+						//	/DND/8006                                         : yes
+						//	3 results found.
+							
+
+						 //通过 遍历 DND 的结果，取出 /DND/XXX 的结果
+						
+						
+						List<String> listRs = cr.getResult();
+						
+						for(String line:listRs) {
+							
+							if(!BlankUtils.isBlank(line)) {
+								
+								boolean b = StringUtil.containsAny(line, "DND");
+								
+								//即是  /DND/8004                                         : yes
+								//分解数据得到座席号
+								if(b) {
+									
+									String[] list = line.split("\\s+");     // 多点个空格分隔
+									
+									String dndInfo = list[0];    //得到  /DND/8004
+									
+									//再分隔  /DND/8004
+									
+									if(!BlankUtils.isBlank(dndInfo)) {
+										dndInfo = dndInfo.trim();
+										String agentNumber = dndInfo.split("/")[2];
+										
+										dndList.add(agentNumber);
+										
+									}
+									
+									
+								}
+								
+								
+							}
+							
+						}
+						
+					} catch (TimeoutException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					//(2) 查看 core show hints 情况
 					conn.sendAction(action, new SendActionCallback() {
 						
 						@Override
@@ -143,7 +216,21 @@ public class AgentStateMonitor extends Thread {
 											String agentState = stateInfo.split(":")[1];
 											
 											//System.out.println("座席号码为:" + agentNumber + ",状态为:" + agentState);
-											MemoryVariableUtil.agentStateMap.put(agentNumber,agentState);
+											//对于 idle 状态的座席,因为有可能已经处于 DND（即示忙的状态）,所以很有必要让前端登录的人看到示忙状态
+											if(agentState.equalsIgnoreCase("Idle")) {
+												
+												//查看当前座席是否处于示忙状态
+												boolean isDND = dndList.contains(agentNumber);
+												if(isDND) {
+													MemoryVariableUtil.agentStateMap.put(agentNumber,"dnd");
+												}else {
+													MemoryVariableUtil.agentStateMap.put(agentNumber,agentState.toLowerCase());
+												}
+												
+											}else {
+												MemoryVariableUtil.agentStateMap.put(agentNumber,agentState.toLowerCase());
+											}
+											
 											
 										}
 										
@@ -154,6 +241,9 @@ public class AgentStateMonitor extends Thread {
 						}
 						
 					});
+					
+					
+					
 				} catch (IllegalArgumentException e) {
 					e.printStackTrace();
 				} catch (IllegalStateException e) {
