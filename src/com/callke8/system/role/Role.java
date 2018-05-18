@@ -2,17 +2,11 @@ package com.callke8.system.role;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
-
-import org.eclipse.jetty.server.Request;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
@@ -20,6 +14,9 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 表结构
@@ -53,10 +50,10 @@ public class Role extends Model<Role> {
 	 * totalPage  总页数
 	 * totalRow   总的数量
 	 */
-	public Page<Record> getRoleByPaginate(int currentPage,int numPerPage,String roleCode,String roleName,String roleState) {
+	public Page<Record> getRoleByPaginate(int currentPage,int numPerPage,String roleCode,String roleName,String roleState,boolean currOperIdIsSuperRole) {
 		
 		StringBuilder sb = new StringBuilder();
-		Object[] pars = new Object[3];
+		Object[] pars = new Object[8];
 		int index = 0;
 		
 		sb.append("from sys_role where 1=1");
@@ -79,18 +76,24 @@ public class Role extends Model<Role> {
 			index++;
 		}
 		
+		if(!currOperIdIsSuperRole) {   //如果非超级角色时
+			sb.append(" and ROLE_CODE!=?");
+			pars[index] = "super";
+			index++;
+		}
+		
 		Page<Record> p = Db.paginate(currentPage, numPerPage,"select *",sb.toString(),ArrayUtils.copyArray(index, pars));
 		
 		return p;
 		
 	}
 	
-	public void getRoleByPaginateToJson(int currentPage,int numPerPage,String roleCode,String roleName,String roleState,HttpServletResponse response) {
+	public void getRoleByPaginateToJson(int currentPage,int numPerPage,String roleCode,String roleName,String roleState,HttpServletResponse response,boolean currOperIdIsSuperRole) {
 		
 		/**
 		 * 先查询出当前 page 的数量
 		 */
-		Page p = getRoleByPaginate(currentPage, numPerPage, roleCode, roleName, roleState);
+		Page p = getRoleByPaginate(currentPage, numPerPage, roleCode, roleName, roleState,currOperIdIsSuperRole);
 		
 		int total = p.getTotalRow();
 		List list = p.getList();
@@ -111,12 +114,12 @@ public class Role extends Model<Role> {
 		
 	}
 	
-	public JSONObject getRoleByPaginateToJson(int currentPage,int numPerPage,String roleCode,String roleName,String roleState) {
+	public JSONObject getRoleByPaginateToJson(int currentPage,int numPerPage,String roleCode,String roleName,String roleState,boolean currOperIdIsSuperRole) {
 		
 		/**
 		 * 先查询出当前 page 的数量
 		 */
-		Page p = getRoleByPaginate(currentPage, numPerPage, roleCode, roleName, roleState);
+		Page p = getRoleByPaginate(currentPage, numPerPage, roleCode, roleName, roleState,currOperIdIsSuperRole);
 		int total = p.getTotalRow();
 		//List list = p.getList();
 		
@@ -157,11 +160,11 @@ public class Role extends Model<Role> {
 		return jo;
 		
 	}
-	public Map getRoleByPaginateToMap(int currentPage,int numPerPage,String roleCode,String roleName,String roleState) {
+	public Map getRoleByPaginateToMap(int currentPage,int numPerPage,String roleCode,String roleName,String roleState,boolean currOperIdIsSuperRole) {
 		/**
 		 * 先查询出当前 page 的数量
 		 */
-		Page<Record> p = getRoleByPaginate(currentPage, numPerPage, roleCode, roleName, roleState);
+		Page<Record> p = getRoleByPaginate(currentPage, numPerPage, roleCode, roleName, roleState,currOperIdIsSuperRole);
 		int total = p.getTotalRow();
 		
 		Map map = new HashMap();

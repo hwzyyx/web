@@ -215,6 +215,36 @@
 				}
 			});
 		}
+		
+		//重置密码
+		function operatorInitPassword(operId) {
+			
+			var newPassword = "aaa123";
+			
+			$.messager.confirm('提示','你确定要重置操作员  '+ operId + ' 的密码为' + newPassword + ' 吗?',function(r){
+				
+				if(r) {
+					
+					$("#operatorForm").form('submit',{
+						url:"operator/initPassword?operId=" + operId + "&newPassword=" + newPassword,
+						onSubmit:function() {
+							
+						},
+						success:function(data) {
+							var result = JSON.parse(data);    //解析Json 数据
+							
+							var statusCode = result.statusCode; //返回的结果类型
+							var message = result.message;       //返回执行的信息
+	
+							window.parent.showMessage(message,statusCode);
+							
+							//由于是重置密码，并不需要重新刷新加载列表
+						}
+					});
+				}
+			});
+			
+		}
 
 		function saveAdd() {
 			var ids = [];      //记录已经选中roleCode
@@ -339,7 +369,8 @@
 		//格式化：在每行输出 修改及删除
 		function rowformater(value,data,index) {
 			return "<a href='#' onclick='javascript:operatorEdit(\"" + data.OPER_ID +"\",\""+ data.OPER_NAME +"\",\"" + data.STATE + "\",\"" + data.SEX + "\",\"" + data.PASSWORD + "\",\"" + data.TELNO + "\",\"" + data.ORG_CODE + "\",\"" + data.CALL_NUMBER + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>" + 
-			"<a href='#' onclick='javascript:operatorDel(\"" + data.OPER_ID +"\")'><img src='themes/icons/pencil.png' border='0'>删除</a>";
+			"&nbsp;&nbsp;<a href='#' onclick='javascript:operatorDel(\"" + data.OPER_ID +"\")'><img src='themes/icons/cancel.png' border='0'>删除</a>" +
+			"&nbsp;&nbsp;<a href='#' onclick='javascript:operatorInitPassword(\"" + data.OPER_ID +"\")'><img src='themes/icons/reload.png' border='0'>重置密码为:aaa123</a>";
 		}
 		
 		//格式化：将状态格式化，如果状态值为1,则为绿色，且定义为有效；状态值为0，则为红色，且定义为无效
@@ -405,7 +436,7 @@
 										<th data-options="field:'TELNO',width:120,align:'center'">联系电话</th>
 										<th data-options="field:'CALL_NUMBER',width:70,align:'center'">座席号码</th>
 										<th data-options="field:'CREATETIME',width:110,align:'center'">创建时间</th>
-										<th data-options="field:'id',width:150,align:'center',formatter:rowformater">操作</th>
+										<th data-options="field:'id',width:300,align:'center',formatter:rowformater">操作</th>
 									
 									</tr>        
 								</thead>

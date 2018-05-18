@@ -3,6 +3,7 @@ package com.callke8.system.operator;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.callke8.utils.BlankUtils;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Record;
@@ -45,6 +46,36 @@ public class OperRole extends Model<OperRole> {
 		
 		return roleCodes;
 	}
+	
+	
+	/**
+	 * 检查传入的操作员ID 是否为超级角色
+	 * 
+	 * @param operId
+	 * @return
+	 * 		如果为超级角色，返回  true; 非超级角色，返回 false
+	 */
+	public boolean checkOperIdIsSuperRole(String operId) {
+		
+		boolean b = false;
+		
+		if(!BlankUtils.isBlank(operId)) {
+			
+			//从数据库中查询出当前操作员所属的所有角色列表
+			List<String> roleList = OperRole.dao.getRoleCodeByOperId(operId);
+			
+			for(String roleCode:roleList) {
+				if(roleCode.equalsIgnoreCase("super")) {   //只要有一个角色为 super  角色时，返回 true;
+					b = true;
+					return b;
+				}
+			}
+			
+		}
+		
+		return b;
+	}
+	
 	
 	/**
 	 * 添加操作员角色表

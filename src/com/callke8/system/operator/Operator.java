@@ -53,13 +53,15 @@ public class Operator extends Model<Operator> {
 	 * @param operId
 	 * @param operName
 	 * @param operState
+	 * @param currOperIdIsSuperRole 
+	 * 				当前操作员是否为超级角色
 	 * @return
 	 */
-	public Page<Record> getOperatorByPaginate(int currentPage,int numPerPage,String operId,String operName,String operState,String orgCode) {
+	public Page<Record> getOperatorByPaginate(int currentPage,int numPerPage,String operId,String operName,String operState,String orgCode,boolean currOperIdIsSuperRole) {
 		
 		//先拼接SQL语句
 		StringBuilder sb = new StringBuilder();
-		Object[] pars = new Object[4];   //先定义一个容量为3的参数数组
+		Object[] pars = new Object[8];   //先定义一个容量为3的参数数组
 		int index = 0;
 		
 		sb.append("from sys_operator where 1=1");
@@ -89,6 +91,12 @@ public class Operator extends Model<Operator> {
 			index++;
 		}
 		
+		if(!currOperIdIsSuperRole) {   //如果不为超级角色用户时，只显示非超级角色的其他用户
+			sb.append(" and OPER_ID IN(SELECT OPER_ID from sys_oper_role where ROLE_CODE!=?)");
+			pars[index] = "super";
+			index++;
+		}
+		
 		
 		Page<Record> p = Db.paginate(currentPage, numPerPage, "select *", sb.toString(), ArrayUtils.copyArray(index, pars));
 		
@@ -102,12 +110,14 @@ public class Operator extends Model<Operator> {
 	 * @param operId
 	 * @param operName
 	 * @param operState
+	 * @param currOperIdIsSuperRole 
+	 * 				当前操作员是否为超级角色
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public Map getOperatorByPaginateToMap(int currentPage,int numPerPage,String operId,String operName,String operState,String orgCode) {
+	public Map getOperatorByPaginateToMap(int currentPage,int numPerPage,String operId,String operName,String operState,String orgCode,boolean currOperIdIsSuperRole) {
 		
-		Page p = getOperatorByPaginate(currentPage, numPerPage, operId, operName, operState,orgCode);
+		Page p = getOperatorByPaginate(currentPage, numPerPage, operId, operName, operState,orgCode,currOperIdIsSuperRole);
 		
 		int total = p.getTotalRow();
 		

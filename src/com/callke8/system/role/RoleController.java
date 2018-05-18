@@ -25,14 +25,13 @@ public class RoleController extends Controller implements IController {
 		Integer rows = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer page = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Enumeration<String> pns = getParaNames();
+		//判断当前登录操作员ID，是否属于超级角色
+		//(1)如果为超级角色时，显示所有的角色列表
+		//(2)如果非超级角色时，只返回除了超级角色的角色列表
+		String currOperId = !BlankUtils.isBlank(getSession().getAttribute("currOperId"))?getSession().getAttribute("currOperId").toString():null;
+		boolean currOperIdIsSuperRole = OperRole.dao.checkOperIdIsSuperRole(currOperId);
 		
-		while(pns.hasMoreElements()) {
-			String pn = pns.nextElement();
-			//System.out.println("参数： " + pn + "=" + getPara(pn));
-		}
-		
-		renderJson(Role.dao.getRoleByPaginateToMap(page,  rows, roleCode, roleName, roleState));
+		renderJson(Role.dao.getRoleByPaginateToMap(page,  rows, roleCode, roleName, roleState,currOperIdIsSuperRole));
 	}
 	
 	public void add() {

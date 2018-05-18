@@ -36,8 +36,13 @@ public class OperatorController extends Controller implements IController {
 		int rows = Integer.valueOf(getPara("rows"));
 		int page = Integer.valueOf(getPara("page"))==0?1:Integer.valueOf(getPara("page"));
 		
+		//判断当前登录的操作员所属角色，是否为超级角色，
+		//(1)如果为超级角色时，将显示所有的角色下的操作员
+		//(2)如果非超级角色时，将只显示除超级角色下的其他操作员
+		String currOperId = !BlankUtils.isBlank(getSession().getAttribute("currOperId"))?getSession().getAttribute("currOperId").toString():null;
+		boolean currOperIdIsSuperRole = OperRole.dao.checkOperIdIsSuperRole(currOperId);
 		
-		Map getOperatorByPaginateToMap = Operator.dao.getOperatorByPaginateToMap(page, rows, operId, operName, operState,orgCode);
+		Map getOperatorByPaginateToMap = Operator.dao.getOperatorByPaginateToMap(page, rows, operId, operName, operState,orgCode,currOperIdIsSuperRole);
 		
 		renderJson(getOperatorByPaginateToMap);
 	}
@@ -112,6 +117,25 @@ public class OperatorController extends Controller implements IController {
 		}
 		
 	}
+	
+	/**
+	 * 重置密码为 aaa123
+	 */
+	public void initPassword() {
+		
+		String operId = getPara("operId");   				//获得传入的操作员ID
+		String newPassword = getPara("newPassword");		//获得传入的新密码
+		
+		boolean b = Operator.dao.changePassword(operId, Md5Utils.Md5(newPassword));
+		
+		if(b) {
+			render(RenderJson.success("重置操作员 " + operId + " 密码为 :" + newPassword +  " 成功!"));
+		}else {
+			render(RenderJson.error("重置操作员 " + operId + " 密码为 :" + newPassword +  "  失败!"));
+		}
+		
+	}
+	
 	
 	public void update() {
 		Operator  oper = getModel(Operator.class,"operator");
