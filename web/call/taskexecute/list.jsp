@@ -175,6 +175,10 @@
 </head>
 
 <body>
+
+<!-- 页面加载效果 -->
+<%@ include file="/base_loading.jsp" %>
+
 <div id="listPanel" style="padding:1px;width:99%" class="easyui-panel" title="外呼任务列表" data-options="fit:true">
 	<!-- 包含任务列表 -->
 	<%@ include file="/call/taskexecute/_taskList.jsp"%>

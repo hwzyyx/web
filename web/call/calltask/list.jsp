@@ -671,6 +671,10 @@
 </head>
 
 <body>
+
+	<!-- 页面加载效果 -->
+	<%@ include file="/base_loading.jsp" %>
+
 	<div class="easyui-panel" title="外呼任务管理" data-options="fit:true" style="padding:1px;">
 		<div data-options="fit:true" class="easyui-layout">
 			<!-- 查询区部分 -->

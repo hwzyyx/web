@@ -205,7 +205,8 @@
 </head>
 
 <body>
-
+<!-- 页面加载效果 -->
+<%@ include file="/base_loading.jsp" %>
 <!-- 定义一个 layout -->
 <div data-options="fit:true" class="easyui-layout">
 	<!-- 顶部查询区 -->

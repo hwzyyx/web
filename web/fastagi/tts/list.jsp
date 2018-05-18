@@ -216,6 +216,8 @@
 </head>
 
 <body>
+	<!-- 页面加载效果 -->
+	<%@ include file="/base_loading.jsp" %>
 	<div class="easyui-panel" title="在线TTS(语音合成)" data-options="fit:true" style="text-align: center;">
 			<!-- 编辑区下半部分列表 -->
 		<div class="easyui-panel" style="padding-top:5px;padding-left:5px;"  data-options="fit:true">

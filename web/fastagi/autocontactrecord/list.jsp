@@ -117,6 +117,8 @@
 	</script>
 </head>
 <body>
+<!-- 页面加载效果 -->
+<%@ include file="/base_loading.jsp" %>
 
 <table id="autoContactRecordDg">
 	<thead>
