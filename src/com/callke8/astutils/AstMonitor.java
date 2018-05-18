@@ -6,10 +6,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.asteriskjava.fastagi.DefaultAgiServer;
 import org.asteriskjava.manager.AuthenticationFailedException;
 import org.asteriskjava.manager.ManagerConnection;
-import org.asteriskjava.manager.ManagerConnectionFactory;
 import org.asteriskjava.manager.ManagerEventListener;
 import org.asteriskjava.manager.TimeoutException;
 import org.asteriskjava.manager.event.BridgeEvent;
@@ -19,11 +17,11 @@ import org.asteriskjava.manager.event.HangupEvent;
 import org.asteriskjava.manager.event.ManagerEvent;
 
 import com.callke8.call.incoming.InComing;
-import com.callke8.rabbitmqutils.MessageUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.StringUtil;
 import com.jfinal.plugin.activerecord.Record;
+
 
 /**
  * AsteriskMonitor 主要是用于监控 asterisk 的事件，用于分析来电信息用于前端来电弹屏功能
@@ -32,25 +30,18 @@ import com.jfinal.plugin.activerecord.Record;
  */
 public class AstMonitor implements Runnable,ManagerEventListener {
 
-	private static ManagerConnectionFactory factory;
-	private static ManagerConnection conn;
-	private static Log log = LogFactory.getLog(AstMonitor.class);
-	private static String astHost;
-	private static int astPort;
-	private static String astUser;
-	private static String astPass;
-	private static String state;  //连接状态
-	private static String astCallOutContext;     	   //正常外呼的 context
-	private static String astHoldOnContext;    //系统执行呼叫保持的 context
-	private static String astCallerId;    //外呼时设置的主叫号码（主要用于话务接续按钮中使用）
-	private static Map<String,InComing> inComingMap = new HashMap<String,InComing>();      //当客户来电被接通时，存入该变量，用于前端扫描并弹屏用
-	//private static DefaultAgiServer agiServer;
+	private ManagerConnection conn;
+	
+	private Log log = LogFactory.getLog(AstMonitor.class);
+	
+	private String state;     //Asterisk 连接状态
+	private static Map<String,InComing> inComingMap = new HashMap<String,InComing>();     //当客户来电接通时，存入该变量，用于前端扫描并弹屏用
 	
 	public AstMonitor() {
 		
-		factory = new ManagerConnectionFactory(astHost,astPort,astUser,astPass);
-		conn = factory.createManagerConnection();
+		conn = AsteriskUtils.connPool.getConnection();
 		conn.addEventListener(this);
+		
 	}
 	
 	@Override
@@ -60,11 +51,10 @@ public class AstMonitor implements Runnable,ManagerEventListener {
 		
 		while(true) {
 			
-			state = BlankUtils.isBlank(conn)?null:conn.getState().toString();
-			
+			state = BlankUtils.isBlank(conn)?null:conn.getState().toString();   //得到连接的状态
 			log.info("第 " + i + " 次检测 Asterisk连接状态，连接状态为: " +  state);
+			
 			if(BlankUtils.isBlank(state) || !state.equalsIgnoreCase("CONNECTED")) {   //如果连接状态为无连接时
-				
 				try {
 					if(state.equalsIgnoreCase("RECONNECTING")) {   //如果状态为 RECONNECTING 时，需要先 logoff ，然后再重新连接
 						conn.logoff();
@@ -79,11 +69,9 @@ public class AstMonitor implements Runnable,ManagerEventListener {
 				} catch (TimeoutException e) {
 					e.printStackTrace();
 				}
-				
 			}
 			
 			if(i == 10) { i = 1;} else { i++;};
-			
 			try {
 				Thread.sleep(60 * 1000);
 			} catch (InterruptedException e) {
@@ -302,81 +290,9 @@ public class AstMonitor implements Runnable,ManagerEventListener {
 			
 		}
 		
-		
 	}
 
-	public static ManagerConnectionFactory getFactory() {
-		return factory;
-	}
-
-	public static void setFactory(ManagerConnectionFactory factory) {
-		AstMonitor.factory = factory;
-	}
-
-	public static ManagerConnection getConn() {
-		return conn;
-	}
-
-	public static void setConn(ManagerConnection conn) {
-		AstMonitor.conn = conn;
-	}
-
-	public static String getAstHost() {
-		return astHost;
-	}
-
-	public static void setAstHost(String astHost) {
-		AstMonitor.astHost = astHost;
-	}
-
-	public static int getAstPort() {
-		return astPort;
-	}
-
-	public static void setAstPort(int astPort) {
-		AstMonitor.astPort = astPort;
-	}
-
-	public static String getAstUser() {
-		return astUser;
-	}
-
-	public static void setAstUser(String astUser) {
-		AstMonitor.astUser = astUser;
-	}
-
-	public static String getAstPass() {
-		return astPass;
-	}
-
-	public static void setAstPass(String astPass) {
-		AstMonitor.astPass = astPass;
-	}
 	
-	public static String getAstCallOutContext() {
-		return astCallOutContext;
-	}
-
-	public static void setAstCallOutContext(String astCallOutContext) {
-		AstMonitor.astCallOutContext = astCallOutContext;
-	}
-
-	public static String getAstCallerId() {
-		return astCallerId;
-	}
-
-	public static void setAstCallerId(String astCallerId) {
-		AstMonitor.astCallerId = astCallerId;
-	}
-	
-	public static String getAstHoldOnContext() {
-		return astHoldOnContext;
-	}
-
-	public static void setAstHoldOnContext(String astHoldOnContext) {
-		AstMonitor.astHoldOnContext = astHoldOnContext;
-	}
-
 	/**
 	 * 根据座席号，取出是否有可用于弹屏的记录
 	 * @param agentNumber
@@ -406,5 +322,17 @@ public class AstMonitor implements Runnable,ManagerEventListener {
 			return null;
 		}
 	}
+
 	
 }
+
+
+
+
+
+
+
+
+
+
+

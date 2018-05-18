@@ -8,8 +8,6 @@ import java.util.Map;
 import org.asteriskjava.live.CallerId;
 import org.asteriskjava.live.DefaultAsteriskServer;
 import org.asteriskjava.live.OriginateCallback;
-import org.asteriskjava.manager.AuthenticationFailedException;
-import org.asteriskjava.manager.DefaultManagerConnection;
 import org.asteriskjava.manager.ManagerConnection;
 import org.asteriskjava.manager.TimeoutException;
 import org.asteriskjava.manager.action.CommandAction;
@@ -26,76 +24,82 @@ import com.callke8.utils.BlankUtils;
 import com.callke8.utils.StringUtil;
 
 /**
+ * Asterisk工具类,直接调用 asterisk接口，实现相应的功能： 示忙、示闲、呼叫转移、外呼、挂机等等
  * 
- * AsteriskUtils 为通过 AMI 操作 Asterisk 的工具类
- * 所有的 CTI 功能，均由该类直接对asterisk 进行操作， CtiUtils 仅提供接口
- * 
- * @author hwz
+ * @author <a href="mailto:120077407@qq.com">黄文周</a>
  *
  */
 public class AsteriskUtils {
 	
-	ManagerConnection conn = null;
+	/**
+	 * 定义静态Asterisk连接池，项目启动时，执行连接池初始化
+	 */
+	public static AsteriskConnectionPool connPool;
 	
-	//构造方法，先连接asterisk
+	/**
+	 * 连接柄
+	 */
+	private ManagerConnection conn;
+	
 	public AsteriskUtils() {
-		conn = new DefaultManagerConnection(AstMonitor.getAstHost(),AstMonitor.getAstPort(),AstMonitor.getAstUser(),AstMonitor.getAstPass());
-		try {
-			conn.login();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (AuthenticationFailedException e) {
-			e.printStackTrace();
-		} catch (TimeoutException e) {
-			e.printStackTrace();
-		}
+		
+		conn = connPool.getConnection();
+		
 	}
 	
 	/**
-	 * 呼出功能
+	 * 执行外呼,接通后转到 Extension
 	 * 
 	 * @param channel
-	 * 			通道名称,如： SIP/8004,  ss7/siuc/13512775995
 	 * @param context
-	 * 			context:如 from-exten
 	 * @param exten
 	 * @param priority
-	 * @param timeout
+	 * @param timeOut
 	 * @param callerId
-	 * @param variables
+	 * @param variable
 	 * @param cb
 	 */
-	public void doCallOut(java.lang.String channel,
-            java.lang.String context,
-            java.lang.String exten,
-            int priority,
-            long timeout,
-            CallerId callerId,
-            java.util.Map<java.lang.String,java.lang.String> variables,
-            OriginateCallback cb) {
+	public void doCallOutToExtension(String channel,
+			String context,
+			String exten,
+			int priority,
+			long timeout,
+			CallerId callerId,
+			Map<String,String> variables,
+			OriginateCallback cb) {
 		
 		DefaultAsteriskServer server = new DefaultAsteriskServer(conn);
-		//System.out.println("conn.getHostname():" + conn.getHostname());
-		//System.out.println("conn.getPassword():" + conn.getPassword());
-		//System.out.println("conn.getUsername():" + conn.getUsername());
-		//System.out.println("conn.getPort():" + conn.getPort());
-		//System.out.println("server.getVersion():" + server.getVersion());
 		
-		server.originateToExtensionAsync(channel, context, exten, priority, timeout, callerId, variables,cb);
+		server.originateToExtensionAsync(channel, context, exten, priority, timeout, callerId, variables, cb);
 		
 		try {
 			Thread.sleep(timeout);
-			
-			server.shutdown();
-		} catch (InterruptedException e) {
+		}catch (InterruptedException e) {
 			e.printStackTrace();
+		}finally {
+			close(); 			//将连接放回连接池中
 		}
+		
 	}
 	
-	
-	public void doCallOutToApplication(String channel,String application,String data,long timeout,CallerId callerId,Map<String,String> variables,OriginateCallback cb) {
+	/**
+	 * 执行外呼，呼通后转到 application 
+	 * 
+	 * @param channel
+	 * @param application
+	 * @param data
+	 * @param timeout
+	 * @param callerId
+	 * @param variable
+	 * @param db
+	 */
+	public void doCallOutToApplication(String channel,
+			String application,
+			String data,
+			long timeout,
+			CallerId callerId,
+			Map<String,String> variables,
+			OriginateCallback cb) {
 		
 		DefaultAsteriskServer server = new DefaultAsteriskServer(conn);
 		
@@ -103,35 +107,36 @@ public class AsteriskUtils {
 		
 		try {
 			Thread.sleep(timeout);
-		} catch (InterruptedException e) {
+		}catch (InterruptedException e) {
 			e.printStackTrace();
+		}finally {
+			close();    //将连接放回连接池中
 		}
 		
 	}
-	
 	
 	/**
 	 * 执行呼叫转移
 	 * 
-	 * @param targetNumber
-	 * 			转移到目标号码
-	 * @return
+	 * @param dstChannel
+	 * @param forwardNumber
 	 */
 	public void doTransfer(String dstChannel,String forwardNumber) {
 		
-		//AtxferAction action  = new AtxferAction(dstChannel, AstMonitor.getAstCallOutContext(),forwardNumber, 1);
-		RedirectAction action  = new RedirectAction(dstChannel,AstMonitor.getAstCallOutContext(),forwardNumber,1);
+		RedirectAction action = new RedirectAction(dstChannel,AsteriskConfig.getAstCallOutContext(),forwardNumber,1);
 		
 		try {
-			ManagerResponse response = conn.sendAction(action,3000);
 			
-			System.out.println("执行转移返回的 Response: " + response);
+			ManagerResponse response = conn.sendAction(action, 3000);
+			
+			System.out.println("执行呼叫转移返回 Response: " + response);
 			
 			try {
 				Thread.sleep(3000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			}catch(InterruptedException ie) {
+				ie.printStackTrace();
 			}
+			
 			
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
@@ -141,92 +146,58 @@ public class AsteriskUtils {
 			e.printStackTrace();
 		} catch (TimeoutException e) {
 			e.printStackTrace();
-		}finally {
-			conn.logoff();
 		}
 		
 	}
 	
 	/**
-	 * 检查通道是否存在
+	 * 根据座席号码，取得当前座席通话的通道名称
 	 * 
-	 * @param channel
+	 * @param agentNumber
+	 * 			座席号码
 	 * @return
+	 * 			如果座席在通话中时，返回通道名称，否则返回空值
 	 */
-	public boolean isExistChannel(String channel) {
+	public String getChannelByAgentNumber(String agentNumber) {
 		
-		boolean b = false;
+		String srcChannel = null;
 		
-		try {
-			
-			CommandAction action = new CommandAction();
-			
-			action.setCommand("core show channels concise");
+		Map<String,String> channelMap = getSrcChannelAndDstChannelByAgentNumber(agentNumber);
 		
-			ManagerResponse response = conn.sendAction(action,500);
-			
-			/**
-			 * 执行之后，返回的数据如下:
-			 * 
-			 localhost*CLI> core show channels concise
-			SIP/8003-000000ab!macro-dial-one!s!1!Up!AppDial!(Outgoing Line)!8003!!!3!20!Local/8003@from-queue-00000012;2!1441604413.209
-			SIP/8004-000000aa!from-internal!401!10!Up!Queue!401,t,,,30!8004!!!3!21!Local/8003@from-queue-00000012;1!1441604412.206
-			Local/8003@from-queue-00000012;1!from-queue!401!1!Up!AppQueue!(Outgoing Line)!8003!!!3!21!SIP/8004-000000aa!1441604413.207
-			Local/8003@from-queue-00000012;2!macro-dial-one!s!37!Up!Dial!SIP/8003,"",trM(auto-blkvm)!8004!!!3!21!SIP/8003-000000ab!1441604413.208
-
-			 * 
-			 * 我们要做的，就是将所有的通道先找出来，然后对比目标通道，看看是否存在相关通道
-			 */
-			
-			if(response != null) {
-				
-				CommandResponse res = (CommandResponse)response;
-				
-				for(String line:res.getResult()) {        //遍历数据
-					
-					String channelInfo = line.split("!")[0];                    //得到 SIP/8011-0000008b
-					
-					channelInfo = channelInfo.trim();                             //去掉空格
-					//System.out.println("channelInfo:" + channelInfo + ",channel:" + channel + "||||||||||||");
-					if(channelInfo.equals(channel)) {            //如果存在相同的通道时，设为 true
-						b = true;
-					}
-				}
-			}
-			
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (TimeoutException e) {
-			e.printStackTrace();
+		if(!BlankUtils.isBlank(channelMap)) {
+			srcChannel = channelMap.get("srcChannel");
 		}
 		
-		return b;
+		return srcChannel;
 		
 	}
 	
+	
 	/**
-	 * 根据传入的通道名称，挂断该通话
-	 * @return
+	 * 通话保持
+	 * 
+	 * @param srcChannel
+	 * 			源通道
+	 * @param dstChannel
+	 * 			目标通道
 	 */
-	public void hangupByChannel(String channelName) {
+	public void doPark(String srcChannel,String dstChannel) {
 		
 		try {
 			
-			HangupAction action = new HangupAction(channelName);
+			ParkAction action  = new ParkAction(dstChannel,srcChannel,24 * 60 * 60 * 1000);
 			
-			conn.sendAction(action,500);
+			ManagerResponse response = conn.sendAction(action);
 			
 			try {
-				Thread.sleep(500);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+			}finally {
+				connPool.close(conn);
 			}
 			
-		} catch (IllegalArgumentException e) {
+		}catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
@@ -238,13 +209,88 @@ public class AsteriskUtils {
 		
 	}
 	
+	/**
+	 * 取消通话保持
+	 * 
+	 * @param agentNumber
+	 * @param dstChannel
+	 */
+	public void doBackPark(String agentNumber,String dstChannel) {
+		
+		try {
+			
+			OriginateAction action = new OriginateAction();
+			
+			action.setActionId("originateAction " + agentNumber + " actionId ");
+			
+			action.setChannel("SIP/" + agentNumber);
+			
+			action.setApplication("Bridge");
+			
+			action.setData(dstChannel);
+			
+			action.setAsync(true);
+			
+			ManagerResponse response = conn.sendAction(action);
+			
+			
+		}catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		
+	}
 	
 	/**
-	 * 针对通话中的座席号码,取得源通道及目标通道
+	 * 根据座席号码取得目标通道
+	 * 
+	 * @param agentNumber
+	 * @return
+	 */
+	public String getDstChannelByAgentNumber(String agentNumber) {
+		
+		String dstChannel = null;
+		
+		Map<String,String> channelMap = getSrcChannelAndDstChannelByAgentNumber(agentNumber);
+		
+		if(!BlankUtils.isBlank(channelMap)) {
+			dstChannel = channelMap.get("dstChannel");
+		}
+		
+		return dstChannel;
+	}
+	
+	/**
+	 * 根据坐席号码取得源通道
+	 * 
+	 * @param agentNumber
+	 * @return
+	 */
+	public String getSrcChannelByAgentNumber(String agentNumber) {
+		
+		String srcChannel = null;
+		
+		Map<String,String> channelMap = getSrcChannelAndDstChannelByAgentNumber(agentNumber);
+		
+		if(!BlankUtils.isBlank(channelMap)) {
+			srcChannel = channelMap.get("srcChannel");
+		}
+		
+		return srcChannel;
+	}
+	
+	/**
+	 * 取得通话中座席号码源通道及目标通道
 	 * 
 	 * 主要是用于通话保持及取消通话保持
 	 * 
 	 * @param agentNumber
+	 * 				座席号码
 	 * @return
 	 */
 	public Map<String,String> getSrcChannelAndDstChannelByAgentNumber(String agentNumber) {
@@ -252,12 +298,9 @@ public class AsteriskUtils {
 		Map<String,String> channelMap = new HashMap<String,String>();
 		
 		try {
-			
-			CommandAction action  = new CommandAction();
-			
-			action.setCommand("core show channels concise");
-			
-			ManagerResponse response = conn.sendAction(action,500);
+			CommandAction action = new CommandAction("core show channels concise");
+		
+			ManagerResponse response = conn.sendAction(action);
 			
 			/**
 			 * 发送 Action 后，返回的数据大概如下：
@@ -403,44 +446,60 @@ public class AsteriskUtils {
 			e.printStackTrace();
 		}
 		
-		
 		return channelMap;
 		
 	}
 	
-	
 	/**
-	 * 根据座席号码,取出与座席通话的目标通道，无论是来电或是去电
+	 * 检查通道是否存在
 	 * 
-	 * @param agentNumber
+	 * @param channel
 	 * @return
 	 */
-	public String getDstChannelByAgentNumber(String agentNumber) {
+	public boolean isExistChannel(String channel) {
 		
-		String dstChannel = null;
+		boolean b = false;
 		
-		Map<String,String> channelMap = getSrcChannelAndDstChannelByAgentNumber(agentNumber);
-		
-		if(!BlankUtils.isBlank(channelMap)) {
+		try{
 			
-			dstChannel = channelMap.get("dstChannel");
+			CommandAction action = new CommandAction();
 			
-		}
-		
-		return dstChannel;
-		
-	}
-	
-	//通话保持
-	public void doPark(String srcChannel,String dstChannel) {
-		
-		try {
-		
-			ParkAction action = new ParkAction(dstChannel,srcChannel,24 * 60 * 60 * 1000);
+			action.setCommand("core show channels concise");
 			
 			ManagerResponse response = conn.sendAction(action);
 			
-		} catch (IllegalArgumentException e) {
+			/**
+			 * 执行之后，返回的数据如下:
+			 * 
+			 localhost*CLI> core show channels concise
+			SIP/8003-000000ab!macro-dial-one!s!1!Up!AppDial!(Outgoing Line)!8003!!!3!20!Local/8003@from-queue-00000012;2!1441604413.209
+			SIP/8004-000000aa!from-internal!401!10!Up!Queue!401,t,,,30!8004!!!3!21!Local/8003@from-queue-00000012;1!1441604412.206
+			Local/8003@from-queue-00000012;1!from-queue!401!1!Up!AppQueue!(Outgoing Line)!8003!!!3!21!SIP/8004-000000aa!1441604413.207
+			Local/8003@from-queue-00000012;2!macro-dial-one!s!37!Up!Dial!SIP/8003,"",trM(auto-blkvm)!8004!!!3!21!SIP/8003-000000ab!1441604413.208
+
+			 * 
+			 * 我们要做的，就是将所有的通道先找出来，然后对比目标通道，看看是否存在相关通道
+			 */
+			
+			if(response != null) {
+				
+				CommandResponse res = (CommandResponse)response;
+				
+				for(String line:res.getResult()) {        //遍历数据
+					
+					String channelInfo = line.split("!")[0];                    //得到 SIP/8011-0000008b
+					
+					channelInfo = channelInfo.trim();                             //去掉空格
+					//System.out.println("channelInfo:" + channelInfo + ",channel:" + channel + "||||||||||||");
+					if(channelInfo.equals(channel)) {            //如果存在相同的通道时，设为 true
+						b = true;
+					}
+				}
+			}
+			
+			connPool.close(conn);
+			
+		}catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
@@ -450,27 +509,32 @@ public class AsteriskUtils {
 			e.printStackTrace();
 		}
 		
+		return b;
 	}
 	
-	//取消保持
-	public void doBackPark(String agentNumber,String dstChannel) {
+	
+	/**
+	 * 根据传入的通道名称，挂断当前通话
+	 * 
+	 * @param channelName
+	 */
+	public void hangupByChannel(String channelName) {
 		
 		
 		try {
 			
-			OriginateAction action  = new OriginateAction();
+			HangupAction action = new HangupAction(channelName);
 			
-			action.setActionId("originateAction " + agentNumber + " actionId ");
+			conn.sendAction(action,500);
 			
-			action.setChannel("SIP/" + agentNumber);
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}finally {
+				connPool.close(conn);
+			}
 			
-			action.setApplication("Bridge");
-			
-			action.setData(dstChannel);
-			
-			action.setAsync(true);
-			
-			ManagerResponse response =  conn.sendAction(action);
 			
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
@@ -484,39 +548,16 @@ public class AsteriskUtils {
 		
 	}
 	
-	
 	/**
-	 * 根据座席号，得到当前座席通话的通道名称
+	 * 检查座席是否已经处于登录状态
 	 * 
 	 * @param agentNumber
 	 * 			座席号码
 	 * @return
-	 * 			如果在通话中，则返回通道名称；否则返回空值
+	 * 			登录状态：返回true;否则返回 false
+	 * 		
 	 */
-	public String getChannelByAgentNumber (String agentNumber) {
-		
-		String srcChannel = null;
-		
-		Map<String,String> channelMap = getSrcChannelAndDstChannelByAgentNumber(agentNumber);
-		
-		if(!BlankUtils.isBlank(channelMap)) {
-			
-			srcChannel = channelMap.get("srcChannel");
-			
-		}
-		
-		return srcChannel;
-	}
-	
-	/**
-	 * 判断座席是否已经登录
-	 * 
-	 * @param agentNumber
-	 * 			座席号码
-	 * @return
-	 * 			如果已经登录，返回 true; 如果离线状态，返回 false
-	 */
-	public boolean isLogined(String agentNumber) {
+	public boolean isAgentLogin(String agentNumber) {
 		
 		String hostInfo = "";
 		String statusInfo = "";
@@ -525,27 +566,27 @@ public class AsteriskUtils {
 		try {
 			
 			CommandAction action = new CommandAction("SIP show peer " + agentNumber);
-			
-			ManagerResponse response = conn.sendAction(action,500);
+		
+			ManagerResponse response = conn.sendAction(action);
 			
 			if(!BlankUtils.isBlank(response)) {
 				
 				CommandResponse res = (CommandResponse)response;
 				
-				for(String line:res.getResult()) {      //逐行分析 SIP 的信息
+				//逐行分析 SIP 信息,主要是分析：状态行的情况：Status:UNKNOWN   或是 Status:OK (210 ms)
+				for(String line:res.getResult()) {
 					
-					if(StringUtil.containsAny(line, "Status")) {     		//如果其中一行包含为 Status 的字样时，则可以取出状态行的情况：Status       : UNKNOWN   或是 Status       : OK (210 ms)
-						statusInfo = line;
-						if(StringUtil.containsAny(statusInfo, "OK")) {      //如果其状态还包括 OK 字样时，表示登录状态为已经登录
+					if(StringUtil.containsAny(line, "Status")) {
+						if(StringUtil.containsAny(line, "OK")) {
 							statusInfo = line;
-						}else {
-							statusInfo = null;                              //将其置为空
 						}
+						
 					}
 					
-					if(StringUtil.containsAny(line, "Addr->IP")) {      //如果其中一行包含 Addr->IP的字样时，则可以取出登录的IP信息, 一般是这样的信息: Addr->IP:42.81.46.103 Port 3550  或是 Addr->IP     : (Unspecified) Port 0
-						String hostAndPort = line.split(":")[1];		//以 冒号 分割,得到  192.168.11.119 Port 5060  或是 (Unspecified) Port 0
-						String host = hostAndPort.split("Port")[0];     //以 Port 分割，到到  192.168.11.119  或是 (Unspecified)
+					if(StringUtil.containsAny(line, "Addr->IP")) { 		 //如果其中一行包含 Addr->IP的字样时，则可以取出登录的IP信息, 一般是这样的信息: Addr->IP:42.81.46.103 Port 3550  或是 Addr->IP 
+						
+						String hostAndPort = line.split(":")[1];         //以 冒号 分割,得到  192.168.11.119 Port 5060  或是 (Unspecified) Port 0
+						String host = hostAndPort.split("Port")[0];      //以 Port 分割，到到  192.168.11.119  或是 (Unspecified)
 						
 						host = host.trim();
 						
@@ -554,22 +595,14 @@ public class AsteriskUtils {
 						}else {
 							hostInfo = null;
 						}
-						
 					}
+					
 					
 				}
 				
-				
 			}
 			
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-			
-			if(!BlankUtils.isBlank(statusInfo) && !BlankUtils.isBlank(hostInfo)) {    //只有两个信息都不为空时，才判断其为已经登录
+			if(!BlankUtils.isBlank(statusInfo) && !BlankUtils.isBlank(hostInfo)) {		//只有两个信息都不为空时，才判断其为已经登录
 				rs = true;
 			}
 			
@@ -589,10 +622,58 @@ public class AsteriskUtils {
 	}
 	
 	/**
+	 * 示忙
+	 * 
+	 * @param agentNumber
+	 */
+	public void doDNDOn(String agentNumber) {
+		
+		DbPutAction action = new DbPutAction("DND",agentNumber,"yes");
+		
+		try {
+			ManagerResponse response = conn.sendAction(action);
+		}catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	/**
+	 * 示闲
+	 * 
+	 * @param agentNumber
+	 */
+	public void doDNDOff(String agentNumber) {
+		
+		DbDelAction action = new DbDelAction("DND",agentNumber);
+		
+		try {
+			ManagerResponse response  = conn.sendAction(action);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	/**
 	 * 根据座席号码,查看当前座席的示忙示闲状态
 	 * 
 	 * @param agentNumber
 	 * @return
+	 * 		如果处于示忙状态时，返回YES；如果处于示闲状态，返回NO
 	 */
 	public String getDNDValue(String agentNumber) {
 		
@@ -620,13 +701,9 @@ public class AsteriskUtils {
 								agentDNDState = "YES";
 								break;
 							}
-							
 						}
-						
 					}
-					
 				}
-				
 			}
 			
 		} catch (IllegalArgumentException e) {
@@ -639,93 +716,52 @@ public class AsteriskUtils {
 			e.printStackTrace();
 		}
 		
-		
 		return agentDNDState;
-		
 	}
 	
-	
 	/**
-	 * 示忙
+	 * 取得Asterisk连接状态
 	 * 
-	 * @param agentNumber
-	 */
-	public void doDNDOn(String agentNumber) {
-		
-		DbPutAction action = new DbPutAction("DND",agentNumber,"yes");
-		
-		try {
-			ManagerResponse response = conn.sendAction(action);
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (TimeoutException e) {
-			e.printStackTrace();
-		}
-		
-	}
-	
-	
-	
-	/**
-	 * 示闲
-	 * 
-	 * @param agentNumber
-	 */
-	public void doDNDOff(String agentNumber) {
-		
-		DbDelAction action = new DbDelAction("DND",agentNumber);
-		
-		try {
-			ManagerResponse response  = conn.sendAction(action);
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (TimeoutException e) {
-			e.printStackTrace();
-		}
-		
-		
-	}
-	
-	
-	
-	/**
-	 * 得到连接的状态
+	 * Asterisk连接状态主要有：
+	 * 	1.CONNECTED 连接成功
+	 * 	2.CONNECTING 连接中
+	 * 	3.DISCONNECTING 连接失败
+	 * 	4.INITIAL 初始化
+	 * 	5.RECONNECTING 重连接中（中断后自动重新连接）
 	 * 
 	 * @return
-	 * 		如果连接状态不为空且状态为 CONNECTED 时，返回真；否则返回 FALSE
 	 */
-	public boolean getConnectionState() {
-		
-		String state = conn.getState().toString();
-		
-		if(!BlankUtils.isBlank(state)&&state.equalsIgnoreCase("CONNECTED")) {
-			return true;
+	public String getAsteriskConnectionState() {
+		String state = null;
+		if(conn != null) {
+			state = conn.getState().toString();
 		}
-		
-		return false;
+		return state;
 	}
-	
 	
 	/**
-	 * 关闭连接,先判断 conn 是否非空且连接状态为 CONNECTED
+	 * 检查连接状态是否连接成功
+	 * 
+	 * @return
 	 */
-	public void logoff() {
+	public boolean isAstConnSuccess() {
 		
-		if(!BlankUtils.isBlank(conn)) {
-
-			if(getConnectionState()) {
-				conn.logoff();
-			}
+		boolean isConnected = false;
+		
+		String connState = getAsteriskConnectionState();
+		System.out.println("连接状态为:" + connState);
+		if(!BlankUtils.isBlank(connState) && connState.equalsIgnoreCase("CONNECTED")) {
+			isConnected = true;
 		}
 		
+		return isConnected;
 	}
 	
-}
+	/**
+	 * 关闭asterisk工具类,主要是用于将取出的连接，放回连接池中
+	 */
+	public void close() {
+		connPool.close(conn);
+	}
+	
+}	

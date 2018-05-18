@@ -3,7 +3,6 @@ package com.callke8.astutils;
 import java.util.Map;
 
 import com.callke8.call.calltask.CallTaskCounter;
-import com.jfinal.plugin.activerecord.Db;
 
 /**
  * 外呼任务的计数工具，主要是用于根据任务ID、状态标识对任务的数量进行增加与减少
