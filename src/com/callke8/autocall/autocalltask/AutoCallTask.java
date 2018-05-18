@@ -483,7 +483,7 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	/**
 	 * 检查调度方案是否已经被引用 
 	 * 
-	 * @param voiceId
+	 * @param scheduleId
 	 * @return
 	 */
 	public boolean checkScheduleBeUsed(String scheduleId) {
@@ -504,7 +504,7 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	/**
 	 * 检查调查问卷是否已经被引用 
 	 * 
-	 * @param voiceId
+	 * @param questionnaireId
 	 * @return
 	 */
 	public boolean checkQuestionnaireBeUsed(String questionnaireId) {
@@ -527,7 +527,7 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * 修改任务状态
 	 * 
 	 * @param taskId
-	 * @param taskState
+	 * @param newTaskState
 	 * @return
 	 */
 	public boolean changeState(String taskId,String newTaskState) {

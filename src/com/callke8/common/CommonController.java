@@ -16,6 +16,7 @@ import org.asteriskjava.live.OriginateCallback;
 import org.eclipse.jetty.util.log.Log;
 
 import com.callke8.astutils.AstMonitor;
+import com.callke8.astutils.AsteriskConfig;
 import com.callke8.astutils.CtiUtils;
 import com.callke8.astutils.LaunchCtiService;
 import com.callke8.call.incoming.InComing;
@@ -628,6 +629,8 @@ public class CommonController extends Controller {
 	
 	/**
 	 * 挂机
+	 * 
+	 * 传入坐席号码
 	 */
 	public void doHangup() {
 		
@@ -635,9 +638,7 @@ public class CommonController extends Controller {
 		
 		System.out.println("准备执行挂机，座席号码为:" + agentNumber);
 		
-		String channel = CtiUtils.getSrcChannelByAgentNumber(agentNumber);
-		
-		CtiUtils.doHangup(channel);
+		CtiUtils.doHangUpByAgentNumber(agentNumber);
 		
 	}
 	
@@ -656,72 +657,66 @@ public class CommonController extends Controller {
 		String exten = telephone;
 		int priority = 1;
 		long timeout = 30 * 1000;
-		CallerId cid = new CallerId("0762883322","0762883322");
+		CallerId cid = new CallerId(AsteriskConfig.getAstCallerId(),AsteriskConfig.getAstCallerId());
 		Map m = new HashMap();
 		
-		try {
-			Map rs = CtiUtils.doCallOutByAgent(agentNumber,channel, context, exten, priority, timeout, cid, m, new OriginateCallback() {
-				
-				/**
-				 * 客户正忙
-				 */
-				@Override
-				public void onBusy(AsteriskChannel channel) {
-					System.out.println("线路繁忙...");
-				}
+		String rs = CtiUtils.doCallOutByAgent(agentNumber, channel, context, exten, priority, timeout, cid, m, new OriginateCallback(){
 
-				/**
-				 * 开始外呼...
-				 */
-				@Override
-				public void onDialing(AsteriskChannel channel) {
-					System.out.println("开始呼叫...");
-				}
+			/**
+			 * 开始外呼
+			 */
+			@Override
+			public void onDialing(AsteriskChannel channel) {
 				
-				/**
-				 * 呼叫失败
-				 */
-				@Override
-				public void onFailure(LiveException live) {
-					System.out.println("呼叫失败...");
-					
-				}
-
-				/**
-				 * 客户无应答
-				 */
-				@Override
-				public void onNoAnswer(AsteriskChannel arg0) {
-					System.out.println(" 无人接听...");
-					
-				}
-				
-				/**
-				 * 呼叫成功
-				 */
-				@Override
-				public void onSuccess(AsteriskChannel arg0) {
-					System.out.println("呼叫成功...");
-					
-				}
-				
-			});
-			
-			String result = (String) rs.get("result");
-			String str = (String) rs.get("str");
-			
-			if(!BlankUtils.isBlank(result)&&result.equalsIgnoreCase("1")) {    //表示执行成功
-				render(RenderJson.success(str));
-			}else {
-				render(RenderJson.error(str));
+				System.out.println("开始外呼");
 			}
 			
-		} catch (Exception e) {
-			e.printStackTrace();
+			/**
+			 * 客户无应答
+			 */
+			@Override
+			public void onNoAnswer(AsteriskChannel channel) {
+				
+				System.out.println("客户无应答");
+			}
+			
+			/**
+			 * 客户繁忙
+			 */
+			@Override
+			public void onBusy(AsteriskChannel channel) {
+				
+				System.out.println("客户繁忙");
+			}
+
+			/**
+			 * 外呼失败
+			 */
+			@Override
+			public void onFailure(LiveException le) {
+				
+				System.out.println("外呼失败");
+			}
+
+			/**
+			 * 外呼成功
+			 */
+			@Override
+			public void onSuccess(AsteriskChannel channel) {
+				System.out.println("外呼成功");
+			}
+			
+		});
+		
+		if(rs.equalsIgnoreCase("success")) {
+			render(RenderJson.success("发送外呼操作指令成功!"));
+		}else {
+			render(RenderJson.error(rs));
 		}
 		
 	}
 	
+
 	/**
 	 * 话务集成操作：外呼，通道保持，呼叫转移，示忙，示闲，挂机等等操作
 	 * 
@@ -762,7 +757,7 @@ public class CommonController extends Controller {
 		
 		String actionName = getPara("actionName");
 		
-
+		
 		if(actionName.equalsIgnoreCase("signIn")) {    				//签入
 			
 			String agentNumber = getPara("agentNumber");   //获取座席号码
@@ -776,8 +771,7 @@ public class CommonController extends Controller {
 			}
 			
 			//二、检查 PBX 连接状态
-			boolean connState = CtiUtils.getConnectionState();
-			//boolean connState = true;
+			boolean connState = CtiUtils.checkConnectionState();
 			
 			if(!connState) {
 				render(RenderJson.error("签入失败,话务服务器连接状态异常!"));
@@ -791,7 +785,7 @@ public class CommonController extends Controller {
 			String agentState = MemoryVariableUtil.agentStateMap.get(agentNumber);   //取出状态
 			
 			if(!BlankUtils.isBlank(agentState)) {
-				System.out.println("要签入的座席当前的状态为:" + agentState);
+				System.out.println("要签入的坐席号码 " + agentNumber + " 当前的状态为:" + agentState);
 				if(!(agentState.equalsIgnoreCase("Unknown") || agentState.equalsIgnoreCase("Invalid") || agentState.equalsIgnoreCase("Unavailable"))) {
 					isOnLine = true;
 				}
@@ -843,7 +837,7 @@ public class CommonController extends Controller {
 			}
 			
 			//三、检查 PBX 连接状态
-			boolean connState = CtiUtils.getConnectionState();
+			boolean connState = CtiUtils.checkConnectionState();
 			
 			if(!connState) {
 				render(RenderJson.error("执行外呼失败,话务服务器连接状态异常!"));
@@ -887,7 +881,7 @@ public class CommonController extends Controller {
 			}
 			
 			//二、检查 PBX 连接状态
-			boolean connState = CtiUtils.getConnectionState();
+			boolean connState = CtiUtils.checkConnectionState();
 			
 			if(!connState) {
 				render(RenderJson.error("执行通话保持失败,话务服务器连接状态异常!"));
@@ -953,7 +947,7 @@ public class CommonController extends Controller {
 			}
 			
 			//二、检查 PBX 连接状态
-			boolean connState = CtiUtils.getConnectionState();
+			boolean connState = CtiUtils.checkConnectionState();
 			
 			if(!connState) {
 				CtiUtils.parkMap.remove(agentNumber);
@@ -1012,7 +1006,7 @@ public class CommonController extends Controller {
 			}
 			
 			//三、检查 PBX 连接状态
-			boolean connState = CtiUtils.getConnectionState();
+			boolean connState = CtiUtils.checkConnectionState();
 			
 			if(!connState) {
 				render(RenderJson.error("执行外呼转移失败,话务服务器连接状态异常!"));
@@ -1062,8 +1056,7 @@ public class CommonController extends Controller {
 			}
 			
 			//二、检查 PBX 连接状态
-			//boolean connState = CtiUtils.getConnectionState();
-			boolean connState = true;
+			boolean connState = CtiUtils.checkConnectionState();
 			
 			if(!connState) {
 				render(RenderJson.error("执行示忙失败,话务服务器连接状态异常!"));
@@ -1097,8 +1090,7 @@ public class CommonController extends Controller {
 			}
 			
 			//二、检查 PBX 连接状态
-			//boolean connState = CtiUtils.getConnectionState();
-			boolean connState = true;
+			boolean connState = CtiUtils.checkConnectionState();
 			
 			if(!connState) {
 				render(RenderJson.error("执行示闲失败,话务服务器连接状态异常!"));
@@ -1106,18 +1098,17 @@ public class CommonController extends Controller {
 			}
 			
 			//三、检查座席状态是否已经登录 
-			boolean isOnLine = true;
-			
-			if(!isOnLine) {
+			String agentState = MemoryVariableUtil.agentStateMap.get(agentNumber);
+			//
+			if(agentState.equalsIgnoreCase("Unavailable")) {
 				render(RenderJson.error("执行示闲失败,当前座席号码 " + agentNumber + " 已经掉线!"));
 				return;
 			}
 			
-			//四、检查座席状态二，当前座席是否处于示忙中
+			//四、检查座席状态二，当前座席是否处于示忙中(暂时可以忽略)
 			
 			
-			//四、 执行示闲操作
-			
+			//五、 执行示闲操作
 			CtiUtils.doDNDOff(agentNumber);
 			
 			render(RenderJson.success("示闲成功!"));
@@ -1135,17 +1126,14 @@ public class CommonController extends Controller {
 			}
 			
 			//二、检查 PBX 连接状态
-			//boolean connState = CtiUtils.getConnectionState();
-			boolean connState = true;
-			
+			boolean connState = CtiUtils.checkConnectionState();
 			if(!connState) {
 				render(RenderJson.error("执行挂机失败,话务服务器连接状态异常!"));
 				return;
 			}
 			
 			//三、检查当前座席是否在通话中
-			boolean isInUse = true;
-			
+			boolean isInUse = false;
 			String agentState = MemoryVariableUtil.agentStateMap.get(agentNumber);
 			
 			if(!BlankUtils.isBlank(agentState) && agentState.equalsIgnoreCase("InUse")) {
@@ -1158,16 +1146,7 @@ public class CommonController extends Controller {
 			}
 			
 			//四、执行挂机操作
-			String channel = CtiUtils.getSrcChannelByAgentNumber(agentNumber);
-			
-			System.out.println("准备执行挂机的通道为: " + channel);
-			
-			if(BlankUtils.isBlank(channel)) {
-				render(RenderJson.error("执行挂机失败,当前座席 " + agentNumber + " 无法取得通话通道!"));
-				return;
-			}
-			
-			CtiUtils.doHangup(channel);
+			CtiUtils.doHangUpByAgentNumber(agentNumber);
 			
 			render(RenderJson.success("系统正在执行挂机操作!"));
 			return;
@@ -1199,7 +1178,7 @@ public class CommonController extends Controller {
 		
 		if(BlankUtils.isBlank(agentNumber)) {
 			//System.out.println("当前账户未关联座席,暂时无法取得座席状态!");
-			render(RenderJson.success(""));
+			render(RenderJson.success("nosignin"));
 			return;
 		}
 		

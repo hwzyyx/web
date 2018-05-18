@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.callke8.astutils.CtiUtils;
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.utils.BlankUtils;
@@ -22,7 +21,7 @@ public class LoadTaskThread extends Thread {
 	
 	public LoadTaskThread() {
 		//将内存中的配置取出
-		scanInterval = Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_scanInterval"));  //扫描时间间隔
+		scanInterval = Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_scanInterval"));  	//扫描时间间隔
 		maxLoadCount = Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_maxLoadCount"));      //加载总数量 
 		
 	}

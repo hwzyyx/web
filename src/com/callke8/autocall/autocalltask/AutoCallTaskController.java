@@ -352,7 +352,6 @@ public class AutoCallTaskController extends Controller implements IController {
 	 * 执行归档
 	 * 
 	 * @param taskId
-	 * @param taskState
 	 * @return
 	 */
 	public boolean execArchive(String taskId) {

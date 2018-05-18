@@ -210,7 +210,7 @@ public class AutoCallTaskReviewController extends Controller {
 	 * 
 	 * @param autoCallTask
 	 * @return
-	 * 		Map<"播放名字","播放路径">
+	 * 		播放名字,播放路径
 	 */
 	public List<Record> getPlayList(AutoCallTask autoCallTask) {
 		

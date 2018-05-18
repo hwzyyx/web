@@ -4,7 +4,7 @@
 <html>
 <head>
 	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge" content="text/html;charset=UTF-8"/>
-	<title>呼叫中心系统</title>
+	<title>博世家电外呼系统</title>
 	<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
 	<link rel="stylesheet" type="text/css" href="themes/icon.css">
 	<link rel="stylesheet" type="text/css" href="demo.css">
@@ -103,7 +103,7 @@
 	//用于控制 tab 的右击事件
 	$(function(){
 
-		initSystemResourceChart();       //初始化系统资源
+		//initSystemResourceChart();       //初始化系统资源
 		
 		$("#loginInfoDiv").html(loginInfo);    //赋值登录信息
 		
@@ -1192,7 +1192,7 @@
 			}
 		});
 	}
-
+	
 	//弹屏扫描...	
 	function scan() {
 		//showMessage("准备扫描。。。。","success");
@@ -1221,8 +1221,8 @@
 	<!-- 顶部 Bannel start -->
 	<div data-options="region:'north',border:false" style="overflow:hidden;height:50px;background:url('themes/icons/banner.png') repeat-x;">
 
-		<img src="themes/icons/large_logo.png" />
-		<div><%@ include file="/_cti_icons.jsp"%></div>
+		<img src="themes/icons/bosch_logo.png" />
+		<div></div>
 		<div style="vertical-align: bottom;position:absolute;right:120px;bottom:3px;">
 			
 			<a href="#" onClick="modifyPassword()" class="myStyle" style="width:120px;text-decoration: none;color: 14AFFF;">修改密码</a>&nbsp;&nbsp;
@@ -1265,8 +1265,7 @@
 <!--		<div id="layout_center_tabs" style="text-align: center;" class="easyui-tabs" data-options="fit:true,border:false">-->
 		<div id="layout_center_tabs" class="easyui-tabs" data-options="fit:true">
 			<div title="我的工作台" style="padding:20px;overflow:hidden;" data-options="fit:true"> 
-				<%@ include file="/_sysinfo_charts.jsp"%>
-				
+				<!-- %@ include file="/_sysinfo_charts.jsp"% -->
 			</div>
 		</div>
 	</div>

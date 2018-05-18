@@ -31,6 +31,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param taskId
 	 * @param telephone
 	 * @param clientName
+	 * @param state
 	 * @return
 	 */
 	public Page<Record> getAutoCallTaskTelephoneByPaginate(int pageNumber,int pageSize,String taskId,String telephone,String clientName,String state) {
@@ -80,6 +81,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param taskId
 	 * @param telephone
 	 * @param clientName
+	 * @param state
 	 * @return
 	 */
 	public Map<String,Object> getAutoCallTaskTelephoneByPaginateToMap(int pageNumber,int pageSize,String taskId,String telephone,String clientName,String state) {
@@ -117,7 +119,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	/**
 	 * 批量添加记录
 	 * 
-	 * @param autoBlackListTelephones
+	 * @param autoCallTaskTelephones
 	 * @return
 	 */
 	public int add(ArrayList<Record> autoCallTaskTelephones) {
@@ -611,7 +613,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	/**
 	 * 得到重试的数据
 	 * 
-	 * @param count
+	 * @param loadCount
 	 * @return
 	 */
 	public List<AutoCallTaskTelephone> loadRetryData(int loadCount) {
@@ -695,7 +697,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
-	 * 根据任务ID，取出所有的任务号码,并单独将号码加入List<String>,并返回
+	 * 根据任务ID，取出所有的任务号码,并单独将号码加入List并返回
 	 * 
 	 * 用于通过文件批量上传号码时，做重复性判断
 	 * 

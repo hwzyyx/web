@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 日期时间格式处理、转换工具类
@@ -537,6 +539,48 @@ public class DateFormatUtils {
 		
 		
 		return sb.toString();
+		
+	}
+	
+	
+	/**
+	 * 检查日期字符串是否为正常的格式：即是否为 yyyy-MM-dd 格式
+	 * 
+	 * 如果是，返回 true
+	 * 如果格式不正确，返回 false
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static boolean checkDateFormat(String date) {
+		
+		boolean  b = true;
+		
+		//(1) 以正则的方式检查
+		String regex = "[0-9]{4}-[0-9]{2}-[0-9]{2}";
+		
+		Pattern pattern = Pattern.compile(regex);
+		
+		Matcher m = pattern.matcher(date);
+		
+		boolean dateFlag = m.matches();
+		
+		if(!dateFlag) {
+			b = false;
+			return b;
+		}
+		
+		//(2) 以日期转换的方式判断
+		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		formatter.setLenient(false);
+		
+		try {
+			Date d = formatter.parse(date);   //如果这里转换时没有出现错误，则可以表示日期格式是正常的
+			return b;
+		}catch(Exception e) {
+			b = false;
+			return b;
+		}
 		
 	}
 	                                               

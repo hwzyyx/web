@@ -1,6 +1,9 @@
 package com.callke8.utils;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -240,6 +243,40 @@ public class StringUtil {
 		}
 		
 		return moneyStr;
+		
+	}
+	
+	/**
+	 * 向指定的路径写入字符串
+	 * 
+	 * @param path
+	 * 			文件路径
+	 * @param str
+	 * 			字符串
+	 * @param append
+	 * 			是否追加写入
+	 */
+	public static void writeString(String path,String str,boolean append) {
+		
+		FileWriter fw = null;
+		
+		try {
+			File f = new File(path);     //如果文件不存在，就创建文件，如果文件存在，直接添加内容
+			fw = new FileWriter(f, append);
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+		
+		PrintWriter pw = new PrintWriter(fw);
+		pw.println(str);
+		
+		try {
+			fw.flush();
+			pw.close();
+			fw.close();
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	

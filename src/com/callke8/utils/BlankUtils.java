@@ -36,9 +36,8 @@ public class BlankUtils {
 	/**
 	 * 判断字符是否为空
 	 * 
-	 * @param character
-	 *            字符
-	 * @return 返回布尔值，true表示字符为null或空字符
+	 * @param stringBuilder
+	 * @return
 	 */
 	public static boolean isBlank(final StringBuilder stringBuilder) {
 		return stringBuilder == null || stringBuilder.length() <= 0;
@@ -47,9 +46,8 @@ public class BlankUtils {
 	/**
 	 * 判断字符是否为空
 	 * 
-	 * @param character
-	 *            字符
-	 * @return 返回布尔值，true表示字符为null或空字符
+	 * @param stringBuffer
+	 * @return
 	 */
 	public static boolean isBlank(final StringBuffer stringBuffer) {
 		return stringBuffer == null || stringBuffer.length() <= 0;

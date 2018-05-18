@@ -6,13 +6,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.asteriskjava.manager.AuthenticationFailedException;
 import org.asteriskjava.manager.ManagerConnection;
-import org.asteriskjava.manager.ManagerConnectionFactory;
 import org.asteriskjava.manager.ManagerEventListener;
 import org.asteriskjava.manager.TimeoutException;
 import org.asteriskjava.manager.event.HangupEvent;
 import org.asteriskjava.manager.event.ManagerEvent;
 
-import com.callke8.astutils.AstMonitor;
+import com.callke8.astutils.AsteriskUtils;
 import com.callke8.utils.BlankUtils;
 
 /**
@@ -23,14 +22,13 @@ import com.callke8.utils.BlankUtils;
  */
 public class HangUpMonitor extends Thread implements ManagerEventListener {
 	
-	private ManagerConnectionFactory factory;
 	private ManagerConnection conn;
 	private String state;
 	private Log log = LogFactory.getLog(HangUpMonitor.class);
 
 	public HangUpMonitor() {
-		factory = new ManagerConnectionFactory(AstMonitor.getAstHost(),AstMonitor.getAstPort(),AstMonitor.getAstUser(),AstMonitor.getAstPass());
-		conn = factory.createManagerConnection();
+
+		conn = AsteriskUtils.connPool.getConnection();
 		conn.addEventListener(this);
 	}
 	

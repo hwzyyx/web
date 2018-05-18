@@ -296,7 +296,6 @@ public class VoiceController extends Controller implements IController {
 			voiceVoxFile.delete();
 		}
 		
-		
 	}
 
 	@Override

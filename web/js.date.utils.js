@@ -52,7 +52,7 @@ function getDateBefore(n) {
 	
 	var nowDate = new Date();   //得到当前日期对象
 	
-	var newDate = new Date(nowDate.getTime() - 7 * 24 * 3600 * 1000);
+	var newDate = new Date(nowDate.getTime() - n * 24 * 3600 * 1000);
 	
 	dateString += newDate.getFullYear() + "-";
 	dateString += (newDate.getMonth()+1) + "-";

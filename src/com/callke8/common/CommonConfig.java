@@ -1,13 +1,12 @@
 package com.callke8.common;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import com.callke8.astutils.AgentStateMonitor;
-import com.callke8.astutils.AstMonitor;
-import com.callke8.astutils.AstMonitor;
-import com.callke8.astutils.AutoContactMonitor;
+import com.callke8.astutils.AsteriskConfig;
+import com.callke8.astutils.AsteriskConnectionPool;
+import com.callke8.astutils.AsteriskUtils;
 import com.callke8.autocall.autoblacklist.AutoBlackList;
 import com.callke8.autocall.autoblacklist.AutoBlackListTelephone;
 import com.callke8.autocall.autocalltask.AutoCallTask;
@@ -23,6 +22,12 @@ import com.callke8.autocall.questionnaire.Questionnaire;
 import com.callke8.autocall.questionnaire.QuestionnaireRespond;
 import com.callke8.autocall.schedule.Schedule;
 import com.callke8.autocall.voice.Voice;
+import com.callke8.bsh.bshcallparam.BSHCallParam;
+import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
+import com.callke8.bsh.bshorderlist.BSHOrderList;
+import com.callke8.bsh.bshvoice.BSHVoice;
+import com.callke8.bsh.bshvoice.BSHVoiceConfig;
+import com.callke8.bsh.common.BSHRoute;
 import com.callke8.call.calltask.CallTask;
 import com.callke8.call.calltelephone.CallTelephone;
 import com.callke8.call.calltelephone.CallerLocation;
@@ -36,6 +41,7 @@ import com.callke8.fastagi.common.FastagiRoute;
 import com.callke8.fastagi.transfer.Transfer;
 import com.callke8.fastagi.transfer.TransferRecord;
 import com.callke8.predialqueue.Predial;
+import com.callke8.predialqueuforbsh.BSHPredial;
 import com.callke8.report.cdr.Cdr;
 import com.callke8.report.clientinfo.ClientInfo;
 import com.callke8.report.clienttouch.ClientTouchRecord;
@@ -68,6 +74,7 @@ public class CommonConfig extends JFinalConfig {
 
 	@Override
 	public void configConstant(Constants me) {
+		me.setEncoding("UTF-8");
 		me.setDevMode(true);
 		me.setViewType(ViewType.JSP);
 		
@@ -96,6 +103,17 @@ public class CommonConfig extends JFinalConfig {
 			MemoryVariableUtil.operatorMap = Operator.dao.loadOperatorInfo();
 			System.out.println("执行操作员数据初始化到内存变量!");
 		}
+		
+		//加载博世电器的呼叫参数到内存中，加载成功后，打印配置详情
+		System.out.println("----------=============--------------");
+		System.out.println("准备加载博世电器的呼叫参数到内存!");
+		BSHCallParam.dao.loadCallParamDataToMemory();
+		System.out.println(new BSHCallParamConfig());
+		
+		System.out.println("-----------============-------------");
+		System.out.println("准备加载博世电器的语音数据到内存!");
+		BSHVoice.dao.loadBSHVoiceDataToMemory();
+		System.out.println(new BSHVoiceConfig());
 		
 	}
 
@@ -148,14 +166,16 @@ public class CommonConfig extends JFinalConfig {
 		
 		MemoryVariableUtil.autoCallTaskMap = autoCallTaskMap;
 		
-		//顺便将 AstMonitor的属性设置了一下
-		AstMonitor.setAstHost(getProperty("asthost"));
-		AstMonitor.setAstPort(getPropertyToInt("astport"));
-		AstMonitor.setAstUser(getProperty("astuser"));
-		AstMonitor.setAstPass(getProperty("astpass"));
-		AstMonitor.setAstCallOutContext(getProperty("astcalloutcontext"));
-		AstMonitor.setAstCallerId(getProperty("astcallerid"));
-		AstMonitor.setAstHoldOnContext(getProperty("astholdoncontext"));
+		//顺便将 Asterisk配置信息设置了一下
+		AsteriskConfig.setAstHost(getProperty("asthost"));
+		AsteriskConfig.setAstPort(Integer.valueOf(getProperty("astport")));
+		AsteriskConfig.setAstUser(getProperty("astuser"));
+		AsteriskConfig.setAstPassword(getProperty("astpass"));
+		AsteriskConfig.setAstCallOutContext(getProperty("from-internal"));
+		AsteriskConfig.setAstCallerId(getProperty("astcallerid"));
+		AsteriskConfig.setAstHoldOnContext(getProperty("astholdoncontext"));
+		AsteriskConfig.setAstPoolMinSize(Integer.valueOf(getProperty("astpoolminsize")));
+		AsteriskConfig.setAstPoolMaxSize(Integer.valueOf(getProperty("astpoolmaxsize")));
 		
 		C3p0Plugin c3p0Plugin = new C3p0Plugin(getProperty("dburl"),getProperty("dbuser"),getProperty("dbpassword"));
 		me.add(c3p0Plugin);
@@ -198,8 +218,6 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("ac_number",AutoNumber.class);
 		arp.addMapping("ac_number_telephone",AutoNumberTelephone.class);
 		
-		
-		
 		//报表管理表映射
 		arp.addMapping("cdr",Cdr.class);
 		arp.addMapping("client_info", ClientInfo.class);
@@ -214,29 +232,34 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("auto_contact", AutoContact.class);
 		arp.addMapping("auto_contact_record",AutoContactRecord.class);
 		
+		//博世家电数据表
+		arp.addMapping("bsh_orderlist", BSHOrderList.class);
+		arp.addMapping("bsh_voice", BSHVoice.class);
+		arp.addMapping("bsh_call_param", BSHCallParam.class);
+		
+		//在启动守护进程之前，先执行 Asterisk连接池初始化，以便在后期可以随时获取连接
+		System.out.println("初始化Asterisk之前。。。");
+		AsteriskUtils.connPool = AsteriskConnectionPool.newInstance() ;
+		System.out.println("初始化Asterisk之后。。。");
 		//--------以下为自动执行的守护进程------------
 		
 		//一、用于启动事件监控线程，用于监控来电信息，用于前端弹屏
 		/*AstMonitor amt = new AstMonitor();
 		Thread monitorThread = new Thread(amt); 
 		monitorThread.start();*/
-		
-		//二、用于启动自动接触守护程序，用于定时扫描 auto_contact_record 表
-		/*System.out.println("准备加载自动接触记录!");
-		AutoContactMonitor acm = new AutoContactMonitor();
-		Thread acmMonitorThread = new Thread(acm);
-		acmMonitorThread.start();
-		System.out.println("加载自动接触结束!");*/
+
 		
 		//三、用于启动时,定时获取座席的状态,主要是根据 core show hints 命令返回的信息
-		
-		AgentStateMonitor agentStateMonitor = new AgentStateMonitor();
-		
-		agentStateMonitor.start();
+		/*Thread agentStateMonitor = new Thread(new AgentStateMonitor());
+		agentStateMonitor.start();*/
 		
 		//四、用于启动自动外呼任务扫描,并执行自动外呼操作
-		//Predial predial = new Predial();
-		//predial.execDial();
+		/*Predial predial = new Predial();
+		predial.execDial();*/
+		
+		//五、启动博世电器的自动外呼扫描，并执行自动外呼操作
+		BSHPredial bshPredial = new BSHPredial();
+		bshPredial.exec();
 		
 	}
 
@@ -250,6 +273,7 @@ public class CommonConfig extends JFinalConfig {
 		me.add(new ReportRoute());
 		me.add(new FastagiRoute());
 		me.add(new AutoCallRoute());
+		me.add(new BSHRoute());
 	}
 
 }

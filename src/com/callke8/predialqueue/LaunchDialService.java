@@ -12,8 +12,10 @@ import org.asteriskjava.live.CallerId;
 import org.asteriskjava.live.DefaultAsteriskServer;
 import org.asteriskjava.live.LiveException;
 import org.asteriskjava.live.OriginateCallback;
+import org.asteriskjava.manager.ManagerConnection;
 
 import com.callke8.astutils.AstMonitor;
+import com.callke8.astutils.AsteriskUtils;
 import com.callke8.astutils.CtiUtils;
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
@@ -102,25 +104,23 @@ public class LaunchDialService implements Runnable {
 			}
 		}
 		
-		//第二步：检查PBX连接状态
+		//第二步：获取一个链接并检查PBX连接状态
 		//1 执行外呼之前,先判断 asterisk 的连接状态
-		boolean connState = CtiUtils.getConnectionState();
+		boolean connState = CtiUtils.checkConnectionState();
 		
-		log.info("连接状态为:" + connState);
+		log.info("连接状态为:" + connState + "----连接池情况----：" + AsteriskUtils.connPool.getConnectionPoolSize());
+		
 		
 		//连接状态
 		if(!connState) {   //如果连接状态有问题,则不做外呼,直接更改号码的状态      
-			
 			log.info("PBX系统未接通........................");
 			updateTelehponeStateForFailure("DISCONNECTION");      //更改状态,并指定为未连接
-			
 			return;
 		}
 		
 		
 		//第三步：执行外呼
-		final DefaultAsteriskServer server = new DefaultAsteriskServer(AstMonitor.getAstHost(),AstMonitor.getAstPort(),AstMonitor.getAstUser(),AstMonitor.getAstPass());
-		server.originateToApplicationAsync(channel, application, data, timeout, callerId, variables, new OriginateCallback() {
+		CtiUtils.doCallOutToApplication(channel, application, data, timeout, callerId, variables, new OriginateCallback() {
 			
 			@Override
 			public void onDialing(AsteriskChannel channel) {
@@ -131,19 +131,15 @@ public class LaunchDialService implements Runnable {
 			
 			@Override
 			public void onNoAnswer(AsteriskChannel channel) {
-				
 				updateTelehponeStateForFailure("NOANSWER");      //更改状态
 				log.info("onNoAnswer ......");
-				server.shutdown();
 				return;
 			}
 			
 			@Override
 			public void onFailure(LiveException liveexception) {
-				
 				updateTelehponeStateForFailure("FAILURE");      //更改状态
 				log.info("onFailure ......");
-				server.shutdown();
 				return;
 			}
 			
@@ -153,7 +149,6 @@ public class LaunchDialService implements Runnable {
 				
 				updateTelehponeStateForFailure("BUSY");      //更改状态
 				log.info("onBusy ......");
-				server.shutdown();
 				return;
 			}
 			
@@ -169,7 +164,6 @@ public class LaunchDialService implements Runnable {
 				updateTelehponeStateForSuccess("SUCCESS");      //更改状态
 				
 				log.info("onSuccess,通道" + channel.getName() + " 被加入活动通道列表");
-				server.shutdown();
 				return;
 			}
 		});

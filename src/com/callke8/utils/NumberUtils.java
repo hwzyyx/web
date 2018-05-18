@@ -143,6 +143,27 @@ public class NumberUtils {
 	    }
 	    
 	    /**
+	     * 查看数字是否符合传入的规则
+	     * 
+	     * @param number
+	     * @param regex
+	     * @return
+	     */
+	    public static boolean checkNumberByRegex(String number,String regex) {
+	    	
+	    	boolean b = false;
+	    	
+	    	Pattern pattern = Pattern.compile(regex);
+	    	
+	    	Matcher m = pattern.matcher(number);
+	    	
+	    	b = m.matches();
+	    	
+	    	return b;
+	    	
+	    }
+	    
+	    /**
 	     * 检查号码类型，并获取号码前缀，手机获取前7位，固话获取区号
 	     * @param number
 	     * @return

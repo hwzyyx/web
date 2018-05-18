@@ -24,7 +24,26 @@ public class MemoryVariableUtil {
 	public static Map<String,String> voicePathMap;     //储存于内存中的语音路径，主要是用于试听语音和上传语音（及转换格式）文件时用
 	public static Map<String,String> autoCallTaskMap;  //储存于内存中的自动外呼任务的配置
 	public static Map<String,String> ttsParamMap;      //储存于内存中 TTS 的参数情况
-	public static Map<String,String> agentStateMap = new HashMap<String,String>();    //储存于内存中的座席状态
+	
+	/**
+	 * 储存于内存中的座席状态
+	 * 
+	 * 格式： Map<坐席号,状态>
+	 * 
+	 * 状态分类：dnd(示忙中)、Idle(在线空闲)、Unavailable(离线)、Ringing(响铃中)
+	 * 
+	 * 	UNKNOWN 未知状态
+ 		NOT_INUSE 没有使用
+ 		INUSE 通话中
+ 		BUSY 繁忙
+ 		UNAVAILABLE 不可用
+ 		RINGING 响铃中
+ 		RINGINUSE 响铃使用中
+ 		HOLDINUSE 保持使用中
+ 		ONHOLD 通话保持
+	 * 
+	 */
+	public static Map<String,String> agentStateMap = new HashMap<String,String>();    
 	
 	/**
 	 * 

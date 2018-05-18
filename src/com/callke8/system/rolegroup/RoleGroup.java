@@ -15,7 +15,7 @@ import com.jfinal.plugin.activerecord.Record;
  * @author <a href="120077407@qq.com">hwz</a>
  * 
  * 表结构：
- * mysql> desc sys_role_group;
+ desc sys_role_group;
 +------------+--------------+------+-----+---------+-------+
 | Field      | Type         | Null | Key | Default | Extra |
 +------------+--------------+------+-----+---------+-------+

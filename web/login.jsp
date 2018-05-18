@@ -67,7 +67,7 @@
 </head>
 <body style="text-align: center;background:url('themes/icons/login_bg.png') repeat-x;">
 	<div style="position: absolute;top:120px;left:350px;">
-		<span style="color:white;font-weight: bold;font-size: 30px;">呼叫中心系统</span>
+		<span style="color:white;font-weight: bold;font-size: 30px;">博世家电外呼系统</span>
 	</div>
 	<input name="operator.OPER_ID" id="OPER_ID" style="position:absolute;top:245px;left:755px;width:175px;border:0px;"/>
 	<input type="password" name="operator.PASSWORD" id="PASSWORD" style="position:absolute;top:295px;left:755px;width:175px;border:0px;"/>

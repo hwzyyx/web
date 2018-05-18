@@ -454,6 +454,9 @@
 				if(message=='' || message == null) {
 					$("#agentStateDesc").text("未知状态");
 					$("#agentStateIcon").attr("xlink:href","#icon-off");
+				}else if(message == 'nosignin') {
+					$("#agentStateDesc").text("未签状态");
+					$("#agentStateIcon").attr("xlink:href","#icon-off");
 				}else if(message == 'unavailable') {
 					$("#agentStateDesc").text("离线状态");
 					$("#agentStateIcon").attr("xlink:href","#icon-off");
@@ -488,7 +491,7 @@
 			
 		});
 		
-	}, 3 * 1000);
+	}, 20 * 1000);
 	
 	
 </script>

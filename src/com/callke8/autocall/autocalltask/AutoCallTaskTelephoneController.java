@@ -265,10 +265,10 @@ public class AutoCallTaskTelephoneController extends Controller implements
 	 * 根据任务ID,和电话号码，查看当前号码，是否黑名单
 	 * 
 	 * @param telephone
-	 * @param taskId
+	 * @param autoCallTask
 	 * @return
-	 * 		  true:表示在黑名单中
-	 * 		  false: 表示不在黑名单中
+	 * 	true:表示在黑名单中
+	 *  false: 表示不在黑名单中
 	 */
 	public boolean checkBlackList(String telephone,AutoCallTask autoCallTask) {
 		

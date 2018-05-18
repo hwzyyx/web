@@ -53,6 +53,7 @@ public class ExcelExportUtil {
 		getWorkbookTail();
 		
 		try {
+			fileName = new String(fileName.getBytes(),"ISO-8859-1");
 			res.setHeader("Content-Disposition", "attachment;filename=" + fileName);
 			res.setContentType("application/octet-stream");
 			res.setContentType("application/OCTET-STREAM;charset=UTF-8");
@@ -273,7 +274,6 @@ public class ExcelExportUtil {
 	/**
 	 * 得到Workbook的头部
 	 * 
-	 * @return
 	 */
 	public void getWorkbookHead() {
 		

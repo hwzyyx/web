@@ -19,7 +19,7 @@ public class Predial {
 		
 		log.info("准备执行外呼.................................");
 		//线程一：扫描外呼任务、并载入外呼号码（由”新建[0]“修改为”已载入[1]“）,并加载到内存的排队机
-		/*LoadTaskThread loadTaskThread = new LoadTaskThread();
+		LoadTaskThread loadTaskThread = new LoadTaskThread();
 		loadTaskThread.start();
 		
 		//线程二：执行外呼线程,从内存的排队机取出外呼数据,并执行外呼
@@ -32,10 +32,9 @@ public class Predial {
 		
 		//线程四：挂机监控线程
 		HangUpMonitor hangUpMonitor = new HangUpMonitor();
-		hangUpMonitor.start();*/
+		hangUpMonitor.start();
 		
 		//线程五：系统资源线程，用于统计系统资源使用情况，并存储在静态变量 systemResourceDataRecord 中
-		
 		SystemResourceThread systemResourceThread = new SystemResourceThread();
 		systemResourceThread.start();
 		
