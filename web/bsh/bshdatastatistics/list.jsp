@@ -126,13 +126,18 @@
     		totalCount = 0;
     		startTime = $("#startTime").datetimebox('getValue');
     		endTime = $("#endTime").datetimebox('getValue');
+    		$.messager.progress({
+				msg:'系统正在处理，请稍候...',
+				interval:3000
+			});
+    		
     		$.ajax({
 
 				url:'bshDataStatistics/reloadStatistics?startTime=' + startTime + '&endTime=' + endTime,
 				method:'post',
 				dataType:'json',
 				success:function(rs) {
-					
+					$.messager.progress("close");
 					var legendData = [];
 					var seriesData1 = [];
 					var seriesData2 = [];
