@@ -1,16 +1,13 @@
 package com.callke8.predialqueuforbsh;
 
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.callke8.astutils.AsteriskConnectionPool;
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.utils.BlankUtils;
-import com.callke8.utils.DateFormatUtils;
 
 public class BSHLoadOrderListThread implements Runnable {
 

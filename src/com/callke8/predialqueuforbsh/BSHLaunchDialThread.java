@@ -40,31 +40,12 @@ public class BSHLaunchDialThread implements Runnable {
 				//先判断中继最大并发量与当前活跃通话量对比,如果最大并发量大于当前活跃通话量时，表示还有空闲通道可用
 				if(trunkMaxCapacity > activeChannelCount) {
 					
-					//计算空闲的通道数量
-					int freeChannelCount = trunkMaxCapacity - activeChannelCount;           //空闲的通道数量，最大并发量-活动的通道数量
+					logSb.append("本次将取出 1条数据，执行外呼!");
 					
-					int launchDialCount = 0; 		//定义一个变量,用于存储本次将从排队机中取出多少数据进行外呼
-					if(freeChannelCount > BSHQueueMachineManager.queueCount) {
-						launchDialCount = BSHQueueMachineManager.queueCount;
-					}else {
-						launchDialCount = freeChannelCount;
-					}
+					BSHOrderList bshOrderList = BSHQueueMachineManager.deQueue();
+					Thread bshDialServiceThread = new Thread(new BSHLaunchDialService(bshOrderList));
 					
-					logSb.append("本次将取出 " + launchDialCount + " 条数据，执行外呼!");
-					
-					for(int j = 1;j<=launchDialCount;j++) {
-						BSHOrderList bshOrderList = BSHQueueMachineManager.deQueue();
-						
-						Thread bshDialServiceThread = new Thread(new BSHLaunchDialService(bshOrderList));
-						
-						bshDialServiceThread.start();
-						
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
+					bshDialServiceThread.start();
 					
 				}else {
 					logSb.append("由于当前活跃通道数量达到中继最大并发量" + BSHCallParamConfig.getTrunkMaxCapacity() + "系统本次循环将不再外呼!");
@@ -75,12 +56,12 @@ public class BSHLaunchDialThread implements Runnable {
 			
 			
 			i++;
-			if(i > 0) {
+			if(i > 10) {
 				i = 1;
 			}
 			
 			try {
-				Thread.sleep(BSHCallParamConfig.getScanInterval() * 1000);
+				Thread.sleep(1 * 1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
