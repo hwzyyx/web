@@ -1,5 +1,6 @@
 package com.callke8.predialqueuforbsh;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +10,8 @@ import org.asteriskjava.live.AsteriskChannel;
 import org.asteriskjava.live.CallerId;
 import org.asteriskjava.live.LiveException;
 import org.asteriskjava.live.OriginateCallback;
+import org.asteriskjava.manager.AuthenticationFailedException;
+import org.asteriskjava.manager.TimeoutException;
 
 import com.callke8.astutils.AsteriskDialParamConfig;
 import com.callke8.astutils.AsteriskUtils;
@@ -64,9 +67,27 @@ public class BSHLaunchDialService implements Runnable {
 		
 		if(!connState) {    //如果连接状态有问题,则不做外呼,直接更改号码的状态
 			log.info("PBX系统连接状态有异常....");
-			au.close();
-			updateBSHOrderListStateForFailure("DISCONNECTION");       //更改状态为失败或是重试，并指定最后失败原因为 未连接
-			return;
+			
+			//如果失败，将再一次连接，如果连接，然后再去判断是否连接成功
+			try {
+				au.doLogin();
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (AuthenticationFailedException e) {
+				e.printStackTrace();
+			} catch (TimeoutException e) {
+				e.printStackTrace();
+			}
+			
+			connState = au.isAstConnSuccess();
+			if(!connState) {    //如果还是连接失败，将直接保存其为失败状态
+				au.close();
+				updateBSHOrderListStateForFailure("DISCONNECTION");       //更改状态为失败或是重试，并指定最后失败原因为 未连接
+				return;
+			}
+			
 		}
 		
 		CtiUtils.doCallOutToApplication(au,dialPC.getChannel(), dialPC.getApplication(), dialPC.getApplicationData(), dialPC.getTimeout(), dialPC.getCallerId(), dialPC.getVariables(), new OriginateCallback() {

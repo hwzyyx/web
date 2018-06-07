@@ -3,6 +3,8 @@ package com.callke8.predialqueuforbsh;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.callke8.test.CallOutDemo;
+
 public class BSHPredial {
 	
 	private Log log = LogFactory.getLog(BSHPredial.class);
@@ -16,9 +18,11 @@ public class BSHPredial {
 		log.info("PredialQueueForBSH 准备开始执行");
 		
 		//检查连接池的连接状态
-		
-		
-		
+		System.out.println("BSHPridial......准备开始执行。。。。");
+		CallOutDemo cod = new CallOutDemo();
+		cod.doCallOut();
+		System.out.println("BSHPridial......执行结束。。。。");
+		/*
 		//线程一：扫描订单信息到排队机线程
 		Thread loadOrderListThread = new Thread(new BSHLoadOrderListThread());
 		loadOrderListThread.start();
@@ -42,6 +46,7 @@ public class BSHPredial {
 		BSHHandleTimeOutThread bshHandleTimeOutT = new BSHHandleTimeOutThread();
 		Thread bshHandleTimeOutThread = new Thread(bshHandleTimeOutT);
 		bshHandleTimeOutThread.start();
+		*/
 		
 	}
 	

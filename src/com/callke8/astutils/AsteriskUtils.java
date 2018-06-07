@@ -8,6 +8,7 @@ import java.util.Map;
 import org.asteriskjava.live.CallerId;
 import org.asteriskjava.live.DefaultAsteriskServer;
 import org.asteriskjava.live.OriginateCallback;
+import org.asteriskjava.manager.AuthenticationFailedException;
 import org.asteriskjava.manager.ManagerConnection;
 import org.asteriskjava.manager.TimeoutException;
 import org.asteriskjava.manager.action.CommandAction;
@@ -72,14 +73,6 @@ public class AsteriskUtils {
 		
 		server.originateToExtensionAsync(channel, context, exten, priority, timeout, callerId, variables, cb);
 		
-		try {
-			Thread.sleep(timeout);
-		}catch (InterruptedException e) {
-			e.printStackTrace();
-		}finally {
-			close(); 			//将连接放回连接池中
-		}
-		
 	}
 	
 	/**
@@ -104,15 +97,6 @@ public class AsteriskUtils {
 		DefaultAsteriskServer server = new DefaultAsteriskServer(conn);
 		
 		server.originateToApplicationAsync(channel, application, data, timeout, callerId, variables, cb);
-		
-		try {
-			Thread.sleep(timeout);
-		}catch (InterruptedException e) {
-			e.printStackTrace();
-		}finally {
-			close();    //将连接放回连接池中
-		}
-		
 	}
 	
 	/**
@@ -762,6 +746,29 @@ public class AsteriskUtils {
 	 */
 	public void close() {
 		connPool.close(conn);
+	}
+	
+	/**
+	 * 执行Asterisk连接Login
+	 * 
+	 * 在执行连接之前，还判断当前状态，如果当前连接状态为 CONNECTED 或是 RECONNECTING 时，还要先执行 logoff 
+	 * 
+	 * @throws IllegalStateException
+	 * @throws IOException
+	 * @throws AuthenticationFailedException
+	 * @throws TimeoutException
+	 */
+	public void doLogin() throws IllegalStateException, IOException, AuthenticationFailedException, TimeoutException {
+		
+		String state = getAsteriskConnectionState();
+		
+		if(!BlankUtils.isBlank(state)) {
+			if(state.equalsIgnoreCase("CONNECTED") || state.equalsIgnoreCase("RECONNECTING")) {    //如果当前连接状态为 CONNECTED 或是 RECONNECTING
+				conn.logoff();      
+			}
+		}
+		
+		conn.login();
 	}
 	
 }	
