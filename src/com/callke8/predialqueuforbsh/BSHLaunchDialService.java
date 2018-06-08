@@ -61,7 +61,7 @@ public class BSHLaunchDialService implements Runnable {
 	public void run() {
 		
 		//在执行之前取出一个连接，并获取连接状态是否正确
-		AsteriskUtils au = new AsteriskUtils();
+		final AsteriskUtils au = new AsteriskUtils();
 		boolean connState = au.isAstConnSuccess();    //检查是否连接成功
 		log.info("系统准备执行呼叫,Asterisk服务器的连接状态为:" + connState);
 		
@@ -104,20 +104,23 @@ public class BSHLaunchDialService implements Runnable {
 			public void onNoAnswer(AsteriskChannel channel) {   //未接听，更改状态
 				log.info("onNoAnswer,通道：" + dialPC.getChannel() + " 未接听,通道channel.getName():" + channel.getName());
 				StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",onNoAnswer(未接事件)：" + dialPC.getChannel() + ",通道标识:" + channel.getName() + ",UNIQUEID:" + channel.getId(), true);
-				return;
+				
+				au.close();   //回收通道
 			}
 			
 			@Override
 			public void onFailure(LiveException le) {				//呼叫失败,生成通道异常
 				updateBSHOrderListStateForFailure("FAILURE");       //当执行到这里，通道异常时，执行失败储存
 				log.info("onFailure,通道：" + dialPC.getChannel() + " 建立通道失败!");
-				return;
+				StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",onFailure(生成通道异常)：" + dialPC.getChannel(), true);
+				au.close();   //回收通道
 			}
 			
 			@Override
 			public void onBusy(AsteriskChannel channel) {			//用户忙
 				log.info("onBusy,通道：" + dialPC.getChannel() + " 用户忙!" + ",UNIQUEID:" + channel.getId());
-				return;
+				StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",onBusy(用户忙)：" + dialPC.getChannel() + ",通道标识:" + channel.getName() + ",UNIQUEID:" + channel.getId(), true);
+				au.close();   //回收通道
 			}
 			
 			@Override
@@ -130,16 +133,9 @@ public class BSHLaunchDialService implements Runnable {
 				log.info("onSuccess,通道：" + dialPC.getChannel() + " 通话成功SUCCESS! ");
 				StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",onSuccess(接听事件)：" + dialPC.getChannel() + ",通道标识:" + channel.getName() + ",UNIQUEID:" + channel.getId(), true);
 				
-				return;
-				
+				au.close();   //回收通道
 			}
 		});
-		
-		try {      //等一定时间
-			Thread.sleep(dialPC.getTimeout());
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 		
 	}
 	

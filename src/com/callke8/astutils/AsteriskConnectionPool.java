@@ -142,7 +142,7 @@ public class AsteriskConnectionPool {
 	 * 查看连接池的连接数
 	 * @return
 	 */
-	public int getConnectionPoolSize() {
+	public static int getConnectionPoolSize() {
 		return pool.size();
 	}
 	

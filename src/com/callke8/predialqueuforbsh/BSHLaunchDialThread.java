@@ -2,6 +2,8 @@ package com.callke8.predialqueuforbsh;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.callke8.astutils.AsteriskConnectionPool;
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 
@@ -32,7 +34,7 @@ public class BSHLaunchDialThread implements Runnable {
 			int trunkMaxCapacity = BSHCallParamConfig.getTrunkMaxCapacity();		//中继的最大并发量
 			
 			
-			logSb.append("线程(BSHLaunchDialThread): 第 " + i + " 次扫描排队机,排队机未呼号码数量为：" + BSHQueueMachineManager.queueCount + "个\r\n");
+			logSb.append("线程(BSHLaunchDialThread): 第 " + i + " 次扫描排队机,排队机未呼号码数量为：" + BSHQueueMachineManager.queueCount + "个,连接池中的连接数量为：" + AsteriskConnectionPool.getConnectionPoolSize() + "\r\n");
 			
 			if(BSHQueueMachineManager.queueCount > 0) {     //如果排队机中有未外呼的号码时
 				logSb.append("当前活跃的通道数量为:" + activeChannelCount + ",中继最大并发量为:" + trunkMaxCapacity);
