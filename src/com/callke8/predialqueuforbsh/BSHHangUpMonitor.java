@@ -1,6 +1,7 @@
 package com.callke8.predialqueuforbsh;
 
 import java.io.IOException;
+import java.util.Timer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -12,8 +13,6 @@ import org.asteriskjava.manager.event.HangupEvent;
 import org.asteriskjava.manager.event.ManagerEvent;
 
 import com.callke8.astutils.AsteriskUtils;
-import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
-import com.callke8.bsh.bshorderlist.BSHHttpRequestThread;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
@@ -112,9 +111,11 @@ public class BSHHangUpMonitor implements ManagerEventListener,Runnable {
 				BSHOrderList bshOrderList = BSHLaunchDialService.activeChannelList.get(channel);    
 				
 				//调用反馈呼叫结果给BSH服务器
-				BSHFeedBackCallResultThread feedBackT = new BSHFeedBackCallResultThread(bshOrderList);
+				/*BSHFeedBackCallResultThread feedBackT = new BSHFeedBackCallResultThread(bshOrderList);
 				Thread feedBackThread = new Thread(feedBackT);
-				feedBackThread.start();
+				feedBackThread.start();*/
+				Timer timer = new Timer();
+				timer.schedule(new BSHFeedBackCallResultTimerTask(bshOrderList.get("ID").toString(), timer),3 * 1000);
 				
 				if(BSHLaunchDialService.activeChannelCount > 0) {   //返回之前,活动的通道数量减1
 					BSHLaunchDialService.activeChannelCount--;
