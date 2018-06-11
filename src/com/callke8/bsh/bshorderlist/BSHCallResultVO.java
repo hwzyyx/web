@@ -46,13 +46,15 @@ public class BSHCallResultVO {
 	 * 			外呼类型0.二次未接通1.一次接通/二次接通2放弃呼叫3已过期
 	 * @param callResult
 	 * 			外呼结果 1：确认建单   2 暂不安装  3 短信确认   4 错误或无回复  5 放弃呼叫 6已过期
+	 * @param bshCallResultKey
+	 * 			呼叫结果反馈密钥
 	 */
-	public BSHCallResultVO(String orderId,String callType,String callResult) {
+	public BSHCallResultVO(String orderId,String callType,String callResult,String bshCallResultKey) {
 		
 		this.orderId = orderId;
 		this.callType = callType;
 		this.time = DateFormatUtils.formatDateTime(new Date(), "yyyyMMddHHmmss");
-		this.sign = Md5Utils.Md5(this.time + this.orderId + BSHCallParamConfig.getBshCallResultKey());
+		this.sign = Md5Utils.Md5(this.time + this.orderId + bshCallResultKey);
 		this.callResult = callResult;
 		
 	}
