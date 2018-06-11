@@ -3,6 +3,7 @@ package com.callke8.predialqueuforbsh;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,9 +52,11 @@ public class BSHLaunchDialService implements Runnable {
 		dialPC.setVariables(new HashMap<String,String>());
 		
 		//调用已载入超时处理线程，对于超过3分钟，呼叫状态仍为1（已载入）时，强制修改其呼叫状态
-		BSHHandleLoadedTimeOutThread handleLoadedTimeOutT = new BSHHandleLoadedTimeOutThread(bshOrderList);
+		/*BSHHandleLoadedTimeOutThread handleLoadedTimeOutT = new BSHHandleLoadedTimeOutThread(bshOrderList);
 		Thread handleLoadedTimeOutThread = new Thread(handleLoadedTimeOutT);
-		handleLoadedTimeOutThread.start();
+		handleLoadedTimeOutThread.start();*/
+		Timer timer = new Timer();
+		timer.schedule(new BSHHandleLoadedTimeOutTimerTask(bshOrderList.get("ID").toString(), timer), 3 * 60 * 1000);
 		
 	}
 	
