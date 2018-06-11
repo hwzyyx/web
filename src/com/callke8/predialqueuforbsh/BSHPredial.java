@@ -1,5 +1,7 @@
 package com.callke8.predialqueuforbsh;
 
+import java.util.Timer;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -20,18 +22,25 @@ public class BSHPredial {
 		
 		
 		//线程一：扫描订单信息到排队机线程
-		Thread loadOrderListThread = new Thread(new BSHLoadOrderListThread());
-		loadOrderListThread.start();
+		/*Thread loadOrderListThread = new Thread(new BSHLoadOrderListThread());
+		loadOrderListThread.start();*/
+		Timer timer = new Timer();
+		timer.schedule(new BSHLoadOrderListTimerTask(), 5 * 1000, 3 * 1000);
+		
 		
 		//线程二：执行外呼线程，从内存的排队机中取出呼叫数据，并执行外呼
-		BSHLaunchDialThread bshLaunchDialT = new BSHLaunchDialThread();
+		/*BSHLaunchDialThread bshLaunchDialT = new BSHLaunchDialThread();
 		Thread bshLaunchDialThread = new Thread(bshLaunchDialT);
-		bshLaunchDialThread.start();
+		bshLaunchDialThread.start();*/
+		Timer bshLaunchDialTimer = new Timer();
+		bshLaunchDialTimer.schedule(new BSHLaunchDialTimerTask(), 5 * 1000, 1 * 1000);
 		
 		//线程三：扫描待重呼数据,并载入排队机，将状态由”重试[3]“ 修改为 已载入[1]
-		BSHLoadRetryThread bshLoadRetryT = new BSHLoadRetryThread();
+		/*BSHLoadRetryThread bshLoadRetryT = new BSHLoadRetryThread();
 		Thread bshLoadRetryThread = new Thread(bshLoadRetryT);
-		bshLoadRetryThread.start();
+		bshLoadRetryThread.start();*/
+		Timer bshLoadRetryTimer = new Timer();
+		bshLoadRetryTimer.schedule(new BSHLoadRetryTimerTask(), 5 * 1000, 3 * 1000);
 		
 		//线程四：挂机监控线程
 		BSHHangUpMonitor bshHangUpMonitor = new BSHHangUpMonitor();
@@ -39,9 +48,11 @@ public class BSHPredial {
 		bshHangUpMonitorThread.start();
 		
 		//线程五：系统一般的外呼时间为早上09:00至晚上20:00,当超过20:00后,如果状态仍为：0（新建）、3（待重呼）时，则将其状态修改为6放弃呼叫
-		BSHHandleTimeOutThread bshHandleTimeOutT = new BSHHandleTimeOutThread();
+		/*BSHHandleTimeOutThread bshHandleTimeOutT = new BSHHandleTimeOutThread();
 		Thread bshHandleTimeOutThread = new Thread(bshHandleTimeOutT);
-		bshHandleTimeOutThread.start();
+		bshHandleTimeOutThread.start();*/
+		Timer bshHandleTimeOutTimer = new Timer();
+		bshHandleTimeOutTimer.schedule(new BSHHandleTimeOutTimerTask(), 5 * 1000, 3 * 1000);
 		
 	}
 	
