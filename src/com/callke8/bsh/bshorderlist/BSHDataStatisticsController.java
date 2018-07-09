@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.callke8.common.CommonController;
 import com.jfinal.core.Controller;
 import com.jfinal.plugin.activerecord.Record;
 
@@ -26,6 +27,8 @@ public class BSHDataStatisticsController extends Controller {
 	
 	
 	public void index() {
+		setAttr("channelSourceComboboxDataFor1",CommonController.getComboboxToString("BSH_CHANNEL_SOURCE","1"));      		//购物平台带请选择的combobox
+		
 		render("list.jsp");
 	}
 	
@@ -36,8 +39,9 @@ public class BSHDataStatisticsController extends Controller {
 		
 		String startTime = getPara("startTime");
 		String endTime = getPara("endTime");
+		String channelSource = getPara("channelSource");
 		
-		Record data = BSHOrderList.dao.getStatisticsData(startTime, endTime);
+		Record data = BSHOrderList.dao.getStatisticsData(startTime, endTime,channelSource);
 		
 		List<Record> list = new ArrayList<Record>();
 		
