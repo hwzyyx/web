@@ -10,6 +10,7 @@ import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHHttpRequestThread;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.utils.BlankUtils;
+import com.callke8.utils.StringUtil;
 
 /**
  * BSH 超时订单处理线程
@@ -24,11 +25,11 @@ import com.callke8.utils.BlankUtils;
  */
 public class BSHHandleTimeOutTimerTask extends TimerTask {
 
-	private Log log = LogFactory.getLog(BSHHandleTimeOutTimerTask.class);
+	//private Log log = LogFactory.getLog(BSHHandleTimeOutTimerTask.class);
 	private int i = 1;
 	
 	public BSHHandleTimeOutTimerTask() {
-		log.info("线程BSHHandleTimeOutTimerTask： 准备执行 ...");
+		StringUtil.log(this, "线程BSHHandleTimeOutTimerTask： 准备执行 ...");
 	}
 	
 	@Override
@@ -58,10 +59,10 @@ public class BSHHandleTimeOutTimerTask extends TimerTask {
 				}
 			}
 			
-			log.info("线程BSHHandleTimeOutTimerTask 第  " + i + " 次执行，此次处理 " + timeOutOrderListCount + " 条超时数据!(超时数据：指的是结束时间 至 23:59:59 状态为： 0(新建)、3(待重呼)的数据!");
+			StringUtil.log(this, "线程BSHHandleTimeOutTimerTask 第  " + i + " 次执行，此次处理 " + timeOutOrderListCount + " 条超时数据!(超时数据：指的是结束时间 至 23:59:59 状态为： 0(新建)、3(待重呼)的数据!");
 			
 		}else {
-			log.info("线程BSHHandleTimeOutTimerTask 未到执行时间,执行时间为 : " + BSHCallParamConfig.getActiveEndTime() + " 至  " + " 23:59:59 ");
+			StringUtil.log(this, "线程BSHHandleTimeOutTimerTask 未到执行时间,执行时间为 : " + BSHCallParamConfig.getActiveEndTime() + " 至  " + " 23:59:59 ");
 		}
 		
 		i++;

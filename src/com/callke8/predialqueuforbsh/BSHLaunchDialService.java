@@ -36,7 +36,7 @@ public class BSHLaunchDialService implements Runnable {
 	
 	private AsteriskDialParamConfig dialPC = new AsteriskDialParamConfig();
 	
-	private Log log = LogFactory.getLog(BSHLaunchDialService.class);
+	//private Log log = LogFactory.getLog(BSHLaunchDialService.class);
 
 	public BSHLaunchDialService(BSHOrderList bshOrderList) {
 		activeChannelCount++;                        //当执行到这里时，当前活动通道即为1
@@ -49,7 +49,9 @@ public class BSHLaunchDialService implements Runnable {
 		dialPC.setApplicationData(BSHCallParamConfig.getAgiUrl());
 		dialPC.setTimeout(30 * 1000);
 		dialPC.setCallerId(new CallerId(BSHCallParamConfig.getCallerNumber(), BSHCallParamConfig.getCallerNumber()));
-		dialPC.setVariables(new HashMap<String,String>());
+		Map<String,String> vm = new HashMap<String,String>();
+		vm.put("bshOrderListId", bshOrderList.get("ID").toString());    //设置通道变量,以便在 BSHCallFlowAGI 中用于查询订单信息
+		dialPC.setVariables(vm);
 		
 		//调用已载入超时处理线程，对于超过3分钟，呼叫状态仍为1（已载入）时，强制修改其呼叫状态
 		/*BSHHandleLoadedTimeOutThread handleLoadedTimeOutT = new BSHHandleLoadedTimeOutThread(bshOrderList);
@@ -66,10 +68,10 @@ public class BSHLaunchDialService implements Runnable {
 		//在执行之前取出一个连接，并获取连接状态是否正确
 		final AsteriskUtils au = new AsteriskUtils();
 		boolean connState = au.isAstConnSuccess();    //检查是否连接成功
-		log.info("系统准备执行呼叫,Asterisk服务器的连接状态为:" + connState);
+		StringUtil.log(this, "系统准备执行呼叫,Asterisk服务器的连接状态为:" + connState);
 		
 		if(!connState) {    //如果连接状态有问题,则不做外呼,直接更改号码的状态
-			log.info("PBX系统连接状态有异常....");
+			StringUtil.log(this, "PBX系统连接状态有异常....");
 			
 			//如果失败，将再一次连接，如果连接，然后再去判断是否连接成功
 			try {
@@ -88,6 +90,7 @@ public class BSHLaunchDialService implements Runnable {
 			if(!connState) {    //如果还是连接失败，将直接保存其为失败状态
 				au.close();
 				updateBSHOrderListStateForFailure("DISCONNECTION");       //更改状态为失败或是重试，并指定最后失败原因为 未连接
+				StringUtil.log(this, "再次重连接Asterisk后，PBX系统连接状态仍旧有异常,系统将直接更改状态为失败或是重试!");
 				return;
 			}
 			
@@ -97,15 +100,15 @@ public class BSHLaunchDialService implements Runnable {
 			
 			@Override
 			public void onDialing(AsteriskChannel channel) {
-				channel.setVariable("bshOrderListId", bshOrderList.get("ID").toString());    //设置通道变量,以便在 BSHCallFlowAGI 中用于查询订单信息
+				//channel.setVariable("bshOrderListId", bshOrderList.get("ID").toString());    //设置通道变量,以便在 BSHCallFlowAGI 中用于查询订单信息
 				activeChannelList.put(channel.getName(), bshOrderList);                      //onDialing时通道已生成，在这里将activeChannel指向 Map
-				log.info("onDialing(准备执行呼叫并生成通道):" + dialPC.getChannel() + ",通道标识:" + channel.getName());
+				StringUtil.log(this, "onDialing(准备执行呼叫并生成通道):" + dialPC.getChannel() + ",通道标识:" + channel.getName());
 				StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",onDialing(准备呼叫)：" + dialPC.getChannel() + ",通道标识:" + channel.getName() + ",UNIQUEID:" + channel.getId(), true);
 			}
 			
 			@Override
 			public void onNoAnswer(AsteriskChannel channel) {   //未接听，更改状态
-				log.info("onNoAnswer,通道：" + dialPC.getChannel() + " 未接听,通道channel.getName():" + channel.getName());
+				StringUtil.log(this, "onNoAnswer,通道：" + dialPC.getChannel() + " 未接听,通道channel.getName():" + channel.getName());
 				StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",onNoAnswer(未接事件)：" + dialPC.getChannel() + ",通道标识:" + channel.getName() + ",UNIQUEID:" + channel.getId(), true);
 				
 				au.close();   //回收通道
@@ -114,14 +117,14 @@ public class BSHLaunchDialService implements Runnable {
 			@Override
 			public void onFailure(LiveException le) {				//呼叫失败,生成通道异常
 				updateBSHOrderListStateForFailure("FAILURE");       //当执行到这里，通道异常时，执行失败储存
-				log.info("onFailure,通道：" + dialPC.getChannel() + " 建立通道失败!");
+				StringUtil.log(this, "onFailure,通道：" + dialPC.getChannel() + " 建立通道失败!");
 				StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",onFailure(生成通道异常)：" + dialPC.getChannel(), true);
 				au.close();   //回收通道
 			}
 			
 			@Override
 			public void onBusy(AsteriskChannel channel) {			//用户忙
-				log.info("onBusy,通道：" + dialPC.getChannel() + " 用户忙!" + ",UNIQUEID:" + channel.getId());
+				StringUtil.log(this, "onBusy,通道：" + dialPC.getChannel() + " 用户忙!" + ",UNIQUEID:" + channel.getId());
 				StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",onBusy(用户忙)：" + dialPC.getChannel() + ",通道标识:" + channel.getName() + ",UNIQUEID:" + channel.getId(), true);
 				au.close();   //回收通道
 			}
@@ -133,7 +136,7 @@ public class BSHLaunchDialService implements Runnable {
 				 * 通话成功时,通话并没有结束,所以活动通道不能减除,而是需要将通道加入内存
 				 * 加一个事件监控线程,在挂机事件时，再将其解除
 				 */
-				log.info("onSuccess,通道：" + dialPC.getChannel() + " 通话成功SUCCESS! ");
+				StringUtil.log(this, "onSuccess,通道：" + dialPC.getChannel() + " 通话成功SUCCESS! ");
 				StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",onSuccess(接听事件)：" + dialPC.getChannel() + ",通道标识:" + channel.getName() + ",UNIQUEID:" + channel.getId(), true);
 				
 				au.close();   //回收通道

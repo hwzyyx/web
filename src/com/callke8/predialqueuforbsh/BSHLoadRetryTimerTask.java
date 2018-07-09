@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.utils.BlankUtils;
+import com.callke8.utils.StringUtil;
 
 /**
  * 获取重试订单信息线程，并将其加入排队机
@@ -21,7 +22,7 @@ public class BSHLoadRetryTimerTask extends TimerTask {
 	private int i = 1;
 	
 	public BSHLoadRetryTimerTask() {
-		log.info("线程BSHLoadRetryTimerTask： 准备执行 ...");
+		StringUtil.log(this, "线程BSHLoadRetryTimerTask： 准备执行 ...");
 	}
 	
 	@Override
@@ -56,11 +57,11 @@ public class BSHLoadRetryTimerTask extends TimerTask {
 					}
 				}
 				
-				log.info("线程 BSHLoadRetryTimerTask 第 " + i + " 次扫描并加载待重呼订单信息到排队机,此次扫描 " + BSHOrderListRetryCount + " 条数据,排队机中未外呼的数量为:" + BSHQueueMachineManager.queueCount);
+				StringUtil.log(this, "线程 BSHLoadRetryTimerTask 第 " + i + " 次扫描并加载待重呼订单信息到排队机,此次扫描 " + BSHOrderListRetryCount + " 条数据,排队机中未外呼的数量为:" + BSHQueueMachineManager.queueCount);
 			}
 			
 		}else {
-			log.info("线程BSHLoadRetryTimerTask ：未到执行时间，系统执行时间为 : " + BSHCallParamConfig.getActiveStartTime() + " 至  " + BSHCallParamConfig.getActiveEndTime());
+			StringUtil.log(this, "线程BSHLoadRetryTimerTask ：未到执行时间，系统执行时间为 : " + BSHCallParamConfig.getActiveStartTime() + " 至  " + BSHCallParamConfig.getActiveEndTime());
 		}
 		
 		i++;

@@ -27,7 +27,7 @@ public class BSHHangUpMonitor implements ManagerEventListener,Runnable {
 	
 	private ManagerConnection conn;
 	private String state;
-	private Log log = LogFactory.getLog(BSHHangUpMonitor.class);
+	//private Log log = LogFactory.getLog(BSHHangUpMonitor.class);
 	
 	public BSHHangUpMonitor() {
 		conn = AsteriskUtils.connPool.getConnection();
@@ -51,7 +51,7 @@ public class BSHHangUpMonitor implements ManagerEventListener,Runnable {
 			
 			if(BlankUtils.isBlank(state) || !state.equalsIgnoreCase("CONNECTED")) {   //如果连接状态无法连接时,将重新连接一次
 				
-				log.info("挂机监控线程,Asterisk连接不成功!系统将重新连接!");
+				StringUtil.log(this, "挂机监控线程,Asterisk连接不成功!系统将重新连接!");
 				try {
 					if(state.equalsIgnoreCase("RECONNECTING")) {   //如果状态为 RECONNECTING 时，需要先 logoff ，然后再重新连接
 						conn.logoff();
@@ -102,7 +102,7 @@ public class BSHHangUpMonitor implements ManagerEventListener,Runnable {
 			//检查通道是否存在于PSHLaunchDialService 中定义的 activeChannelList 中
 			boolean inActiveChannelList = BSHLaunchDialService.activeChannelList.containsKey(channel);
 			
-			log.info("监控到有挂机事件(HangupEvent),挂机通道为: " + channel + ",cause:" + cause + ",causeTxt:" + causeTxt + ",UNIQUEID:" + hangupEvent.getUniqueId());
+			StringUtil.log(this, "监控到有挂机事件(HangupEvent),挂机通道为: " + channel + ",cause:" + cause + ",causeTxt:" + causeTxt + ",UNIQUEID:" + hangupEvent.getUniqueId());
 			StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",onManagerEvent(挂机事件)：" + "监控到有挂机事件(HangupEvent),客户号码为:" + callerIdName + "挂机通道为: " + channel + ",cause:" + cause + ",causeTxt:" + causeTxt + ",UNIQUEID:" + hangupEvent.getUniqueId(), true);
 			
 			if(inActiveChannelList) {    //如果挂机的通道存在于自动外呼的活动通道中时，要将其移除
@@ -122,7 +122,7 @@ public class BSHHangUpMonitor implements ManagerEventListener,Runnable {
 				}
 				BSHLaunchDialService.activeChannelList.remove(channel);
 				
-				log.info("获取挂机事件,挂机通道信息为:" + channel + ",且挂机的通道存在于自动外呼的内存变量活动通道中,\r\n系统将从活动通道中移除,并将活动通道数量减去一个,移除后,活动通道的数量为：" + BSHLaunchDialService.activeChannelCount);
+				StringUtil.log(this, "获取挂机事件,挂机通道信息为:" + channel + ",且挂机的通道存在于自动外呼的内存变量活动通道中,\r\n系统将从活动通道中移除,并将活动通道数量减去一个,移除后,活动通道的数量为：" + BSHLaunchDialService.activeChannelCount);
 				
 			}
 			

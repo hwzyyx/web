@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.utils.BlankUtils;
+import com.callke8.utils.StringUtil;
 
 /**
  * 定时扫描数据到排队机
@@ -17,7 +18,7 @@ import com.callke8.utils.BlankUtils;
  */
 public class BSHLoadOrderListTimerTask extends TimerTask{
 	
-	private Log log = LogFactory.getLog(BSHLoadOrderListTimerTask.class);
+	//private Log log = LogFactory.getLog(BSHLoadOrderListTimerTask.class);
 	
 	private int i = 1;
 	
@@ -27,7 +28,8 @@ public class BSHLoadOrderListTimerTask extends TimerTask{
 		
 		//执行到构造方法，表示TOMCAT重启过，需要将已载入排队机中的数据恢复原状态
 		//此操作主要是将记录状态更改回（未处理）就可以了
-		log.info("线程BSHLoadOrderListTimerTask： 准备执行 ...");
+		//log.info("线程BSHLoadOrderListTimerTask： 准备执行 ...");
+		StringUtil.log(this, "线程(扫描外呼记录)： 准备执行 ...");
 	}
 
 	@Override
@@ -35,7 +37,8 @@ public class BSHLoadOrderListTimerTask extends TimerTask{
 		
 		if(!flag) {
 			int count = BSHOrderList.dao.updateBSHOrderListState(0, "1", "0", null);
-			log.info("Tomcat 被重启过，系统回滚'已载入'的号码数据: " + count + "条!");
+			//log.info("Tomcat 被重启过，系统回滚'已载入'的号码数据: " + count + "条!");
+			StringUtil.log(this, "Tomcat 被重启过，系统回滚'已载入'的号码数据: " + count + "条!");
 			flag = true;
 		}
 		
@@ -69,14 +72,14 @@ public class BSHLoadOrderListTimerTask extends TimerTask{
 					
 				}
 				
-				log.info("线程 BSHLoadOrderListTimerTask : 第  " + i + " 次扫描并加载订单信息到排队机，此次扫描 " + BSHOrderListCount + " 条数据加入排队机! 排队机中未外呼数量：" + BSHQueueMachineManager.queueCount);
+				StringUtil.log(this, "线程 BSHLoadOrderListTimerTask : 第  " + i + " 次扫描并加载订单信息到排队机，此次扫描 " + BSHOrderListCount + " 条数据加入排队机! 排队机中未外呼数量：" + BSHQueueMachineManager.queueCount);
 				
 			}else {
-				log.info("线程 BSHLoadOrderListTimerTask : 第  " + i + " 次扫描并加载订单信息到排队机, 排队机中未外呼记录数大于设定的允许最大值 " + queueMaxCount + ",此次路过扫描!");
+				StringUtil.log(this, "线程 BSHLoadOrderListTimerTask : 第  " + i + " 次扫描并加载订单信息到排队机, 排队机中未外呼记录数大于设定的允许最大值 " + queueMaxCount + ",此次路过扫描!");
 			}
 			
 		}else {
-			log.info("线程 BSHLoadOrderListTimerTask : 处于非生效时间,系统设定系统的生效时间为 :" + BSHCallParamConfig.getActiveStartTime() + " 至   " + BSHCallParamConfig.getActiveEndTime() );
+			StringUtil.log(this, "线程 BSHLoadOrderListTimerTask : 处于非生效时间,系统设定系统的生效时间为 :" + BSHCallParamConfig.getActiveStartTime() + " 至   " + BSHCallParamConfig.getActiveEndTime() );
 		}
 		
 		i++;
