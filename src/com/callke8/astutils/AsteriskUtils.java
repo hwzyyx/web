@@ -9,6 +9,7 @@ import org.asteriskjava.live.CallerId;
 import org.asteriskjava.live.DefaultAsteriskServer;
 import org.asteriskjava.live.OriginateCallback;
 import org.asteriskjava.manager.AuthenticationFailedException;
+import org.asteriskjava.manager.DefaultManagerConnection;
 import org.asteriskjava.manager.ManagerConnection;
 import org.asteriskjava.manager.TimeoutException;
 import org.asteriskjava.manager.action.CommandAction;
@@ -22,6 +23,7 @@ import org.asteriskjava.manager.response.CommandResponse;
 import org.asteriskjava.manager.response.ManagerResponse;
 
 import com.callke8.utils.BlankUtils;
+import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.StringUtil;
 
 /**
@@ -724,6 +726,14 @@ public class AsteriskUtils {
 	}
 	
 	/**
+	 * 取出当前 AsteriskUtil 的  ManagerConnection
+	 * @return
+	 */
+	public ManagerConnection getMangerConnection() {
+		return conn;
+	}
+	
+	/**
 	 * 检查连接状态是否连接成功
 	 * 
 	 * @return
@@ -736,6 +746,10 @@ public class AsteriskUtils {
 		System.out.println("连接状态为:" + connState);
 		if(!BlankUtils.isBlank(connState) && connState.equalsIgnoreCase("CONNECTED")) {
 			isConnected = true;
+		}else if(!BlankUtils.isBlank(connState) && connState.equalsIgnoreCase("RECONNECTING")) {
+			StringUtil.writeString("/opt/do_logoff_for_RECONNECTING.log", DateFormatUtils.getCurrentDate() + " 当前连接状态为:RECONNECTING,系统强制将此连接执行 logoff()", true);
+			//如果连接状态不为空，但是连接状态为 RECONNECTING 时，需要强制将状态 logoff
+			conn.logoff();     //logoff 的结果是，为了后面的再执行 doLogin 时，不会出现错误。
 		}
 		
 		return isConnected;
@@ -764,10 +778,12 @@ public class AsteriskUtils {
 		
 		if(!BlankUtils.isBlank(state)) {
 			if(state.equalsIgnoreCase("CONNECTED") || state.equalsIgnoreCase("RECONNECTING")) {    //如果当前连接状态为 CONNECTED 或是 RECONNECTING
-				conn.logoff();      
+				conn.logoff();
 			}
 		}
-		
+		//为了保证 conn 对象的新鲜性，先将  conn 置空，然后重新创建一个  ManagerConnection
+		conn = null;
+		conn = new DefaultManagerConnection(AsteriskConfig.getAstHost(), AsteriskConfig.getAstPort(), AsteriskConfig.getAstUser(), AsteriskConfig.getAstPassword());
 		conn.login();
 	}
 	
