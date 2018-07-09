@@ -394,7 +394,9 @@ public class BSHOrderList extends Model<BSHOrderList> {
 	}
 	
 	/**
-	 * 更新回复的值
+	 * 更新回复的值,同时强制将呼叫状态，更改为2，即呼叫成功
+	 * 
+	 * 当有客户回复时，必然是执行到了AGI流程，外呼必定是成功的
 	 * 
 	 * @param id
 	 * @param respond
@@ -404,7 +406,7 @@ public class BSHOrderList extends Model<BSHOrderList> {
 		
 		boolean  b = false;
 		
-		String sql = "update bsh_orderlist set RESPOND=? where ID=?";
+		String sql = "update bsh_orderlist set RESPOND=?,STATE=2 where ID=?";
 		
 		int count = Db.update(sql, respond,id);
 		
@@ -734,7 +736,7 @@ public class BSHOrderList extends Model<BSHOrderList> {
 		
 		sb.append(" ORDER BY ID DESC");
 		
-		//System.out.println("SQL语句是：" + sb.toString() + " createTimeStartTime:" + createTimeStartTime + "  createTimeEndTime:" + createTimeEndTime);
+		System.out.println("SQL语句是：" + sb.toString() + " createTimeStartTime:" + createTimeStartTime + "  createTimeEndTime:" + createTimeEndTime);
 		List<Record> list = Db.find(sb.toString(),ArrayUtils.copyArray(index, pars));
 		List<Record> newList = new ArrayList<Record>();    //定义该新的列表，主要是用于将某些列的值，转换为文字表达
 		
@@ -761,7 +763,9 @@ public class BSHOrderList extends Model<BSHOrderList> {
 			int productNameResult = r.getInt("PRODUCT_NAME");
 			r.set("PRODUCT_NAME_DESC", MemoryVariableUtil.getDictName("BSH_PRODUCT_NAME", String.valueOf(productNameResult)));
 			
+			r.set("RETRIED_VALUE", r.getInt("RETRIED"));
 			r.set("RETRIED", r.getInt("RETRIED") + "/" + BSHCallParamConfig.getRetryTimes());
+			
 			
 			newList.add(r);
 			
@@ -778,9 +782,11 @@ public class BSHOrderList extends Model<BSHOrderList> {
 	 * 			外呼时间：开始时间
 	 * @param endTime
 	 * 			外呼时间：结束时间
+	 * @param channelSource
+	 * 			购物平台
 	 * @return
 	 */
-	public Record getStatisticsData(String startTime,String endTime) {
+	public Record getStatisticsData(String startTime,String endTime,String channelSource) {
 		
 		Record data = new Record();
 		data.set("state1Data",0);
@@ -796,10 +802,10 @@ public class BSHOrderList extends Model<BSHOrderList> {
 		data.set("respond4Data", 0);
 		
 		//(1)取得统计数据（呼叫状态）
-		getStatisticsDataForState(data,startTime,endTime);
+		getStatisticsDataForState(data,startTime,endTime,channelSource);
 		
 		//(2)取得统计数据（客户回复）：客户回复总和=呼叫状态为2（即已成功）的数量
-		getStatisticsDataForRespond(data,startTime,endTime);
+		getStatisticsDataForRespond(data,startTime,endTime,channelSource);
 		
 		return data;
 	}
@@ -812,8 +818,9 @@ public class BSHOrderList extends Model<BSHOrderList> {
 	 * @param data
 	 * @param startTime
 	 * @param endTime
+	 * @param channelSource
 	 */
-	public void getStatisticsDataForState(Record data,String startTime,String endTime) {
+	public void getStatisticsDataForState(Record data,String startTime,String endTime,String channelSource) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
@@ -832,6 +839,13 @@ public class BSHOrderList extends Model<BSHOrderList> {
 		if(!BlankUtils.isBlank(endTime)) {
 			sb.append(" and LOAD_TIME<?");
 			pars[index] = endTime;
+			index++;
+		}
+		
+		//购物平台
+		if(!BlankUtils.isBlank(channelSource) && !channelSource.equalsIgnoreCase("empty")) {
+			sb.append(" and CHANNEL_SOURCE=?");
+			pars[index] = channelSource;
 			index++;
 		}
 		
@@ -871,7 +885,7 @@ public class BSHOrderList extends Model<BSHOrderList> {
 	 * @param startTime
 	 * @param endTime
 	 */
-	public void getStatisticsDataForRespond(Record data,String startTime,String endTime) {
+	public void getStatisticsDataForRespond(Record data,String startTime,String endTime,String channelSource) {
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
 		int index = 0;
@@ -889,6 +903,13 @@ public class BSHOrderList extends Model<BSHOrderList> {
 		if(!BlankUtils.isBlank(endTime)) {
 			sb.append(" and LOAD_TIME<?");
 			pars[index] = endTime;
+			index++;
+		}
+		
+		//购物平台
+		if(!BlankUtils.isBlank(channelSource) && !channelSource.equalsIgnoreCase("empty")) {
+			sb.append(" and CHANNEL_SOURCE=?");
+			pars[index] = channelSource;
 			index++;
 		}
 		
