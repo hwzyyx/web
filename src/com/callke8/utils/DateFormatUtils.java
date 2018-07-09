@@ -583,8 +583,26 @@ public class DateFormatUtils {
 		}
 		
 	}
-	                                               
-	
+	                                            
+	/**
+	 * 得到N秒之前的时间字符串，返回的字符串格式：yyyy-MM-dd HH:mm:ss
+	 * 
+	 * @param seconds
+	 * @return
+	 */
+	public static String getBeforeSecondDateTime(long seconds) {
+		
+		long currTimeMillis = getTimeMillis();        //得到当前的毫秒数
+		
+		long beforeTimeMillis = currTimeMillis - seconds * 1000;    //N秒前的时间毫秒数
+		
+		Date beforeDate = new Date(beforeTimeMillis);               //N秒前的日期对象
+		
+		String beforeDate2Str = formatDateTime(beforeDate, "yyyy-MM-dd HH:mm:ss");
+		
+		return beforeDate2Str;
+		
+	}
 	
 }
 
