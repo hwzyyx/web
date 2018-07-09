@@ -280,5 +280,15 @@ public class StringUtil {
 		
 	}
 	
+	/**
+	 * 模拟输出日志
+	 * 
+	 * @param o
+	 * @param str
+	 */
+	public static void log(Object o,String str) {
+		System.out.println(DateFormatUtils.getCurrentDate() + "\t" + o.getClass().getSimpleName() + "\t" + str);
+	}
+	
 
 }
