@@ -61,6 +61,15 @@
     		$('#startTime').datetimebox('setValue',getCurrDate() + ' 00:00:00');
     		$('#endTime').datetimebox('setValue',getDateAfter(1) + ' 00:00:00');
     		
+    		var channelSourceComboboxDataFor1 = eval('${channelSourceComboboxDataFor1}');
+    		
+    		//购物平台Combobox
+    		$("#channelSource").combobox({    
+				valueField:'id',
+    			textField:'text',
+    			panelHeight:'auto'
+			}).combobox('loadData',channelSourceComboboxDataFor1).combobox('setValue',"empty");
+    		
     		$("#timeInterval").combobox({
     			onChange:function(newValue,oldValue){
     				//alert("newValue:" + newValue + ";oldValue:" + nv + ";getDateBefore:" + getDateBefore(newValue));
@@ -82,7 +91,7 @@
     			toolbar:'#orderListDgTool',
     			queryParams:{
     				orderId:null,
-    				channelSource:null,
+    				channelSource:$('#channelSource').combobox('getValue'),
     				customerName:null,
     				customerTel:null,
     				brand:null,
@@ -108,7 +117,7 @@
     	function findData() {
     		$("#bshOrderListDg").datagrid('reload',{
     			orderId:null,
-    			channelSource:null,
+    			channelSource:$('#channelSource').combobox('getValue'),
 				customerName:null,
 				customerTel:null,
 				brand:null,
@@ -126,6 +135,7 @@
     		totalCount = 0;
     		startTime = $("#startTime").datetimebox('getValue');
     		endTime = $("#endTime").datetimebox('getValue');
+    		channelSource = $('#channelSource').combobox('getValue');
     		$.messager.progress({
 				msg:'系统正在处理，请稍候...',
 				interval:3000
@@ -133,7 +143,7 @@
     		
     		$.ajax({
 
-				url:'bshDataStatistics/reloadStatistics?startTime=' + startTime + '&endTime=' + endTime,
+				url:'bshDataStatistics/reloadStatistics?startTime=' + startTime + '&endTime=' + endTime + '&channelSource=' + channelSource,
 				method:'post',
 				dataType:'json',
 				success:function(rs) {
@@ -360,6 +370,9 @@
 							<option value="9">9天</option>
 							<option value="10">10天</option>
 						</select>
+					</span>
+					<span style="padding-left:20px;">
+						购物平台：<select class="easyui-combobox" id="channelSource" name="channelSource" style="width:200px;"></select>
 					</span>
 					<span style="padding-left:146px;"><a href="javascript:reloadStatistics()" class="easyui-linkbutton" style="width:155px;" data-options="iconCls:'icon-search'">查询</a></span>
 				</td>
@@ -750,6 +763,13 @@ myChart.on('dblclick',function(params){
 		title += ",客户回复：无/错回复";
 		conditionState = 2;
 		conditionRespond = 4;
+	}
+	
+	var channelSourceText = $("#channelSource").combobox('getText');
+	if(channelSourceText=='请选择') {
+		title += ", 购物平台: 全部";
+	}else {
+		title += ", 购物平台: " + channelSourceText;
 	}
 	
 	findData();
