@@ -1,11 +1,10 @@
 package com.callke8.bsh.bshorderlist;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
-import com.callke8.predialqueuforbsh.BSHLaunchDialService;
-import com.callke8.predialqueuforbsh.BSHQueueMachineManager;
+import com.callke8.pridialqueueforbshbyquartz.BSHPredial;
+import com.callke8.pridialqueueforbshbyquartz.BSHQueueMachineManager;
 import com.callke8.utils.DateFormatUtils;
 import com.jfinal.core.Controller;
 import com.jfinal.plugin.activerecord.Record;
@@ -30,7 +29,8 @@ public class BSHRealTimeDataController extends Controller {
 		Record data = new Record();
 		data.set("name", currTime);
 		data.set("value1", BSHQueueMachineManager.queueCount);
-		data.set("value2", BSHLaunchDialService.activeChannelCount);
+		//data.set("value2", BSHLaunchDialService.activeChannelCount);
+		data.set("value2", BSHPredial.activeChannelCount);
 		
 		renderJson(data);
 	}
