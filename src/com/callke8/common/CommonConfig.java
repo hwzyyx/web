@@ -3,6 +3,8 @@ package com.callke8.common;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.quartz.SchedulerException;
+
 import com.callke8.astutils.AgentStateMonitor;
 import com.callke8.astutils.AsteriskConfig;
 import com.callke8.astutils.AsteriskConnectionPool;
@@ -41,7 +43,7 @@ import com.callke8.fastagi.common.FastagiRoute;
 import com.callke8.fastagi.transfer.Transfer;
 import com.callke8.fastagi.transfer.TransferRecord;
 import com.callke8.predialqueue.Predial;
-import com.callke8.predialqueuforbsh.BSHPredial;
+import com.callke8.pridialqueueforbshbyquartz.BSHPredial;
 import com.callke8.report.cdr.Cdr;
 import com.callke8.report.clientinfo.ClientInfo;
 import com.callke8.report.clienttouch.ClientTouchRecord;
@@ -258,8 +260,14 @@ public class CommonConfig extends JFinalConfig {
 		predial.execDial();*/
 		
 		//五、启动博世电器的自动外呼扫描，并执行自动外呼操作
+		/*BSHPredial bshPredial = new BSHPredial();
+		bshPredial.exec();*/
 		BSHPredial bshPredial = new BSHPredial();
-		bshPredial.exec();
+		try {
+			bshPredial.exec();
+		} catch (SchedulerException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
