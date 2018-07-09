@@ -15,6 +15,7 @@ import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.bsh.bshvoice.BSHVoice;
 import com.callke8.bsh.bshvoice.BSHVoiceConfig;
 import com.callke8.predialqueuforbsh.BSHLaunchDialService;
+import com.callke8.pridialqueueforbshbyquartz.BSHPredial;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.StringUtil;
@@ -30,8 +31,8 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 		//执行到这里之后，由于 Avaya 传过来的状态有可能出现这种情况：通道已接听，但是在 BSHLaunchDialService 的返回的呼叫状态结果中可能还是出现了 NOANSWER 状态
 		
 		
-		String bshOrderListId = channel.getVariable("bshOrderListId");     
-		StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",FastAGI00000(流程执行):bshOrderListId " + bshOrderListId + ",通道标识:" + channel.getName(), true);
+		String bshOrderListId = channel.getVariable("bshOrderListId");
+		StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",/(流程执行):bshOrderListId " + bshOrderListId + ",通道标识:" + channel.getName(), true);
 		
 		//List<Record> playList = new ArrayList<Record>();		 		//定义一个List，用于储存插入列表 
 		
@@ -93,18 +94,21 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 				if(respond.equalsIgnoreCase("1")) {     		//如果回复的是1时,确认安装
 					
 					exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "回复1,即确认安装");
+					//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
 					BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
 					
 					execPlayBack(respond1PlayList);     //回复后，还需要将结果播放回去
 				}else if(respond.equalsIgnoreCase("2")) {		//如果回复的是2时，暂不安装
 					
 					exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "回复2,即暂不安装");
+					//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
 					BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
 				
 					execPlayBack(respond2PlayList);     //回复后，还需要将结果播放回去
 					
 				}else if(respond.equalsIgnoreCase("3")) {       //如果回复的是3时，延后安装
 					exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "回复3,即延后安装");
+					//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
 					BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
 					
 					execPlayBack(respond3PlayList);     //回复后，还需要将结果播放回去
@@ -112,6 +116,7 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 				}else {                       //如果回复的是其他按键时,按回复
 					exec("Noop","客户 " + bshOrderList.get("CUSTOMER_TEL") + "回复" + respond + ",即为错误回复");
 					respond = "4";            //强制为错误回复
+					//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
 					BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
 					
 					execPlayBack(respond4PlayList);     //回复后，还需要将结果播放回去
@@ -123,6 +128,17 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 				BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
 				
 				execPlayBack(respond4PlayList);     //回复后，还需要将结果播放回去
+			}
+			
+			//需要将客户回复结果返回给BSH服务器
+			//同时，将呼叫成功结果反馈给 BSH 服务器
+			BSHHttpRequestThread httpRequestT = new BSHHttpRequestThread(bshOrderList.get("ID").toString(),bshOrderList.getStr("ORDER_ID"), "1", String.valueOf(respond));
+			Thread httpRequestThread = new Thread(httpRequestT);
+			httpRequestThread.start();
+			
+			//无论是否回复什么结果，或是没有回复结果,在这里表示外呼已经结束，需要将活跃通道减掉一个
+			if(BSHPredial.activeChannelCount > 0) {        
+				BSHPredial.activeChannelCount--;
 			}
 			
 		} catch (AgiException e) {
@@ -161,18 +177,21 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 							if(respond.equalsIgnoreCase("1")) {     		//如果回复的是1时,确认安装
 								
 								exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "回复1,即确认安装");
+								//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
 								BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
 								
 								execPlayBack(respond1PlayList);     //回复后，还需要将结果播放回去
 							}else if(respond.equalsIgnoreCase("2")) {		//如果回复的是2时，暂不安装
 								
 								exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "回复2,即暂不安装");
+								//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
 								BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
 							
 								execPlayBack(respond2PlayList);     //回复后，还需要将结果播放回去
 								
 							}else if(respond.equalsIgnoreCase("3")) {       //如果回复的是3时，延后安装
 								exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "回复3,即延后安装");
+								//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
 								BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
 								
 								execPlayBack(respond3PlayList);     //回复后，还需要将结果播放回去
@@ -180,6 +199,7 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 							}else {                       //如果回复的是其他按键时,按回复
 								exec("Noop","客户 " + bshOrderList.get("CUSTOMER_TEL") + "回复" + respond + ",即为错误回复");
 								respond = "4";            //强制为错误回复
+								//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
 								BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
 								
 								execPlayBack(respond4PlayList);     //回复后，还需要将结果播放回去
@@ -188,10 +208,14 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 						}else {
 							exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "无回复任何");
 							respond = "4";
+							//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
 							BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
 							
 							execPlayBack(respond4PlayList);     //回复后，还需要将结果播放回去
 						}
+						
+						//无论是否回复什么结果，或是没有回复结果,在这里表示外呼已经结束，需要将活跃通道减掉一个
+						BSHPredial.activeChannelCount--;
 						
 					} catch (AgiException e) {
 						e.printStackTrace();
