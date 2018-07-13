@@ -95,21 +95,21 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 					
 					exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "回复1,即确认安装");
 					//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
-					BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
+					//BSHOrderList.dao.updateBSHOrderListRespondAndBillsec(bshOrderList.get("ID").toString(), respond,Integer.valueOf(channel.getVariable("CDR(billsec)")));
 					
 					execPlayBack(respond1PlayList);     //回复后，还需要将结果播放回去
 				}else if(respond.equalsIgnoreCase("2")) {		//如果回复的是2时，暂不安装
 					
 					exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "回复2,即暂不安装");
 					//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
-					BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
+					//BSHOrderList.dao.updateBSHOrderListRespondAndBillsec(bshOrderList.get("ID").toString(), respond,Integer.valueOf(channel.getVariable("CDR(billsec)")));
 				
 					execPlayBack(respond2PlayList);     //回复后，还需要将结果播放回去
 					
 				}else if(respond.equalsIgnoreCase("3")) {       //如果回复的是3时，延后安装
 					exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "回复3,即延后安装");
 					//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
-					BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
+					//BSHOrderList.dao.updateBSHOrderListRespondAndBillsec(bshOrderList.get("ID").toString(), respond,Integer.valueOf(channel.getVariable("CDR(billsec)")));
 					
 					execPlayBack(respond3PlayList);     //回复后，还需要将结果播放回去
 					
@@ -117,7 +117,7 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 					exec("Noop","客户 " + bshOrderList.get("CUSTOMER_TEL") + "回复" + respond + ",即为错误回复");
 					respond = "4";            //强制为错误回复
 					//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
-					BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
+					//BSHOrderList.dao.updateBSHOrderListRespondAndBillsec(bshOrderList.get("ID").toString(), respond,Integer.valueOf(channel.getVariable("CDR(billsec)")));
 					
 					execPlayBack(respond4PlayList);     //回复后，还需要将结果播放回去
 				}
@@ -125,10 +125,11 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 			}else {
 				exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "无回复任何");
 				respond = "4";
-				BSHOrderList.dao.updateBSHOrderListRespond(bshOrderList.get("ID").toString(), respond);
 				
 				execPlayBack(respond4PlayList);     //回复后，还需要将结果播放回去
 			}
+			
+			BSHOrderList.dao.updateBSHOrderListRespondAndBillsec(bshOrderList.get("ID").toString(), respond,Integer.valueOf(channel.getVariable("CDR(billsec)")));
 			
 			//需要将客户回复结果返回给BSH服务器
 			//同时，将呼叫成功结果反馈给 BSH 服务器

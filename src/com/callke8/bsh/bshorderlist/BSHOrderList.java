@@ -419,6 +419,33 @@ public class BSHOrderList extends Model<BSHOrderList> {
 	}
 	
 	/**
+	 * 更新回复的值,同时强制将呼叫状态，更改为2，即呼叫成功,     同时还需要将通话时长加入
+	 * 
+	 * 当有客户回复时，必然是执行到了AGI流程，外呼必定是成功的
+	 * 
+	 * @param id
+	 * @param respond
+	 * @param billsec
+	 * @return
+	 */
+	public boolean updateBSHOrderListRespondAndBillsec(String id,String respond,int billsec) {
+		
+		boolean  b = false;
+		
+		String sql = "update bsh_orderlist set RESPOND=?,STATE=2,BILLSEC=? where ID=?";
+		
+		int count = Db.update(sql, respond,billsec,id);
+		
+		if(count > 0) {
+			b = true;
+		}
+		
+		return b;
+		
+	}
+	
+	
+	/**
 	 * 根据ID，删除订单信息
 	 * 
 	 * @return
