@@ -614,11 +614,16 @@ public class BSHOrderList extends Model<BSHOrderList> {
 	 */
 	public List<BSHOrderList> handleTimeOutOrderList() {
 		
-		String sql = "select ID from bsh_orderlist where STATE in(0,3) and EXPECT_INSTALL_DATE<=?";
+		//String sql = "select ID from bsh_orderlist where STATE in(0,3) and EXPECT_INSTALL_DATE<=?";
+		//理论上只需要按上面注释的条件即可处理超时数据,但是为了效率起见,需要加一个创建时间条件,只处理数据提交五天内的数据
+		String sql = "select ID from bsh_orderlist where STATE in(0,3) and EXPECT_INSTALL_DATE<=? and CREATE_TIME>?";
 		
 		String currDateTimeStr = DateFormatUtils.formatDateTime(new Date(),"yyyy-MM-dd HH:mm:ss");
 		
-		List<Record> list = Db.find(sql,currDateTimeStr);
+		long fiveDayTimes = 5 * 24 * 3600 * 1000L;   //5天的毫秒数
+		String fiveDayDateTimeStr = DateFormatUtils.getBeforeSecondDateTime(fiveDayTimes);   //5天前的日期时间
+		
+		List<Record> list = Db.find(sql,currDateTimeStr,fiveDayDateTimeStr);                 //多加一个条件
 		
 		String ids = "";     //定义一个ids
 		for(Record r:list) {        
