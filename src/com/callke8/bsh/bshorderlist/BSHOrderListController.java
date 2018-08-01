@@ -143,24 +143,31 @@ public class BSHOrderListController extends Controller implements IController {
 		
 		if(BlankUtils.isBlank(orderId)) {
 			renderJson(resultMap("ERROR","订单编号为空!"));
+			System.out.println("处理订单：" + orderId + "失败,失败原因:订单编号为空!");
 			return;
 		}else if(BlankUtils.isBlank(customerName)) {
 			renderJson(resultMap("ERROR","客户姓名为空!"));
+			System.out.println("处理订单：" + orderId + "失败,失败原因:客户姓名为空!");
 			return;
 		}else if(BlankUtils.isBlank(customerTel)) {
 			renderJson(resultMap("ERROR","客户号码为空!"));
+			System.out.println("处理订单：" + orderId + "失败,失败原因:客户号码为空!");
 			return;
 		}else if(BlankUtils.isBlank(expectInstallDate)) {
 			renderJson(resultMap("ERROR","计划安装日期为空!"));
+			System.out.println("处理订单：" + orderId + "失败,失败原因:计划安装日期为空!");
 			return;
 		}else if(BlankUtils.isBlank(brand)) {
 			renderJson(resultMap("ERROR","品牌信息为空!"));
+			System.out.println("处理订单：" + orderId + "失败,失败原因:品牌信息为空!");
 			return;
 		}else if(BlankUtils.isBlank(productName)) {
 			renderJson(resultMap("ERROR","产品信息为空!"));
+			System.out.println("处理订单：" + orderId + "失败,失败原因:产品信息为空!");
 			return;
 		}else if(BlankUtils.isBlank(channelSource)) {
 			renderJson(resultMap("ERROR","购物平台信息为空!"));
+			System.out.println("处理订单：" + orderId + "失败,失败原因:购物平台信息为空!");
 			return;
 		}
 		
@@ -168,6 +175,7 @@ public class BSHOrderListController extends Controller implements IController {
 		boolean checkTelephoneFormat = NumberUtils.checkNumberByRegex(customerTel,"[0-9]{7,12}");    
 		if(!checkTelephoneFormat) {
 			renderJson(resultMap("ERROR","客户号码 " + customerTel + " 格式错误，格式必须是 纯数字且号码长度为7-12位!"));
+			System.out.println("处理订单：" + orderId + "失败,失败原因:" + "客户号码 " + customerTel + " 格式错误，格式必须是 纯数字且号码长度为7-12位!");
 			return;
 		}
 		
@@ -175,6 +183,7 @@ public class BSHOrderListController extends Controller implements IController {
 		boolean checkTelephoneZero = NumberUtils.checkNumberByRegex(customerTel,"[0]{2,9}[0-9]{0,13}");
 		if(checkTelephoneZero) {
 			renderJson(resultMap("ERROR","客户号码 " + customerTel + " 格式错误，格式必须是 纯数字且号码长度为7-13位!且不允许前面有两个零以上!"));
+			System.out.println("处理订单：" + orderId + "失败,失败原因:" + "客户号码 " + customerTel + " 格式错误，格式必须是 纯数字且号码长度为7-13位!且不允许前面有两个零以上!");
 			return;
 		}
 		
@@ -182,6 +191,7 @@ public class BSHOrderListController extends Controller implements IController {
 		boolean checkDateFormat = NumberUtils.checkNumberByRegex(expectInstallDate,"20[0-9]{2}[0-1]{1}[0-9]{1}[0-3]{1}[0-9]{1}");
 		if(!checkDateFormat) {
 			renderJson(resultMap("ERROR","计划安装日期 " + expectInstallDate + " 格式错误，必须是yyyyMMdd 格式!"));
+			System.out.println("处理订单：" + orderId + "失败,失败原因:" + "计划安装日期 " + expectInstallDate + " 格式错误，必须是yyyyMMdd 格式!");
 			return;
 		}
 		
@@ -193,6 +203,7 @@ public class BSHOrderListController extends Controller implements IController {
 		if(!compareInstallDate2CurrentDate) {    //如果已经过期，则直接将状态修改为5，即是安装日期已过期
 			orderList.set("STATE","5");
 			renderJson(resultMap("ERROR","计划安装日期 是" + expectInstallDate + ",已过期!"));
+			System.out.println("处理订单：" + orderId + "失败,失败原因:" + "计划安装日期 是" + expectInstallDate + ",已过期!");
 			return;
 		}else {
 			orderList.set("STATE","0");
@@ -217,6 +228,7 @@ public class BSHOrderListController extends Controller implements IController {
 						
 			if(customerTelLen < 11) {        	//如果是小于11位长度时,则可以表示该号码格式有错误，因为只要带区号的座机，必然长度会等于或是大于11位
 				renderJson(resultMap("ERROR","客户号码 " + customerTel + " 格式错误，号码以0开头，但长度小于11位,为非正常座机或手机号码!"));
+				System.out.println("处理订单：" + orderId + "失败,失败原因:" + "客户号码 " + customerTel + " 格式错误，号码以0开头，但长度小于11位,为非正常座机或手机号码!");
 				return;
 			}
 			
@@ -240,6 +252,7 @@ public class BSHOrderListController extends Controller implements IController {
 					}
 				}else {                 //即是无法定位号码归属地，有可能是一个假的号码
 					renderJson(resultMap("ERROR","客户号码 " + customerTel + " 格式 正确，但无法定位归属地，号码异常!"));
+					System.out.println("处理订单：" + orderId + "失败,失败原因:" + "客户号码 " + customerTel + " 格式 正确，但无法定位归属地，号码异常!");
 					return;
 				}
 			}else {       //如果为非01开头手机号码，则表示应该是座机
@@ -266,6 +279,7 @@ public class BSHOrderListController extends Controller implements IController {
 			}else {                     //如果不是以10开头，那么就可能是手机号码
 				if(customerTelLen < 11) {
 					renderJson(resultMap("ERROR","客户号码 " + customerTel + " 格式 正确，但无法定位归属地，号码异常!"));
+					System.out.println("处理订单：" + orderId + "失败,失败原因:" + "客户号码 " + customerTel + " 格式 正确，但无法定位归属地，号码异常!");
 					return;
 				}
 				
@@ -283,6 +297,7 @@ public class BSHOrderListController extends Controller implements IController {
 					}
 				}else {                 //即是无法定位号码归属地，有可能是一个假的号码
 					renderJson(resultMap("ERROR","客户号码 " + customerTel + " 格式 正确，但无法定位归属地，号码异常!"));
+					System.out.println("处理订单：" + orderId + "失败,失败原因:" + "客户号码 " + customerTel + " 格式 正确，但无法定位归属地，号码异常!");
 					return;
 				}
 				
@@ -297,6 +312,7 @@ public class BSHOrderListController extends Controller implements IController {
 				orderList.set("CALLOUT_TEL", "0" + customerTel);
 			}else {  //如果长度不为8位，且长度大于8位时，该号码是带区号的没有给0的座机号
 				renderJson(resultMap("ERROR","客户号码 " + customerTel + " 格式 正确，但无法定位归属地，号码异常!"));
+				System.out.println("处理订单：" + orderId + "失败,失败原因:" + "客户号码 " + customerTel + " 格式 正确，但无法定位归属地，号码异常!");
 				return;
 			}
 			
@@ -314,8 +330,10 @@ public class BSHOrderListController extends Controller implements IController {
 		
 		if(b) {
 			renderJson(resultMap("SUCCESS","提交订单数据成功!"));
+			System.out.println("处理订单：" + orderId + ",提交结果: 提交订单数据成功!");
 		}else {
 			renderJson(resultMap("ERROR","提交订单数据失败!"));
+			System.out.println("处理订单：" + orderId + ",提交结果: 提交订单数据失败!");
 		}
 		
 	}
@@ -412,8 +430,8 @@ public class BSHOrderListController extends Controller implements IController {
 		List<Record> list = BSHOrderList.dao.getBSHOrderListByCondition(orderId, channelSource, customerName, customerTel, brand, productName, state, respond, createTimeStartTime, createTimeEndTime, loadTimeStartTime, loadTimeEndTime);
 		
 		//得到数据列表，准备以 Excel 方式导出
-		String[] headers = {"订单编号","购物平台","客户姓名","客户号码","省份","城市","外呼号码","品牌","产品名称","计划安装日期","客户回复","创建时间","外呼结果","失败原因","已重试","外呼时间","下次外呼时间","外呼结果JSON","接口响应"};
-		String[] columns = {"ORDER_ID","CHANNEL_SOURCE_DESC","CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","BRAND_DESC","PRODUCT_NAME_DESC","EXPECT_INSTALL_DATE","RESPOND_DESC","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED","LOAD_TIME","NEXT_CALLOUT_TIME","CALLRESULT_JSON","FEEDBACK_CALLRESULT_RESPOND"};
+		String[] headers = {"订单编号","购物平台","客户姓名","客户号码","省份","城市","外呼号码","品牌","产品名称","计划安装日期","客户回复","创建时间","外呼结果","失败原因","已重试","外呼时间","通话时长","下次外呼时间","外呼结果JSON","接口响应"};
+		String[] columns = {"ORDER_ID","CHANNEL_SOURCE_DESC","CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","BRAND_DESC","PRODUCT_NAME_DESC","EXPECT_INSTALL_DATE","RESPOND_DESC","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","CALLRESULT_JSON","FEEDBACK_CALLRESULT_RESPOND"};
 		String fileName = "时间区间:" + startTime + " 至 " + endTime + " .xls";
 		String sheetName = "订单信息列表";
 		int cellWidth = 200;
