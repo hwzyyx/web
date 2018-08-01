@@ -2,6 +2,7 @@ package com.callke8.pridialqueueforbshbyquartz;
 
 import java.util.Date;
 import java.util.Properties;
+import java.util.Timer;
 
 import org.quartz.CronScheduleBuilder;
 import org.quartz.Job;
@@ -77,6 +78,13 @@ public class BSHPredial {
 		scheduler4.scheduleJob(createJobDetail(BSHLoadRetryJob.class), createTrigger(startTime,3));
 		scheduler4.start();
 		
+		//线程五:清理超时订单信息
+		//若订单状态为:0(新建),或为:3(待重呼),但是安装日期却小于等是等于当前日期时,系统却强制处理该记录,将状态修改为放弃呼叫!
+		String currDate = DateFormatUtils.formatDateTime(new Date(), "yyyy-MM-dd");    //当天日期
+		String firstDateTime = currDate + " 02:00:00";                                 //凌晨2点钟
+		Date firstTime = DateFormatUtils.parseDateTime(firstDateTime, "yyyy-MM-dd HH:mm:ss");    //转回为 Date 对象
+		Timer cleanTimeOutTimer = new Timer();
+		cleanTimeOutTimer.scheduleAtFixedRate(new BSHCleanTimeOutTask(), firstTime, 24 * 60 * 60 * 1000);
 	}
 	
 	/**
