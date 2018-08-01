@@ -22,6 +22,7 @@
 					<th data-options="field:'LAST_CALL_RESULT',width:180,align:'center'">失败原因</th>
 					<th data-options="field:'RETRIED',width:60,align:'center'">已重试</th>
 					<th data-options="field:'LOAD_TIME',width:170,align:'center'">外呼时间</th>
+					<th data-options="field:'BILLSEC',width:100,align:'center'">通话时长</th>
 					<th data-options="field:'NEXT_CALLOUT_TIME',width:170,align:'center'">下次外呼时间</th>
 					<th data-options="field:'CALLRESULT_JSON',width:1000,align:'center'">外呼结果JSON</th>
 					<th data-options="field:'FEEDBACK_CALLRESULT_RESPOND',width:500,align:'center'">接口响应</th>
