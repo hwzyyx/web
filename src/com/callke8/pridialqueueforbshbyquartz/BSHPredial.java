@@ -80,7 +80,7 @@ public class BSHPredial {
 		
 		//线程五:清理超时订单信息
 		//若订单状态为:0(新建),或为:3(待重呼),但是安装日期却小于等是等于当前日期时,系统却强制处理该记录,将状态修改为放弃呼叫!
-		String currDate = DateFormatUtils.formatDateTime(new Date(), "yyyy-MM-dd");    //当天日期
+		String currDate = DateFormatUtils.formatDateTime(new Date(System.currentTimeMillis() + 24 * 3600 * 1000), "yyyy-MM-dd");    //第2天的日期
 		String firstDateTime = currDate + " 02:00:00";                                 //凌晨2点钟
 		Date firstTime = DateFormatUtils.parseDateTime(firstDateTime, "yyyy-MM-dd HH:mm:ss");    //转回为 Date 对象
 		Timer cleanTimeOutTimer = new Timer();
