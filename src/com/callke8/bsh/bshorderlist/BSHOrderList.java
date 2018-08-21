@@ -620,7 +620,7 @@ public class BSHOrderList extends Model<BSHOrderList> {
 		
 		String currDateTimeStr = DateFormatUtils.formatDateTime(new Date(),"yyyy-MM-dd HH:mm:ss");
 		
-		long fiveDayTimes = 5 * 24 * 3600 * 1000L;   //5天的毫秒数
+		long fiveDayTimes = 5 * 24 * 3600L;   //5天的秒数
 		String fiveDayDateTimeStr = DateFormatUtils.getBeforeSecondDateTime(fiveDayTimes);   //5天前的日期时间
 		
 		List<Record> list = Db.find(sql,currDateTimeStr,fiveDayDateTimeStr);                 //多加一个条件
