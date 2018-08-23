@@ -44,6 +44,7 @@ public class BSHOrderList extends Model<BSHOrderList> {
 	 * @param productName
 	 * @param state
 	 * @param respond
+	 * @param timeType
 	 * @param createTimeStartTime
 	 * 					创建时间的开始时间
 	 * @param createTimeEndTime
@@ -54,7 +55,7 @@ public class BSHOrderList extends Model<BSHOrderList> {
 	 * 					外呼时间的结束时间
 	 * @return
 	 */
-	public Page getBSHOrderListByPaginate(int pageNumber,int pageSize,String orderId,String channelSource,String customerName,String customerTel,String brand,String productName,String state,String respond,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
+	public Page getBSHOrderListByPaginate(int pageNumber,int pageSize,String orderId,String channelSource,String customerName,String customerTel,String brand,String productName,String state,String respond,String timeType,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[20];
@@ -118,6 +119,13 @@ public class BSHOrderList extends Model<BSHOrderList> {
 			index++;
 		}
 		
+		//日期类型
+		if(!BlankUtils.isBlank(timeType) && !timeType.equalsIgnoreCase("empty")) {
+			sb.append(" and TIME_TYPE=?");
+			pars[index] = timeType;
+			index++;
+		}
+		
 		//创建的开始时间查询
 		if(!BlankUtils.isBlank(createTimeStartTime)) {
 			sb.append(" and CREATE_TIME>?");
@@ -175,9 +183,9 @@ public class BSHOrderList extends Model<BSHOrderList> {
 	 * 					外呼时间的结束时间
 	 * @return
 	 */
-	public Map getBSHOrderListByPaginateToMap(int pageNumber,int pageSize,String orderId,String channelSource,String customerName,String customerTel,String brand,String productName,String state,String respond,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
+	public Map getBSHOrderListByPaginateToMap(int pageNumber,int pageSize,String orderId,String channelSource,String customerName,String customerTel,String brand,String productName,String state,String respond,String timeType,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
 		
-		Page<Record> p = getBSHOrderListByPaginate(pageNumber, pageSize, orderId,channelSource,customerName, customerTel,brand,productName,state,respond,createTimeStartTime, createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
+		Page<Record> p = getBSHOrderListByPaginate(pageNumber, pageSize, orderId,channelSource,customerName, customerTel,brand,productName,state,respond,timeType,createTimeStartTime, createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
 		
 		int total = p.getTotalRow();    //获取查询出来的总数量
 		
@@ -200,6 +208,10 @@ public class BSHOrderList extends Model<BSHOrderList> {
 			//品牌描述
 			int brandResult = r.getInt("BRAND");
 			r.set("BRAND_DESC", MemoryVariableUtil.getDictName("BSH_BRAND", String.valueOf(brandResult)));
+			
+			//时间类型描述
+			int timeTypeResult = r.getInt("TIME_TYPE");
+			r.set("TIME_TYPE_DESC", MemoryVariableUtil.getDictName("BSH_TIME_TYPE", String.valueOf(timeTypeResult)));
 			
 			//货物描述
 			int productNameResult = r.getInt("PRODUCT_NAME");
@@ -235,6 +247,7 @@ public class BSHOrderList extends Model<BSHOrderList> {
 		nr.set("EXPECT_INSTALL_DATE", bshOrderList.get("EXPECT_INSTALL_DATE"));
 		nr.set("BRAND", bshOrderList.getInt("BRAND"));
 		nr.set("PRODUCT_NAME", bshOrderList.getInt("PRODUCT_NAME"));
+		nr.set("TIME_TYPE", bshOrderList.getInt("TIME_TYPE"));
 		nr.set("CREATE_TIME", bshOrderList.get("CREATE_TIME"));
 		nr.set("PROVINCE", bshOrderList.get("PROVINCE"));
 		nr.set("CITY", bshOrderList.get("CITY"));
@@ -664,6 +677,7 @@ public class BSHOrderList extends Model<BSHOrderList> {
 	 * @param productName
 	 * @param state
 	 * @param respond
+	 * @param timeType
 	 * @param createTimeStartTime
 	 * 					创建时间的开始时间
 	 * @param createTimeEndTime
@@ -674,7 +688,7 @@ public class BSHOrderList extends Model<BSHOrderList> {
 	 * 					外呼时间的结束时间
 	 * @return
 	 */
-	public List<Record> getBSHOrderListByCondition(String orderId,String channelSource,String customerName,String customerTel,String brand,String productName,String state,String respond,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
+	public List<Record> getBSHOrderListByCondition(String orderId,String channelSource,String customerName,String customerTel,String brand,String productName,String state,String respond,String timeType,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[20];
@@ -738,6 +752,13 @@ public class BSHOrderList extends Model<BSHOrderList> {
 			index++;
 		}
 		
+		//时间类型
+		if(!BlankUtils.isBlank(timeType) && !timeType.equalsIgnoreCase("empty")) {
+			sb.append(" and TIME_TYPE=?");
+			pars[index] = timeType;
+			index++;
+		}
+		
 		//创建的开始时间查询
 		if(!BlankUtils.isBlank(createTimeStartTime)) {
 			sb.append(" and CREATE_TIME>?");
@@ -794,6 +815,10 @@ public class BSHOrderList extends Model<BSHOrderList> {
 			//货物描述
 			int productNameResult = r.getInt("PRODUCT_NAME");
 			r.set("PRODUCT_NAME_DESC", MemoryVariableUtil.getDictName("BSH_PRODUCT_NAME", String.valueOf(productNameResult)));
+			
+			//时间类型描述
+			int timeTypeResult = r.getInt("TIME_TYPE");
+			r.set("TIME_TYPE_DESC", MemoryVariableUtil.getDictName("BSH_TIME_TYPE", String.valueOf(timeTypeResult)));
 			
 			r.set("RETRIED_VALUE", r.getInt("RETRIED"));
 			r.set("RETRIED", r.getInt("RETRIED") + "/" + BSHCallParamConfig.getRetryTimes());

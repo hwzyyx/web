@@ -41,6 +41,7 @@
     		var productNameComboboxDataFor1 = eval('${productNameComboboxDataFor1}');
     		var stateComboboxDataFor1 = eval('${stateComboboxDataFor1}');
     		var respondComboboxDataFor1 = eval('${respondComboboxDataFor1}');
+    		var timeTypeComboboxDataFor1 = eval('${timeTypeComboboxDataFor1}');
     		
     		//购物平台Combobox
     		$("#channelSource").combobox({    
@@ -77,6 +78,13 @@
     			panelHeight:'auto'
 			}).combobox('loadData',respondComboboxDataFor1).combobox('setValue',"empty");
     		
+    		//日期类型Combobox
+    		$("#timeType").combobox({    
+				valueField:'id',
+    			textField:'text',
+    			panelHeight:'auto'
+			}).combobox('loadData',timeTypeComboboxDataFor1).combobox('setValue',"empty");
+    		
     		$("#bshOrderListDg").datagrid({
     			pageSize:30,
     			pagination:true,
@@ -95,6 +103,7 @@
     				productName:$('#productName').combobox('getValue'),
     				state:$('#state').combobox('getValue'),
     				respond:$('#respond').combobox('getValue'),
+    				timeType:$('#timeType').combobox('getValue'),
     				startTime:$('#startTime').datebox('getValue'),
     				endTime:$('#endTime').datebox('getValue'),
     				dateTimeType:dateTimeType
@@ -123,6 +132,7 @@
 				productName:$("#productName").combobox('getValue'),
 				state:$("#state").combobox('getValue'),
 				respond:$('#respond').combobox('getValue'),
+				timeType:$('#timeType').combobox('getValue'),
 				startTime:$("#startTime").datebox('getValue'),
 				endTime:$("#endTime").datebox('getValue'),
 				dateTimeType:dateTimeType
@@ -174,6 +184,7 @@
     				param.productName = $("#productName").combobox('getValue'),
     				param.state = $("#state").combobox('getValue'),
     				param.respond = $('#respond').combobox('getValue'),
+    				param.timeType = $('#timeType').combobox('getValue'),
     				param.startTime = $("#startTime").datebox('getValue'),
     				param.endTime = $("#endTime").datebox('getValue'),
     				param.dateTimeType = dateTimeType
@@ -208,6 +219,9 @@
 					</span>
 					<span style="padding-left:20px;">客户姓名：<input id="customerName" type="text" class="easyui-textbox" style="width:200px;"/></span>
 					<span style="padding-left:20px;">客户号码：<input id="customerTel" type="text" class="easyui-textbox" style="width:200px;"/></span>
+					<span style="padding-left:20px;">
+						日期类型：<select class="easyui-combobox" id="timeType" name="timeType" style="width:200px;"></select>
+					</span>
 				</td>
 				
 			</tr>
@@ -266,6 +280,7 @@
 					<th data-options="field:'CALLOUT_TEL',width:130,align:'center'">外呼号码</th>
 					<th data-options="field:'BRAND_DESC',width:100,align:'center'">品牌</th>
 					<th data-options="field:'PRODUCT_NAME_DESC',width:100,align:'center'">产品名称</th>
+					<th data-options="field:'TIME_TYPE_DESC',width:100,align:'center'">日期类型</th>
 					<th data-options="field:'EXPECT_INSTALL_DATE',width:100,align:'center'">计划安装日期</th>
 					<th data-options="field:'RESPOND_DESC',width:120,align:'center',formatter:respondformatter">客户回复</th>
 					<th data-options="field:'CREATE_TIME',width:170,align:'center'">创建时间</th>

@@ -37,6 +37,7 @@ public class BSHOrderListController extends Controller implements IController {
 		setAttr("productNameComboboxDataFor1",CommonController.getComboboxToString("BSH_PRODUCT_NAME","1"));        			//货物信息带请选择的combobox
 		setAttr("stateComboboxDataFor1",CommonController.getComboboxToString("BSH_CALL_STATE","1"));        				//外呼状态带请选择的combobox
 		setAttr("respondComboboxDataFor1",CommonController.getComboboxToString("BSH_CLIENT_RESPOND","1"));       			//客户回复带请选择的combobox
+		setAttr("timeTypeComboboxDataFor1",CommonController.getComboboxToString("BSH_TIME_TYPE","1"));       			//客户回复带请选择的combobox
 		
 		render("list.jsp");
 	}
@@ -52,6 +53,7 @@ public class BSHOrderListController extends Controller implements IController {
 		String productName = getPara("productName");
 		String state = getPara("state");
 		String respond = getPara("respond");
+		String timeType = getPara("timeType");
 		String startTime = getPara("startTime");
 		String endTime = getPara("endTime");
 		String dateTimeType = getPara("dateTimeType");     //取得查询时间类型，0表示时间区段为以创建时间为查询区间，1表示以外呼时间为查询区间
@@ -72,7 +74,7 @@ public class BSHOrderListController extends Controller implements IController {
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = BSHOrderList.dao.getBSHOrderListByPaginateToMap(pageNumber, pageSize, orderId,channelSource,customerName, customerTel,brand,productName,state,respond,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
+		Map map = BSHOrderList.dao.getBSHOrderListByPaginateToMap(pageNumber, pageSize, orderId,channelSource,customerName, customerTel,brand,productName,state,respond,timeType,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
 		//System.out.println("map:" + map);
 		renderJson(map);
 		
@@ -85,6 +87,7 @@ public class BSHOrderListController extends Controller implements IController {
 		String customerName = null;
 		String customerTel = null;
 		String productName = null;
+		String timeType = null;
 		String expectInstallDate = null;
 		String brand = null;
 		String channelSource = null;
@@ -119,11 +122,16 @@ public class BSHOrderListController extends Controller implements IController {
 			if(!BlankUtils.isBlank(jsonStr) && jsonStr.toString().length() > 40) {
 				
 				JSONObject paramJson = JSONObject.fromObject(jsonStr);
+				boolean containTimeType = paramJson.containsKey("timeType");
 				
 				orderId = String.valueOf(paramJson.get("orderId"));
 				customerName = String.valueOf(paramJson.get("customerName"));
 				customerTel = String.valueOf(paramJson.get("customerTel"));
 				productName = String.valueOf(paramJson.get("productName"));
+				if(containTimeType) {
+					//System.out.println("上传的参数有 timeType");
+					timeType = String.valueOf(paramJson.get("timeType"));
+				}
 				expectInstallDate = String.valueOf(paramJson.get("expectInstallDate"));
 				brand = String.valueOf(paramJson.get("brand"));
 				channelSource = String.valueOf(paramJson.get("channelSource"));
@@ -136,6 +144,7 @@ public class BSHOrderListController extends Controller implements IController {
 			customerName = getPara("customerName");
 			customerTel = getPara("customerTel");
 			productName = getPara("productName");
+			timeType = getPara("timeType");
 			expectInstallDate = getPara("expectInstallDate");
 			brand = getPara("brand");
 			channelSource = getPara("channelSource");
@@ -169,6 +178,10 @@ public class BSHOrderListController extends Controller implements IController {
 			renderJson(resultMap("ERROR","购物平台信息为空!"));
 			System.out.println("处理订单：" + orderId + "失败,失败原因:购物平台信息为空!");
 			return;
+		}
+		
+		if(BlankUtils.isBlank(timeType)) {
+			timeType = "1";
 		}
 		
 		//判断客户号码是否为纯数字，则长度为 7 ~ 12 位
@@ -323,6 +336,7 @@ public class BSHOrderListController extends Controller implements IController {
 		orderList.set("CUSTOMER_TEL", customerTel);
 		orderList.set("BRAND", Integer.valueOf(brand));
 		orderList.set("PRODUCT_NAME", Integer.valueOf(productName));
+		orderList.set("TIME_TYPE", Integer.valueOf(timeType));
 		orderList.set("CHANNEL_SOURCE", Integer.valueOf(channelSource));
 		orderList.set("CREATE_TIME", DateFormatUtils.getCurrentDate());
 		
@@ -409,6 +423,7 @@ public class BSHOrderListController extends Controller implements IController {
 		String productName = getPara("productName");
 		String state = getPara("state");
 		String respond = getPara("respond");
+		String timeType = getPara("timeType");
 		String startTime = getPara("startTime");
 		String endTime = getPara("endTime");
 		String dateTimeType = getPara("dateTimeType");     //取得查询时间类型，0表示时间区段为以创建时间为查询区间，1表示以外呼时间为查询区间
@@ -427,11 +442,11 @@ public class BSHOrderListController extends Controller implements IController {
 		}
 		
 		//根据传入的条件，从数据库中查询出列表
-		List<Record> list = BSHOrderList.dao.getBSHOrderListByCondition(orderId, channelSource, customerName, customerTel, brand, productName, state, respond, createTimeStartTime, createTimeEndTime, loadTimeStartTime, loadTimeEndTime);
+		List<Record> list = BSHOrderList.dao.getBSHOrderListByCondition(orderId, channelSource, customerName, customerTel, brand, productName, state, respond,timeType, createTimeStartTime, createTimeEndTime, loadTimeStartTime, loadTimeEndTime);
 		
 		//得到数据列表，准备以 Excel 方式导出
-		String[] headers = {"订单编号","购物平台","客户姓名","客户号码","省份","城市","外呼号码","品牌","产品名称","计划安装日期","客户回复","创建时间","外呼结果","失败原因","已重试","外呼时间","通话时长","下次外呼时间","外呼结果JSON","接口响应"};
-		String[] columns = {"ORDER_ID","CHANNEL_SOURCE_DESC","CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","BRAND_DESC","PRODUCT_NAME_DESC","EXPECT_INSTALL_DATE","RESPOND_DESC","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","CALLRESULT_JSON","FEEDBACK_CALLRESULT_RESPOND"};
+		String[] headers = {"订单编号","购物平台","客户姓名","客户号码","省份","城市","外呼号码","品牌","产品名称","日期类型","计划安装日期","客户回复","创建时间","外呼结果","失败原因","已重试","外呼时间","通话时长","下次外呼时间","外呼结果JSON","接口响应"};
+		String[] columns = {"ORDER_ID","CHANNEL_SOURCE_DESC","CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","BRAND_DESC","PRODUCT_NAME_DESC","TIME_TYPE_DESC","EXPECT_INSTALL_DATE","RESPOND_DESC","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","CALLRESULT_JSON","FEEDBACK_CALLRESULT_RESPOND"};
 		String fileName = "时间区间:" + startTime + " 至 " + endTime + " .xls";
 		String sheetName = "订单信息列表";
 		int cellWidth = 200;
