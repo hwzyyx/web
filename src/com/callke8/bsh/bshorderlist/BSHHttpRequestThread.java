@@ -30,7 +30,7 @@ public class BSHHttpRequestThread implements Runnable {
 		callType	外呼类型0.二次未接通1.一次接通/二次接通2放弃呼叫3已过期
 		time	时间（yyyyMMddHHmmss）
 		sign	签名（全小写）= md5(time + orderId+ key)key为约定好的密钥
-		callResult	外呼结果 1：确认建单   2 暂不安装  3 短信确认   4 错误或无回复  5 放弃呼叫 6已过期
+		callResult	外呼结果 1：确认建单   2 暂不安装  3 短信确认 4提前预约  5 错误或无回复  6 放弃呼叫 7已过期
 	 * 
 	 * @param id
 	 * 				订单对应的ID，用于储存反馈提交反馈json及由服务器返回的处理结果
