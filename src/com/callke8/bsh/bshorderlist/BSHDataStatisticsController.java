@@ -14,7 +14,7 @@ import net.sf.json.JSONObject;
 /**
  * 数据统计 Controller 类
  * 
- * 用于显示时间区间内外呼的情况：已载入、已成功（确认安装、暂不安装、延后安装、无/错回复）、已失败、待重呼、已过期、放弃呼叫 等状态的数量的情况
+ * 用于显示时间区间内外呼的情况：已载入、已成功（确认安装、暂不安装、延后安装、提前预约、无/错回复）、已失败、待重呼、已过期、放弃呼叫 等状态的数量的情况
  * 
  * 并以双饼图的方式展示结果，当客户点击任意一状态值时，还可以弹出数据明细
  * 
@@ -75,11 +75,18 @@ public class BSHDataStatisticsController extends Controller {
 		respond3Data.set("value", data.get("respond3Data"));
 		list.add(respond3Data);
 		
-		//无/错回复
+		
+		//提前预约
 		Record respond4Data = new Record();
-		respond4Data.set("name", "无/错回复");
+		respond4Data.set("name", "提前预约");
 		respond4Data.set("value", data.get("respond4Data"));
 		list.add(respond4Data);
+		
+		//无/错回复
+		Record respond5Data = new Record();
+		respond5Data.set("name", "无/错回复");
+		respond5Data.set("value", data.get("respond5Data"));
+		list.add(respond5Data);
 		
 		//待重呼
 		Record state3Data = new Record();

@@ -857,6 +857,7 @@ public class BSHOrderList extends Model<BSHOrderList> {
 		data.set("respond2Data", 0);
 		data.set("respond3Data", 0);
 		data.set("respond4Data", 0);
+		data.set("respond5Data", 0);
 		
 		//(1)取得统计数据（呼叫状态）
 		getStatisticsDataForState(data,startTime,endTime,channelSource);
@@ -986,6 +987,8 @@ public class BSHOrderList extends Model<BSHOrderList> {
 					data.set("respond3Data", respondCount);
 				}else if(respondValue == 4) {
 					data.set("respond4Data", respondCount);
+				}else if(respondValue == 5) {
+					data.set("respond5Data", respondCount);
 				}
 			}
 		}

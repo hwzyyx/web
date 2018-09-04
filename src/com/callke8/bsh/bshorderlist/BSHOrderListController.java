@@ -479,6 +479,7 @@ public class BSHOrderListController extends Controller implements IController {
 		String respond2Count = getPara("respond2Count");	rc.set("respond2Data", respond2Count);
 		String respond3Count = getPara("respond3Count");	rc.set("respond3Data", respond3Count);
 		String respond4Count = getPara("respond4Count");	rc.set("respond4Data", respond4Count);
+		String respond5Count = getPara("respond5Count");	rc.set("respond5Data", respond5Count);
 		list.add(rc);
 		
 		String totalRate = getPara("totalRate");		rr.set("totalData", totalRate + "%");
@@ -492,14 +493,16 @@ public class BSHOrderListController extends Controller implements IController {
 		String respond2Rate = getPara("respond2Rate");		rr.set("respond2Data", respond2Rate + "%");
 		String respond3Rate = getPara("respond3Rate");		rr.set("respond3Data", respond3Rate + "%");
 		String respond4Rate = getPara("respond4Rate");		rr.set("respond4Data", respond4Rate + "%");
+		String respond5Rate = getPara("respond5Rate");		rr.set("respond5Data", respond5Rate + "%");
+		
 		list.add(rr);
 		
 		String startTime = getPara("startTime");
 		String endTime = getPara("endTime");
 
 		//得到数据列表，准备以 Excel 方式导出
-		String[] headers = {"","数据总量","已载入","已成功","待重呼","已失败","已过期","放弃呼叫","确认安装","暂不安装","延后安装","无/错回复"};
-		String[] columns = {"category","totalData","state1Data","state2Data","state3Data","state4Data","state5Data","state6Data","respond1Data","respond2Data","respond3Data","respond4Data"};
+		String[] headers = {"","数据总量","已载入","已成功","待重呼","已失败","已过期","放弃呼叫","确认安装","暂不安装","延后安装","提前预约","无/错回复"};
+		String[] columns = {"category","totalData","state1Data","state2Data","state3Data","state4Data","state5Data","state6Data","respond1Data","respond2Data","respond3Data","respond4Data","respond5Data"};
 		String fileName = "时间区间:" + startTime + " 至 " + endTime + " 的统计汇总情况.xls";
 		String sheetName = "数据汇总信息";
 		

@@ -55,6 +55,8 @@
         var respond3Rate = 0;
         var respond4Count = 0;
         var respond4Rate = 0;
+        var respond5Count = 0;
+        var respond5Rate = 0;
     
     	$(function(){
     		//初始化搜索日期
@@ -168,7 +170,7 @@
 							j++;
 						}
 						
-						if(name=='已载入' || name=='确认安装' || name=='暂不安装' || name=='延后安装' || name=='无/错回复' || name=='待重呼' || name=='已失败' || name=='已过期' || name=='放弃呼叫') {
+						if(name=='已载入' || name=='确认安装' || name=='暂不安装' || name=='延后安装' || name=='提前预约' || name=='无/错回复' || name=='待重呼' || name=='已失败' || name=='已过期' || name=='放弃呼叫') {
 							seriesData2[k] = map;
 							k++;
 						}
@@ -198,7 +200,8 @@
 								else if(name=='确认安装') {pvV = respond1Count;  ppV = respond1Rate;space='    '}
 								else if(name=='暂不安装') {pvV = respond2Count;  ppV = respond2Rate; space='    '}
 								else if(name=='延后安装') {pvV = respond3Count;  ppV = respond3Rate; space='    '}
-								else if(name=='无/错回复') {pvV = respond4Count;  ppV = respond4Rate; space='   '}
+								else if(name=='提前预约') {pvV = respond4Count;  ppV = respond4Rate; space='    '}
+								else if(name=='无/错回复') {pvV = respond5Count;  ppV = respond5Rate; space='   '}
 								return  name + space + "(占比 ：" + ppV + "%)";
 							}
 						},
@@ -228,8 +231,8 @@
     	function getSummaryData() {
     		
     		var summaryData = '{"total":2,"rows":[';
-    		summaryData += '{"category":"数量","totalData":' + totalCount + ',"state1Data":' + state1Count + ',"state2Data":' + state2Count + ',"state3Data":' + state3Count + ',"state4Data":' + state4Count + ',"state5Data":' + state5Count + ',"state6Data":' + state6Count + ',"respond1Data":' + respond1Count + ',"respond2Data":' + respond2Count + ',"respond3Data":' + respond3Count + ',"respond4Data":' + respond4Count + '},';
-    		summaryData += '{"category":"占比","totalData":"' + totalRate + '%' + '","state1Data":"' + state1Rate  + '%' + '","state2Data":"' + state2Rate  + '%' + '","state3Data":"' + state3Rate  + '%' + '","state4Data":"' + state4Rate  + '%' + '","state5Data":"' + state5Rate  + '%' + '","state6Data":"' + state6Rate  + '%' + '","respond1Data":"' + respond1Rate  + '%' + '","respond2Data":"' + respond2Rate  + '%' + '","respond3Data":"' + respond3Rate  + '%' + '","respond4Data":"' + respond4Rate  + '%' + '"}';
+    		summaryData += '{"category":"数量","totalData":' + totalCount + ',"state1Data":' + state1Count + ',"state2Data":' + state2Count + ',"state3Data":' + state3Count + ',"state4Data":' + state4Count + ',"state5Data":' + state5Count + ',"state6Data":' + state6Count + ',"respond1Data":' + respond1Count + ',"respond2Data":' + respond2Count + ',"respond3Data":' + respond3Count + ',"respond4Data":' + respond4Count + ',"respond5Data":' + respond5Count + '},';
+    		summaryData += '{"category":"占比","totalData":"' + totalRate + '%' + '","state1Data":"' + state1Rate  + '%' + '","state2Data":"' + state2Rate  + '%' + '","state3Data":"' + state3Rate  + '%' + '","state4Data":"' + state4Rate  + '%' + '","state5Data":"' + state5Rate  + '%' + '","state6Data":"' + state6Rate  + '%' + '","respond1Data":"' + respond1Rate  + '%' + '","respond2Data":"' + respond2Rate  + '%' + '","respond3Data":"' + respond3Rate  + '%' + '","respond4Data":"' + respond4Rate  + '%' + '","respond5Data":"' + respond5Rate  + '%' + '"}';
     		summaryData += "]}";
     		
     		return JSON.parse(summaryData);
@@ -288,6 +291,8 @@
 					param.respond3Rate = respond3Rate,
 					param.respond4Count = respond4Count,
 					param.respond4Rate = respond4Rate,
+					param.respond5Count = respond5Count,
+					param.respond5Rate = respond5Rate,
 					param.startTime = $("#startTime").datebox('getValue'),
     				param.endTime = $("#endTime").datebox('getValue')
 				},
@@ -338,6 +343,7 @@
     	function respond2DataFormatter(value,data,index){ return "<span style='font-weight:bolder'>" + value + "</span>"; }
     	function respond3DataFormatter(value,data,index){ return "<span style='font-weight:bolder'>" + value + "</span>"; }
     	function respond4DataFormatter(value,data,index){ return "<span style='font-weight:bolder'>" + value + "</span>"; }
+    	function respond5DataFormatter(value,data,index){ return "<span style='font-weight:bolder'>" + value + "</span>"; }
     	
     </script>
 </head>
@@ -391,18 +397,19 @@
 			<table id="summaryDg" class="easyui-datagrid" data-options="fit:true,singleSelect:true,rownumbers:false" toolbar='#summaryDgTool'>
 				<thead>
 					<tr style="font-weight: bold;">
-						<th data-options="field:'category',width:90,align:'center'"></th>
+						<th data-options="field:'category',width:75,align:'center'"></th>
 						<th data-options="field:'totalData',width:100,align:'center',formatter:tota1DataFormatter">数据总量</th>
-						<th data-options="field:'state1Data',width:100,align:'center',formatter:state1DataFormatter">已载入</th>
-						<th data-options="field:'state2Data',width:100,align:'center',formatter:state2DataFormatter">已成功</th>
-						<th data-options="field:'state3Data',width:100,align:'center',formatter:state3DataFormatter">待重呼</th>
-						<th data-options="field:'state4Data',width:100,align:'center',formatter:state4DataFormatter">已失败</th>
-						<th data-options="field:'state5Data',width:100,align:'center',formatter:state5DataFormatter">已过期</th>
-						<th data-options="field:'state6Data',width:100,align:'center',formatter:state6DataFormatter">放弃呼叫</th>
-						<th data-options="field:'respond1Data',width:100,align:'center',formatter:respond1DataFormatter">确认安装</th>
+						<th data-options="field:'state1Data',width:90,align:'center',formatter:state1DataFormatter">已载入</th>
+						<th data-options="field:'state2Data',width:90,align:'center',formatter:state2DataFormatter">已成功</th>
+						<th data-options="field:'state3Data',width:90,align:'center',formatter:state3DataFormatter">待重呼</th>
+						<th data-options="field:'state4Data',width:90,align:'center',formatter:state4DataFormatter">已失败</th>
+						<th data-options="field:'state5Data',width:90,align:'center',formatter:state5DataFormatter">已过期</th>
+						<th data-options="field:'state6Data',width:90,align:'center',formatter:state6DataFormatter">放弃呼叫</th>
+						<th data-options="field:'respond1Data',width:90,align:'center',formatter:respond1DataFormatter">确认安装</th>
 						<th data-options="field:'respond2Data',width:90,align:'center',formatter:respond2DataFormatter">暂不安装</th>
 						<th data-options="field:'respond3Data',width:90,align:'center',formatter:respond3DataFormatter">延后安装</th>
-						<th data-options="field:'respond4Data',width:90,align:'center',formatter:respond4DataFormatter">无/错回复</th>
+						<th data-options="field:'respond4Data',width:90,align:'center',formatter:respond4DataFormatter">提前预约</th>
+						<th data-options="field:'respond5Data',width:90,align:'center',formatter:respond5DataFormatter">无/错回复</th>
 					</tr>
 				</thead>
 			</table>
@@ -438,7 +445,7 @@ option = null;
 app.title = '嵌套环形图';
 
 option = {
-	color: ['#f8d013','#00ff00', '#fc00ff', '#ff0000', '#fb5c5c','#fa1616',  '#04b904', '#07b3fa','#55cafa', '#666666', '#001100'],
+	color: ['#f8d013','#00ff00', '#fc00ff', '#ff0000', '#fb5c5c','#fa1616',  '#04b904', '#07b3fa','#55cafa','#8cdcfc','#666666', '#001100'],
 	title:{
 		text:'BSH外呼系统时间区间内的外呼情况展示',
 		subtext:'时间区间:2018-05-01 00:00:00 至 2018-05-02 00:00:00',
@@ -479,7 +486,7 @@ option = {
     legend: {
         orient: 'vertical',
         x: 'left',
-        data:['已载入','已成功','确认安装','暂不安装','延后安装','无/错回复','待重呼','已失败','已过期','放弃呼叫']
+        data:['已载入','已成功','确认安装','暂不安装','延后安装','提前预约','无/错回复','待重呼','已失败','已过期','放弃呼叫']
     },
     series: [
         {
@@ -631,9 +638,13 @@ option = {
                     		respond3Count = pv;
                     		respond3Rate = pp;
                     		pnEnglish = 'Postpone Installation';
-                    	}else if(pn=='无/错回复') {
+                    	}else if(pn=='提前预约') {
                     		respond4Count = pv;
                     		respond4Rate = pp;
+                    		pnEnglish = 'Postpone Installation';
+                    	}else if(pn=='无/错回复') {
+                    		respond5Count = pv;
+                    		respond5Rate = pp;
                     		pnEnglish = 'No/Wrong Reply';
                     	}else if(pn=='已载入') {
                     		pnEnglish = 'Loaded';
@@ -697,6 +708,7 @@ option = {
                 {value:0, name:'确认安装'},
                 {value:0, name:'暂不安装'},
                 {value:0, name:'延后安装'},
+                {value:0, name:'提前预约'},
                 {value:0, name:'无/错回复'},
                 {value:0, name:'待重呼'},
                 {value:0, name:'已失败'},
@@ -759,10 +771,14 @@ myChart.on('dblclick',function(params){
 		title += ",客户回复：延后安装";
 		conditionState = 2;
 		conditionRespond = 3;
+	}else if(name=='提前预约') {
+		title += ",客户回复：提前预约";
+		conditionState = 2;
+		conditionRespond = 4;
 	}else if(name=='无/错回复') {
 		title += ",客户回复：无/错回复";
 		conditionState = 2;
-		conditionRespond = 4;
+		conditionRespond = 5;
 	}
 	
 	var channelSourceText = $("#channelSource").combobox('getText');
