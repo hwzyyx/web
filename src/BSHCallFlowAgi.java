@@ -41,7 +41,8 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 		List<Record> respond1PlayList = new ArrayList<Record>();        //定义一个当回复1，即是确认安装后播放的语音列表
 		List<Record> respond2PlayList = new ArrayList<Record>();        //定义一个当回复2，即是暂不安装后播放的语音列表
 		List<Record> respond3PlayList = new ArrayList<Record>();        //定义一个当回复3，即是延后安装后播放的语音列表
-		List<Record> respond4PlayList = new ArrayList<Record>();        //定义一个当无回复或是错误回复，播放的语音列表
+		List<Record> respond4PlayList = new ArrayList<Record>();        //定义一个当回复4，即是已经预约后播放的语音列表
+		List<Record> respondErrorPlayList = new ArrayList<Record>();        //定义一个当无回复或是错误回复，播放的语音列表
 		
 		exec("Noop","bshOrderListId-----" + bshOrderListId);
 		//从数据表中取出订单信息
@@ -57,6 +58,7 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 		respond2PlayList = getRespond2PlayList(bshOrderList);
 		respond3PlayList = getRespond3PlayList(bshOrderList);
 		respond4PlayList = getRespond4PlayList(bshOrderList);
+		respondErrorPlayList = getRespondErrorPlayList(bshOrderList);
 			
 		//如果开始播放列表不为空时
 		if(!BlankUtils.isBlank(readVoiceFileList)) {
@@ -64,7 +66,7 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 			exec("Noop","Read播放文件列表内容:" + readVoiceFileList);
 			exec("Wait","1");
 			
-			execRead(readVoiceFileList,respond1PlayList, respond2PlayList, respond3PlayList, respond4PlayList,bshOrderList, channel);     //执行调查操作
+			execRead(readVoiceFileList,respond1PlayList, respond2PlayList, respond3PlayList, respond4PlayList,respondErrorPlayList,bshOrderList, channel);     //执行调查操作
 			
 			StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",FastAGI22222(流程执行结束)：" + bshOrderList.getStr("CUSTOMER_TEL") + ",通道标识:" + channel.getName(), true);
 			
@@ -75,7 +77,7 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 		
 	}
 	
-	public void execRead(String readVoiceFileList,List<Record> respond1PlayList,List<Record> respond2PlayList,List<Record> respond3PlayList,List<Record> respond4PlayList,BSHOrderList bshOrderList,AgiChannel channel) {
+	public void execRead(String readVoiceFileList,List<Record> respond1PlayList,List<Record> respond2PlayList,List<Record> respond3PlayList,List<Record> respond4PlayList,List<Record> respondErrorPlayList,BSHOrderList bshOrderList,AgiChannel channel) {
 		
 		try {
 			
@@ -84,7 +86,7 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 			String respond = channel.getVariable("respond");     //取得回复结果
 			
 			//一共要求两次，如果客户第一次回复为空或是错误回复时，再执行一次。
-			if(BlankUtils.isBlank(respond) || !(respond.equalsIgnoreCase("1") || respond.equalsIgnoreCase("2") || respond.equalsIgnoreCase("3"))) {
+			if(BlankUtils.isBlank(respond) || !(respond.equalsIgnoreCase("1") || respond.equalsIgnoreCase("2") || respond.equalsIgnoreCase("3") || respond.equalsIgnoreCase("4"))) {
 				exec("Read","respond," + readVoiceFileList + ",1,,1,8");
 				respond = channel.getVariable("respond");     //再次取得回复结果
 			}
@@ -113,20 +115,23 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 					
 					execPlayBack(respond3PlayList);     //回复后，还需要将结果播放回去
 					
+				}else if(respond.equalsIgnoreCase("4")) {       //如果回复的是4时,表示已预约
+					exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "回复4,即已经预约");
+					execPlayBack(respond4PlayList);     //回复后，还需要将结果播放回去
 				}else {                       //如果回复的是其他按键时,按回复
 					exec("Noop","客户 " + bshOrderList.get("CUSTOMER_TEL") + "回复" + respond + ",即为错误回复");
-					respond = "4";            //强制为错误回复
+					respond = "5";            //强制为错误回复
 					//更改客户回复的同时，将呼叫状态更改为2，即是外呼成功
 					//BSHOrderList.dao.updateBSHOrderListRespondAndBillsec(bshOrderList.get("ID").toString(), respond,Integer.valueOf(channel.getVariable("CDR(billsec)")));
 					
-					execPlayBack(respond4PlayList);     //回复后，还需要将结果播放回去
+					execPlayBack(respondErrorPlayList);     //回复后，还需要将结果播放回去
 				}
 				
 			}else {
 				exec("Noop","客户" + bshOrderList.get("CUSTOMER_TEL") + "无回复任何");
-				respond = "4";
+				respond = "5";
 				
-				execPlayBack(respond4PlayList);     //回复后，还需要将结果播放回去
+				execPlayBack(respondErrorPlayList);     //回复后，还需要将结果播放回去
 			}
 			
 			BSHOrderList.dao.updateBSHOrderListRespondAndBillsec(bshOrderList.get("ID").toString(), respond,Integer.valueOf(channel.getVariable("CDR(billsec)")));
@@ -262,73 +267,184 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 	 * 取得 Read 命令所需语音文件名字符串
 	 * 一次性取得多个文件，形成完整的调查语音
 	 * 
+	 * 开场分两种情况：
+	 * 
+	 * 		开场1：您好，这里是(西门子/博世)家电客服中心，来电跟您确认(洗衣机/XXX)的安装日期。根据(京东/苏宁/国美/天猫)平台传来的信息，
+	 * 		                 我们将于(明天/12月10号)上门安装。确认请按1，暂不安装请按2，如需改约到后面3天，请按3,如果您已经提前预约好服务，请按4。 
+
+                               开场2：您好，这里是(西门子/博世)家电客服中心。您在国美选购的(洗衣机/XXX)将于(明天/12月10号)送货，我们将于送货当天上门安装，
+                                                 需要您进一步确认。确认送货当天安装请按1，暂不安装请按2，如需改约到后面3天请按3,如果您已经提前预约好服务,请按4。
+                  
+                   语音列表如下：
+                   
+          begin_1_brand_0_timeType_1：您好，这里是西门子家电客服中心，来电跟您确认
+          begin_1_brand_1_timeType_1：您好，这里是博世家电客服中心，来电跟您确认
+          begin_1_brand_0_timeType_2：您好，这里是西门子家电客服中心
+          begin_1_brand_1_timeType_2：您好，这里是博世家电客服中心
+          
+          		  begin_2_timeType_1：的安装日期
+                  begin_2_timeType_2：您在国美选购的
+          
+          	 begin_3_channelSource_1：根据京东平台传来的信息，我们将于
+             begin_3_channelSource_2：根据苏宁平台传来的信息，我们将于
+		     begin_3_channelSource_3：根据天猫平台传来的信息，我们将于
+		     begin_3_channelSource_4：根据国美平台传来的信息，我们将于
+		          begin_3_timeType_2：将于
+		          
+		          begin_4_timeType_1：上门安装
+                  begin_4_timeType_2：送货，我们将于送货当天上门安装，需要您进一步确认
+                  
+                  begin_5_timeType_1：确认请按1，暂不安装请按2，如需改约到后面3天，请按3,如果您已经提前预约好服务，请按4。
+                  begin_5_timeType_2：确认送货当天安装请按1，暂不安装请按2，如需改约到后面3天请按3,如果您已经提前预约好服务,请按4。
+          
+	 * 
+	 * 
 	 * @param bshOrderList
 	 * @return
 	 */
 	public String getReadVoiceFileToString(BSHOrderList bshOrderList) {
 		
 		StringBuilder sb = new StringBuilder();
-		
 		String voicePath = BSHCallParamConfig.getVoicePathSingle();   //取出配置的语音文件（单声道）路径
 		
-		//(1)您好，这里是西门子家电客服中心,来电跟您确认
-		int brand = bshOrderList.getInt("BRAND");           //取得品牌
-		String voiceId1 = "Brand_" + brand;
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceId1)) {
-			sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceId1));
+		int brand = bshOrderList.getInt("BRAND");                            //品牌，0：西门子；1：博世
+		int channelSource = bshOrderList.getInt("CHANNEL_SOURCE");           //购物平台，1：京东；2：苏宁；3：天猫；4：国美
+		int timeType = bshOrderList.getInt("TIME_TYPE");                     //日期类型，1：安装日期；2：送货日期
+		int productName = bshOrderList.getInt("PRODUCT_NAME");               //产品名称
+		
+		/** 一、组织第一条语音
+		  begin_1_brand_0_timeType_1：您好，这里是西门子家电客服中心，来电跟您确认
+          begin_1_brand_1_timeType_1：您好，这里是博世家电客服中心，来电跟您确认
+          begin_1_brand_0_timeType_2：您好，这里是西门子家电客服中心
+          begin_1_brand_1_timeType_2：您好，这里是博世家电客服中心
+		 */
+		String voiceNameFor1 = "begin_1_brand_" + brand + "_timeType_" + timeType;
+		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameFor1)) {
+			sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameFor1));
 		}
 		
-		//(2)产品语音
-		int productName = bshOrderList.getInt("PRODUCT_NAME");       //取得产品
-		String voiceId2 = "ProductName_" + productName;
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceId2)) {
-			sb.append("&");
-			sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceId2));
+		/**
+		 * 二、再根据日期类型,决定直接报产品名称，还是报：您在国美选购的
+		 */
+		if(timeType==1) {      //表示安装日期，需要直接报出产品的名称
+			/**
+			 * 整句即是：
+			 * produceName_*:洗衣机   
+			 * begin_2_timeType_1：的安装日期
+			 */
+			String voiceNameForProductName = "productName_" + productName;
+			if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameForProductName)) {
+				sb.append("&");
+				sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameForProductName));
+			}
+			//紧接着第二条语音: 的安装日期
+			String voiceNameFor2 = "begin_2_timeType_1";
+			if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameFor2)) {
+				sb.append("&");
+				sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameFor2));
+			}
+			
+		}else {              //如果日期类型为送货日期，则需要先报出： 您在国美选购的
+			/**
+			 * 整句为：
+			 * begin_2_timeType_2：您在国美选购的
+			 * productName_*:  洗衣机
+			 */
+			//先紧接着第二条语音: 您在国美选购的
+			String voiceNameFor2 = "begin_2_timeType_2";
+			if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameFor2)) {
+				sb.append("&");
+				sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameFor2));
+			}
+			
+			//产品语音播报
+			String voiceNameForProductName = "productName_" + productName;
+			if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameForProductName)) {
+				sb.append("&");
+				sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameForProductName));
+			}
+			
 		}
 		
-		//(3)的安装日期
-		String voiceId3 = "Notice_1";
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceId3)) {
-			sb.append("&");
-			sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceId3));
+		/**
+		 * 三、组织第三条语音
+		 * 
+		    begin_3_channelSource_1：根据京东平台传来的信息，我们将于
+            begin_3_channelSource_2：根据苏宁平台传来的信息，我们将于
+		    begin_3_channelSource_3：根据天猫平台传来的信息，我们将于
+		    begin_3_channelSource_4：根据国美平台传来的信息，我们将于
+		    begin_3_timeType_2：将于
+		 */
+		if(timeType==1) {     //日期类型为：安装日期
+			String voiceNameFor3 = "begin_3_channelSource_" + channelSource;   
+			if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameFor3)) {
+				sb.append("&");
+				sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameFor3));
+			}
+		}else {               //日期类型为：送货日期
+			String voiceNameFor3 = "begin_3_timeType_2";   
+			if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameFor3)) {
+				sb.append("&");
+				sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameFor3));
+			}
 		}
 		
-		//(4)根据京东平台传来的信息，我们将于
-		int channelSource = bshOrderList.getInt("CHANNEL_SOURCE");   //取出平台信息
-		String voiceId4 = "ChannelSource_" + channelSource;
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceId4)) {
-			sb.append("&");
-			sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceId4));
-		}
-		
-		//(5)5月12号
+		/**
+		 * 安装日期或是送货日期 组织
+		 * 
+		 * 还有一种情况需要考虑：
+		 * 如果安装/送货日期为明天（即是第二天时），即无需报出具体时间，只需要播报”明天“即可
+		 * 
+		 */
 		String expectInstallDate = bshOrderList.getDate("EXPECT_INSTALL_DATE").toString();      //取出期望安装日期
-		Date installDate = DateFormatUtils.parseDateTime(expectInstallDate, "yyyy-MM-dd");
-		String monthStr = DateFormatUtils.formatDateTime(installDate, "MM");
-		String dayStr = DateFormatUtils.formatDateTime(installDate,"dd");
-		String voiceIdForMonth = "Month_" + monthStr;
-		String voiceIdForDay = "Day_" + dayStr;
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceIdForMonth)) {
-			sb.append("&");
-			sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceIdForMonth));
-		}
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceIdForDay)) {
-			sb.append("&");
-			sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceIdForDay));
+		
+		boolean b = checkInstallDateIsNextDay(expectInstallDate);
+		
+		if(b) {
+			//System.out.println("安装日期为明天");
+			String voiceNameForDate = "tomorrow";
+			if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameForDate)) {
+				sb.append("&");
+				sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameForDate));
+			}
+		}else {
+			//System.out.println("安装日期不是明天,而是" + expectInstallDate);
+			Date installDate = DateFormatUtils.parseDateTime(expectInstallDate, "yyyy-MM-dd");
+			String monthStr = DateFormatUtils.formatDateTime(installDate, "MM");
+			String dayStr = DateFormatUtils.formatDateTime(installDate,"dd");
+			String voiceNameForMonth = "month_" + monthStr;
+			String voiceNameForDay = "day_" + dayStr;
+			if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameForMonth)) {
+				sb.append("&");
+				sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameForMonth));
+			}
+			if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameForDay)) {
+				sb.append("&");
+				sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameForDay));
+			}
 		}
 		
-		//(6)上门安装
-		String voiceId6 = "Notice_2";
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceId6)) {
+		/**
+		 * 四、组织第四条语音
+		 *
+		   begin_4_timeType_1：上门安装
+           begin_4_timeType_2：送货，我们将于送货当天上门安装，需要您进一步确认
+		 */
+		String voiceNameFor4 = "begin_4_timeType_" + timeType;
+		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameFor4)) {
 			sb.append("&");
-			sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceId6));
+			sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameFor4));
 		}
 		
-		//（7）确认安装请按“1”，暂不安装请按“2”，如需改约到后面3天，请按“3”。
-		String voiceId7 = "ComfirmVoice";
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceId7)) {
+		/**
+		 * 五、组织第五条语音
+		 * begin_5_timeType_1：确认请按1，暂不安装请按2，如需改约到后面3天，请按3,如果您已经提前预约好服务，请按4。
+           begin_5_timeType_2：确认送货当天安装请按1，暂不安装请按2，如需改约到后面3天请按3,如果您已经提前预约好服务,请按4。
+		 */
+		String voiceNameFor5 = "begin_5_timeType_" + timeType;
+		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameFor5)) {
 			sb.append("&");
-			sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceId7));
+			sb.append(voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameFor5));
 		}
 		
 		return sb.toString();
@@ -418,12 +534,19 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 	/**
 	 * 客户回复1，即确认安装时
 	 * 
-	 * 您的机器安装日期已确认为 12月10号， 工程师最迟会在当天早上9：30之前与您联系具体上门时间。感谢您的配合，再见。
+	 * 场景1：京东、苏宁、天猫
+			    您的机器安装日期已确认为12月10号，工程师最迟会在当天早上9:30之前与您联系具体上门时间。感谢您的配合，再见。
+
+	         场景2：国美
+                                     您的机器安装日期已确认为12月10号，工程师最迟会在当天早上9:30之前与您联系具体上门时间。为确保您的权益，请认准(西门子/博世)厂家的专业工程师。感谢您的配合，再见。
 	 * 
 	 * 并非一整段语音
 	 * 
-	 * （1）您的机器安装日期已确认为（2） 12月10号， （3）工程师最迟会在当天早上9：30之前与您联系具体上门时间。感谢您的配合，再见。
-	 * 
+	                      respond_1_1: 您的机器安装日期已确认为
+	           respond_1_2_timeType_1: 工程师最迟会在当天早上9点半之前与您联系具体上门时间，感谢您的配合，再见。
+	   respond_1_2_timeType_2_brand_0: 工程师最迟会在当天早上9点半之前与您联系具体上门时间，为确保您的权益，请认准西门子厂家的专业工程师，感谢您的配合，再见。
+	   respond_1_2_timeType_2_brand_1: 工程师最迟会在当天早上9点半之前与您联系具体上门时间，为确保您的权益，请认准博世厂家的专业工程师，感谢您的配合，再见。
+	   
 	 * @param bshOrderList
 	 * @return
 	 */
@@ -433,32 +556,48 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 		List<Record> list = new ArrayList<Record>();
 		
 		//（1）您的机器安装日期已确认为
-		String voiceId1 = "Respond_1_0";
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceId1)) {
+		String voiceName = "respond_1_1";
+		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceName)) {
 			list.add(setRecord("wait","1"));         //先停顿1秒
-			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceId1))); 
+			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceName))); 
 			//list.add(setRecord("wait","1"));         //先停顿1秒
 		}
+		
 		//（2）12月10号
 		String expectInstallDate = bshOrderList.getDate("EXPECT_INSTALL_DATE").toString();      //取出期望安装日期
 		Date installDate = DateFormatUtils.parseDateTime(expectInstallDate, "yyyy-MM-dd");
 		String monthStr = DateFormatUtils.formatDateTime(installDate, "MM");
 		String dayStr = DateFormatUtils.formatDateTime(installDate,"dd");
 		
-		String voiceIdForMonth = "Month_" + monthStr;
-		String voiceIdForDay = "Day_" + dayStr;
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceIdForMonth)) {
-			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceIdForMonth))); 
+		String voiceNameForMonth = "month_" + monthStr;
+		String voiceNameForDay = "day_" + dayStr;
+		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameForMonth)) {
+			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameForMonth))); 
 		}
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceIdForDay)) {
-			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceIdForDay))); 
+		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceNameForDay)) {
+			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameForDay))); 
 		}
 		
-		//（3）工程师最迟会在当天早上9：30之前与您联系具体上门时间。感谢您的配合，再见。
-		String voiceId3 = "Respond_1_1";
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceId3)) {
-			list.add(setRecord("wait","0.5"));         //先停顿1秒
-			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceId3))); 
+		//（3）
+		//     A:工程师最迟会在当天早上9点半之前与您联系具体上门时间，感谢您的配合，再见。
+		//     B:工程师最迟会在当天早上9点半之前与您联系具体上门时间，为确保您的权益，请认准西门子厂家的专业工程师，感谢您的配合，再见。
+		//     C:工程师最迟会在当天早上9点半之前与您联系具体上门时间，为确保您的权益，请认准博世厂家的专业工程师，感谢您的配合，再见。
+		int timeType = bshOrderList.getInt("TIME_TYPE");     //日期类型: 1:安装日期；  2：送货日期
+		int brand = bshOrderList.getInt("BRAND");            //品牌： 0：西门子；  1：博世
+		int channelSource = bshOrderList.getInt("CHANNEL_SOURCE");   //购物平台：1：京东 2：苏宁  3：天猫 4：国美
+		
+		if(timeType==1) {        //日期类型为安装日期
+			String voiceNameForTimeType1 = "respond_1_2_timeType_1";
+			if(channelSource==4) {   //如果购物平台为国美
+				voiceNameForTimeType1 = "respond_1_2_timeType_2_brand_" + brand;
+			}
+			list.add(setRecord("wait","0.5"));      //先停半秒
+			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameForTimeType1)));
+		}else {                  //日期类型为送货日期
+			
+			String voiceNameForTimeType2 = "respond_1_2_timeType_2_brand_" + brand;
+			list.add(setRecord("wait","0.5"));      //先停半秒
+			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceNameForTimeType2)));
 		}
 		
 		return list;
@@ -481,11 +620,11 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 		List<Record> list = new ArrayList<Record>();
 		
 		int brand = bshOrderList.getInt("BRAND");           //取得品牌
-		String voiceId1 = "Respond_2_" + brand;				
+		String voiceName = "respond_2_brand_" + brand;				
 		
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceId1)) {
+		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceName)) {
 			list.add(setRecord("wait","0.5"));         //先停顿1秒
-			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceId1))); 
+			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceName))); 
 		}
 		
 		return list;
@@ -504,10 +643,10 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 		List<Record> list = new ArrayList<Record>();
 		
 		//(1) 
-		String voiceId1 = "Respond_3";
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceId1)) {
+		String voiceName = "respond_3";
+		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceName)) {
 			list.add(setRecord("wait","0.5"));         //先停顿1秒
-			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceId1))); 
+			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceName))); 
 		}
 		
 		return list;
@@ -518,13 +657,63 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 		String voicePath = BSHCallParamConfig.getVoicePathSingle();
 		List<Record> list = new ArrayList<Record>();
 		
-		String voiceId1 = "Respond_4";
-		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceId1)) {
+		int brand = bshOrderList.getInt("BRAND");           //取得品牌
+		String voiceName = "respond_4_brand_" + brand;	
+		
+		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceName)) {
 			list.add(setRecord("wait","0.5"));         //先停顿1秒
-			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceId1))); 
+			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceName))); 
 		}
 		
 		return list;
+	}
+	
+	public List<Record> getRespondErrorPlayList(BSHOrderList bshOrderList) {
+		
+		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		List<Record> list = new ArrayList<Record>();
+		
+		String voiceName = "respond_error";
+		
+		if(BSHVoiceConfig.getVoiceMap().containsKey(voiceName)) {
+			list.add(setRecord("wait","0.5"));         //先停顿1秒
+			list.add(setRecord("PlayBack",voicePath + "/" + BSHVoiceConfig.getVoiceMap().get(voiceName))); 
+		}
+		
+		return list;
+	}
+	
+	/**
+	 * 检查安装/送货日期是否为第二天
+	 * 
+	 * @param expectInstallDate
+	 * 				安装/送货 日期，格式：yyyy-MM-dd,如:2018-12-10
+	 * 
+	 * @return
+	 * 		是：返回true; 否: 返回 false
+	 */
+	public boolean checkInstallDateIsNextDay(String expectInstallDate) {
+		
+		//先判断当天日期与安装日期是否相差一天
+		String installDateTime = expectInstallDate + " 00:00:00";
+		String currDateTime = DateFormatUtils.formatDateTime(new Date(), "yyyy-MM-dd") + " 00:00:00";
+				
+		Date installDate = DateFormatUtils.parseDateTime(installDateTime, "yyyy-MM-dd HH:mm:ss");
+		Date currDate = DateFormatUtils.parseDateTime(currDateTime, "yyyy-MM-dd HH:mm:ss");
+		
+		long installDateTimes = installDate.getTime();
+		long currDateTimes = currDate.getTime();
+		
+		long intervalTimes = installDateTimes - currDateTimes;
+		
+		System.out.println("安装日期：expectInstallDate 为 " + expectInstallDate + ",与今天相差毫秒数：" + intervalTimes);
+		
+		if(intervalTimes == 24 * 60 * 60 * 1000) {
+			return true;
+		}else {
+			return false;
+		}
+		
 	}
 	
 	public Record setRecord(String action,String path) {
