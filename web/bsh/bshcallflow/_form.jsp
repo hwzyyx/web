@@ -3,23 +3,31 @@
 <form id="bshVoiceForm" method="post" enctype="multipart/form-data" data-options="novalidate:true">
 <table id="formTable" border="0" cellspacing="0" cellpadding="0" bordercolor="#c4e1ff" width="680"
 					  style="border-collapse: collapse;">
-			<tr style="padding-top: 10px;">
+			<tr style="padding-top: 10px;margin-top:30px;">
 				<td style="width:120px;text-align:center;">
 					语音描述
 				</td>
 				<td>
 					<input name="bshVoice.VOICE_ID" id="VOICE_ID" type="hidden"></input>
-					<input style="width:400px;" name="bshVoice.VOICE_DESC" id="VOICE_DESC" class="easyui-textbox" type="text" required="true" missingMessage="语音描述名称不能为空!"></input>
+					<input class="easyui-textbox" name="bshVoice.VOICE_DESC" id="VOICE_DESC" data-options="multiline:true"  style="width:300px;height:100px" required="true" missingMessage="语音描述名称不能为空!">
 				</td>
 			</tr>
-			<tr style="display:none;">
+			<tr>
 				<td style="text-align:center;vertical-align: top;">
 					<div style="padding-top:10px;">语音类型</div>
 				</td>
 				<td>
 					<div style="padding-top:10px;">
-						 <input class="easyui-combobox" style="width:300px;" name="bshVoice.VOICE_TYPE" id="VOICE_TYPE"></input>
+						<a href="#" id="voiceTypeDescId" onclick="voiceAdd()" class="easyui-linkbutton" plain="true">语音</a>
 			        </div>
+				</td>
+			</tr>
+			<tr style="padding-top: 10px;">
+				<td style="width:120px;text-align:center;">
+					语音命名
+				</td>
+				<td>
+					<input style="width:300px;" name="bshVoice.VOICE_NAME" id="VOICE_NAME" class="easyui-textbox" type="text" required="true" missingMessage="语音命名!"></input>
 				</td>
 			</tr>
 			<tr>
@@ -30,7 +38,7 @@
 							<a href="#" class="easyui-linkbutton" id="createType_voiceFile" data-options="toggle:true,group:'g1',selected:true">创建方式：文件</a>
 						</div>
 						<div style="padding-top:5px;">
-							<a href="#" class="easyui-linkbutton" id="createType_tts" data-options="toggle:true,group:'g1'">创建方式：TTS</a>
+							<a href="#" class="easyui-linkbutton" id="createType_tts" data-options="toggle:true,group:'g1',disabled:true">创建方式：TTS</a>
 						</div>
 					</div>
 				</td>
