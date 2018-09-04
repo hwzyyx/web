@@ -36,11 +36,11 @@ public class BSHVoice extends Model<BSHVoice> {
 		return b;
 	}
 	
-	public boolean update(String voiceDesc,String voiceType,String fileName,String mimeType,String voiceId) {
+	public boolean update(String voiceDesc,String voiceName,String voiceType,String fileName,String mimeType,String voiceId) {
 		boolean b = false;
 		
 		StringBuilder sb = new StringBuilder();
-		Object[] pars = new Object[5];
+		Object[] pars = new Object[8];
 		int index = 0;
 		
 		sb.append("update bsh_voice set ");
@@ -48,6 +48,12 @@ public class BSHVoice extends Model<BSHVoice> {
 		if(!BlankUtils.isBlank(voiceDesc)) {
 			sb.append("VOICE_DESC=?");
 			pars[index] = voiceDesc;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(voiceName)) {
+			sb.append(",VOICE_NAME=?");
+			pars[index] = voiceName;
 			index++;
 		}
 		
@@ -309,6 +315,17 @@ public class BSHVoice extends Model<BSHVoice> {
 	}
 	
 	/**
+	 * 根据语音命名查找语音信息
+	 * 
+	 * @param voiceName
+	 * @return
+	 */
+	public BSHVoice getVoiceByVoiceName(String voiceName) {
+		BSHVoice voice = findFirst("select * from bsh_voice where VOICE_NAME=?",voiceName);
+		return voice;
+	}
+	
+	/**
 	 * 取出所有的语音数据
 	 * 
 	 * @return
@@ -353,10 +370,33 @@ public class BSHVoice extends Model<BSHVoice> {
 		
 		for(Record bshVoice:allBSHVoice) {				//遍历所有的语音记录,将VOICE_ID对应FILE_NAME放置MAP配置中
 			
-			String voiceId = bshVoice.get("VOICE_ID");
+			String voiceName = bshVoice.get("VOICE_NAME");
 			String fileName = bshVoice.get("FILE_NAME");
 			
-			BSHVoiceConfig.getVoiceMap().put(voiceId, fileName);
+			BSHVoiceConfig.getVoiceMap().put(voiceName, fileName);
+		}
+		
+	}
+	
+	/**
+	 * 加载语音数据到内存中
+	 */
+	public void loadBSHVoiceDataToMemoryTest() {
+		
+		List<Record> allBSHVoice = getAllBSHVoice();    //先取出所有的语音记录
+		
+		if(BlankUtils.isBlank(allBSHVoice)) {
+			System.out.println("错误：=======-加载博世电器语音到内存失败,bsh_voice 表数据为空,请添加数据后,再重新启动进行加载!");
+			return;
+		}
+		
+		for(Record bshVoice:allBSHVoice) {				//遍历所有的语音记录,将VOICE_ID对应FILE_NAME放置MAP配置中
+			
+			String voiceName = bshVoice.get("VOICE_NAME");
+			//String fileName = bshVoice.get("FILE_NAME");
+			String voiceDesc = bshVoice.get("VOICE_DESC");
+			
+			BSHVoiceConfig.getVoiceMap().put(voiceName, voiceDesc);
 		}
 		
 	}

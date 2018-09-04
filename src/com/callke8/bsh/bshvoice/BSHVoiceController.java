@@ -67,18 +67,94 @@ public class BSHVoiceController extends Controller implements IController {
 
 	@Override
 	public void add() {
+		String flag = getPara("flag");       //上传语音方式：1：语音文件；2：TTS方式
+		String voiceType = getPara("voiceType");     //文件类型：0 开场    1 确认安装  2暂不安装  3延后安装  4已经预约  5错误回复  6日期  7产品
+		
+		renameFileName = String.valueOf(DateFormatUtils.getTimeMillis());   //定义一个文件名，不包括文件名后缀
+		mimeType = "";                                                      //定义一个空变量，用上传文件操作赋值用
+		
+		//如果有上传语音，就要做语音上传及语音转换
+		int fileSize = getRequest().getContentLength();            //得到上传的语音文件的大小,jfinal 最大的限制是10M,上传的语音文件不能超过限制
+		if(fileSize > (10 * 1024 * 1024)) {
+			render(RenderJson.error("添加语音失败,上传的语音文件过大,上传的语音不能超过10M!"));
+			return;
+		}
+		
+		//执行文件上传操作
+		String fileUploadResult = fileUpload();
+		if(!BlankUtils.isBlank(fileUploadResult) && !fileUploadResult.equalsIgnoreCase("fileEmpty")) {    //如果文件上传处理结果返回不为空时，表示遇到处理错误了，按错误直接返回
+			render(RenderJson.error(fileUploadResult));
+			return ;
+		}
+		
+		BSHVoice bshVoice = getModel(BSHVoice.class,"bshVoice");         //得到上传表单信息
+		String voiceDesc = bshVoice.get("VOICE_DESC");
+		String voiceName = bshVoice.get("VOICE_NAME");
+		//先检查是否存在相同的语音描述
+		BSHVoice checkBshVoiceByVoiceDesc = BSHVoice.dao.getVoiceByVoiceDesc(voiceDesc);
+		if(!BlankUtils.isBlank(checkBshVoiceByVoiceDesc)) {     //如果已经能从数据库中查询到有数据，则表示已经存在相同的语音描述
+			
+			//错误时，要删除已经上传的文件
+			String voicePath = BSHCallParamConfig.getVoicePath();
+			String uploadDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator;
+			
+			File file = new File(uploadDir + renameFileName + "." + mimeType);
+			
+			if(file.exists()) {
+				file.delete();
+			}
+			
+			render(RenderJson.error("增加语音失败!已存在相同的语音描述!"));
+			return;
+		}
+		
+		//先检查是否存在相同的语音命名
+		BSHVoice checkBSHVoiceByVoiceName = BSHVoice.dao.getVoiceByVoiceName(voiceName);
+		if(!BlankUtils.isBlank(checkBSHVoiceByVoiceName)) {
+			
+			//错误时，要删除已经上传的文件
+			String voicePath = BSHCallParamConfig.getVoicePath();
+			String uploadDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator;
+			
+			File file = new File(uploadDir + renameFileName + "." + mimeType);
+			
+			if(file.exists()) {
+				file.delete();
+			}
+			
+			render(RenderJson.error("增加语音失败!已存在相同的语音命名!"));
+			return;
+		}
+		
+		
+		
+		bshVoice.set("VOICE_ID", renameFileName);                        //VOICE_ID 为当前的毫秒
+		bshVoice.set("VOICE_TYPE",voiceType);                            //设置
+		bshVoice.set("CREATE_TIME", DateFormatUtils.getCurrentDate());   //设置创建时间
+		bshVoice.set("FILE_NAME", renameFileName);                       //语音文件名称
+		bshVoice.set("MIME_TYPE", mimeType);                             //文件类型
+		
+		boolean b = BSHVoice.dao.add(bshVoice);
+		
+		if(b) {
+			BSHVoice.dao.loadBSHVoiceDataToMemory();     //重新加载数据到内存
+			render(RenderJson.success("添加语音成功!"));
+		}else {
+			render(RenderJson.error("添加语音失败!"));
+		}
+		
 		
 	}
 
 	@Override
 	public void update() {
 		
-		String flag = getPara("flag");        //上传语音的方式
+		String flag = getPara("flag");               							  //上传语音的方式
 		
 		renameFileName = String.valueOf(DateFormatUtils.getTimeMillis());         //定义一个文件名，不包括文件名后缀
 		mimeType = "";															  //定义一个空变量，用上传文件操作赋值用
 		
-		//如果有上传语音,就要做语音上付及语音转换
+		//如果有上传语音,就要做语音上传及语音转换
 		int fileSize = getRequest().getContentLength();    //得到上传的语音文件的大小,jfinal 最大的限制是10M,上传的语音文件不能超过限制
 		if(fileSize > (10 * 1024 * 1024)) {
 			render(RenderJson.error("添加语音失败,上传的语音文件过大,上传的语音不能超过10M!"));
@@ -97,12 +173,13 @@ public class BSHVoiceController extends Controller implements IController {
 		
 		String voiceId = bshVoice.get("VOICE_ID");
 		String voiceDesc = bshVoice.get("VOICE_DESC");
+		String voiceName = bshVoice.get("VOICE_NAME");
 		
 		//修改之前，先检查是否已经存在相同的语音名称
-		BSHVoice checkBshVoice = BSHVoice.dao.getVoiceByVoiceDesc(voiceDesc);
-		if(!BlankUtils.isBlank(checkBshVoice)) {
-			String vId = checkBshVoice.get("VOICE_ID");
-			if(!BlankUtils.isBlank(vId) && !vId.equalsIgnoreCase(voiceId)) {
+		BSHVoice checkBshVoiceByVoiceDesc = BSHVoice.dao.getVoiceByVoiceDesc(voiceDesc);
+		if(!BlankUtils.isBlank(checkBshVoiceByVoiceDesc)) {
+			String vIdVD = checkBshVoiceByVoiceDesc.get("VOICE_ID");
+			if(!BlankUtils.isBlank(vIdVD) && !vIdVD.equalsIgnoreCase(voiceId)) {
 				
 				//错误时，要删除已经上传的文件
 				String voicePath = BSHCallParamConfig.getVoicePath();
@@ -114,11 +191,30 @@ public class BSHVoiceController extends Controller implements IController {
 					file.delete();
 				}
 				
-				render(RenderJson.error("修改语音失败!已存在相同的任务名字!"));
+				render(RenderJson.error("修改语音失败!已存在相同的语音描述"));
 				return;
 			}
 		}
 		
+		BSHVoice checkBSHVoiceByVoiceName = BSHVoice.dao.getVoiceByVoiceName(voiceName);
+		if(!BlankUtils.isBlank(checkBSHVoiceByVoiceName)) {
+			String vIdVN = checkBSHVoiceByVoiceName.get("VOICE_ID");
+			if(!BlankUtils.isBlank(vIdVN) && !vIdVN.equalsIgnoreCase(voiceId)) {
+				
+				//错误时，要删除已经上传的文件
+				String voicePath = BSHCallParamConfig.getVoicePath();
+				String uploadDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator;
+				
+				File file = new File(uploadDir + renameFileName + "." + mimeType);
+				
+				if(file.exists()) {
+					file.delete();
+				}
+				
+				render(RenderJson.error("修改语音失败!已存在相同的语音命名!"));
+				return;
+			}
+		}
 		
 		//如果 flag 为1时，表示上传了新的语音文件，要先删除旧文件，然后替换成新的文件
 		if(!BlankUtils.isBlank(flag) && flag.equalsIgnoreCase("1")) {
@@ -132,7 +228,7 @@ public class BSHVoiceController extends Controller implements IController {
 			bshVoice.set("MIME_TYPE",mimeType);
 		}
 		
-		boolean b = BSHVoice.dao.update(bshVoice.getStr("VOICE_DESC"),bshVoice.getStr("VOICE_TYPE"),bshVoice.getStr("FILE_NAME"), bshVoice.getStr("MIME_TYPE"), bshVoice.getStr("VOICE_ID"));
+		boolean b = BSHVoice.dao.update(bshVoice.getStr("VOICE_DESC"),bshVoice.getStr("VOICE_NAME"),bshVoice.getStr("VOICE_TYPE"),bshVoice.getStr("FILE_NAME"), bshVoice.getStr("MIME_TYPE"), bshVoice.getStr("VOICE_ID"));
 		
 		if(b) {
 			BSHVoice.dao.loadBSHVoiceDataToMemory();    //重新加载数据到内存
@@ -148,7 +244,24 @@ public class BSHVoiceController extends Controller implements IController {
 		
 		String voiceId = getPara("voiceId");
 		
+		BSHVoice bshVoice = BSHVoice.dao.getVoiceByVoiceId(voiceId);    //根据 VOICE_ID 先查询出来语音信息
 		
+		if(BlankUtils.isBlank(bshVoice)) {
+			render("删除语音失败!数据表中没有 VOICE_ID 为  " + voiceId + " 的记录!");
+			return;
+		}
+		
+		//先删除语音文件
+		fileDelete(bshVoice);
+		
+		boolean b = BSHVoice.dao.deleteByVoiceId(voiceId);
+		
+		if(b) {
+			BSHVoice.dao.loadBSHVoiceDataToMemory();    //重新加载数据到内存
+			render(RenderJson.success("删除语音成功!"));
+		}else {
+			render(RenderJson.error("删除语音失败!"));
+		}
 		
 	}
 	
@@ -345,7 +458,7 @@ public class BSHVoiceController extends Controller implements IController {
 			
 		}
 		
-		boolean b = BSHVoice.dao.update(bshVoice.getStr("VOICE_DESC"),bshVoice.getStr("VOICE_TYPE"),bshVoice.getStr("FILE_NAME"), bshVoice.getStr("MIME_TYPE"), bshVoice.getStr("VOICE_ID"));
+		boolean b = BSHVoice.dao.update(bshVoice.getStr("VOICE_DESC"),bshVoice.getStr("VOICE_NAME"),bshVoice.getStr("VOICE_TYPE"),bshVoice.getStr("FILE_NAME"), bshVoice.getStr("MIME_TYPE"), bshVoice.getStr("VOICE_ID"));
 		
 		if(b) {
 			BSHVoice.dao.loadBSHVoiceDataToMemory();    //重新加载数据到内存
