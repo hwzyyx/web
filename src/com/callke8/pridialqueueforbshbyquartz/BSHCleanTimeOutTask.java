@@ -45,7 +45,7 @@ public class BSHCleanTimeOutTask extends TimerTask {
 			for(BSHOrderList bshOrderList:timeOutOrderList) {    //遍历，用于将结果反馈给BSH服务器
 				
 				//对于超时的记录，将结果反馈给BSH服务器
-				BSHHttpRequestThread httpRequestT = new BSHHttpRequestThread(bshOrderList.get("ID").toString(),bshOrderList.getStr("ORDER_ID"), "2", "5");
+				BSHHttpRequestThread httpRequestT = new BSHHttpRequestThread(bshOrderList.get("ID").toString(),bshOrderList.getStr("ORDER_ID"), "2", "6");
 				Thread httpRequestThread = new Thread(httpRequestT);
 				httpRequestThread.start();
 				

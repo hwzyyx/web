@@ -85,6 +85,7 @@ public class BSHPredial {
 		Date firstTime = DateFormatUtils.parseDateTime(firstDateTime, "yyyy-MM-dd HH:mm:ss");    //转回为 Date 对象
 		Timer cleanTimeOutTimer = new Timer();
 		cleanTimeOutTimer.scheduleAtFixedRate(new BSHCleanTimeOutTask(), firstTime, 24 * 60 * 60 * 1000);
+		
 	}
 	
 	/**
@@ -217,7 +218,7 @@ public class BSHPredial {
 		}else {
 			
 			//两次都失败同时，将这个未接听的结果反馈给BSH服务器
-			BSHHttpRequestThread httpRequestT = new BSHHttpRequestThread(bshOrderList.get("ID").toString(),bshOrderList.getStr("ORDER_ID"), "0", "4");
+			BSHHttpRequestThread httpRequestT = new BSHHttpRequestThread(bshOrderList.get("ID").toString(),bshOrderList.getStr("ORDER_ID"), "0", "5");
 			Thread httpRequestThread = new Thread(httpRequestT);
 			httpRequestThread.start();
 			
@@ -247,7 +248,7 @@ public class BSHPredial {
 		}else {
 			
 			//两次都失败同时，将这个未接听的结果反馈给BSH服务器
-			BSHHttpRequestThread httpRequestT = new BSHHttpRequestThread(bshOrderList.get("ID").toString(),bshOrderList.getStr("ORDER_ID"), "0", "4");
+			BSHHttpRequestThread httpRequestT = new BSHHttpRequestThread(bshOrderList.get("ID").toString(),bshOrderList.getStr("ORDER_ID"), "0", "5");
 			Thread httpRequestThread = new Thread(httpRequestT);
 			httpRequestThread.start();
 			
@@ -279,7 +280,7 @@ public class BSHPredial {
 	 * @param callType
 	 * 				外呼类型
 	 * @param callResult
-	 * 				其实基本就是客户回复的结果，外呼结果, 1：确认建单   2 暂不安装  3 短信确认   4 错误或无回复  5 放弃呼叫 6已过期
+	 * 				其实基本就是客户回复的结果，外呼结果, 1：确认建单   2 暂不安装  3 短信确认 4提前预约  5 错误或无回复  6 放弃呼叫 7已过期
 	 * 
 	 * @param lastCallResult
 	 */
