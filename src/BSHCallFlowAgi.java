@@ -81,14 +81,24 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 		
 		try {
 			
+			String voicePath = BSHCallParamConfig.getVoicePathSingle();   //取出配置的语音文件（单声道）路径
+			
 			exec("Read","respond," + readVoiceFileList + ",1,,1,8");
 			
 			String respond = channel.getVariable("respond");     //取得回复结果
+			StringUtil.log(BSHCallFlowAgi.class, "客户 " + bshOrderList.get("CUSTOMER_TEL") + " 第1次回复输入：" + respond);
 			
 			//一共要求两次，如果客户第一次回复为空或是错误回复时，再执行一次。
 			if(BlankUtils.isBlank(respond) || !(respond.equalsIgnoreCase("1") || respond.equalsIgnoreCase("2") || respond.equalsIgnoreCase("3") || respond.equalsIgnoreCase("4"))) {
+				
+				if(!BlankUtils.isBlank(respond)) {    //如果客户回复不为空，但是按键又不为  1，2，3，4 时
+					String inputErrorVoice = voicePath + "/" + BSHVoiceConfig.getVoiceMap().get("response_error_for_first_time");
+					exec("PlayBack",inputErrorVoice);         //提示输入有误
+				}
+				
 				exec("Read","respond," + readVoiceFileList + ",1,,1,8");
 				respond = channel.getVariable("respond");     //再次取得回复结果
+				StringUtil.log(BSHCallFlowAgi.class, "客户 " + bshOrderList.get("CUSTOMER_TEL") + " 第2次回复输入：" + respond);
 			}
 			
 			if(!BlankUtils.isBlank(respond)) {      //客户回复不为空时
