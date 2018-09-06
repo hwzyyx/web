@@ -391,7 +391,7 @@
 		<div id="container" style="height:650px;width:1200px;"></div>
 		
 		<!-- 数据汇总区 -->
-		<div class="easyui-tabs" style="width:1200px;height:180px;margin-left:10px;">
+		<div class="easyui-tabs" style="width:1220px;height:180px;margin-left:10px;">
 			<div title="数据统计汇总" style="padding:10px">
 				
 			<table id="summaryDg" class="easyui-datagrid" data-options="fit:true,singleSelect:true,rownumbers:false" toolbar='#summaryDgTool'>
