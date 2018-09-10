@@ -51,6 +51,17 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 		exec("Noop","AGI流程得到的订单ID为：" + bshOrderListId + ",订单详情：" + bshOrderList);
 		StringUtil.writeString("/opt/dial-log.log",DateFormatUtils.getCurrentDate() + ",FastAGI11111(流程执行)：" + bshOrderList.getStr("CUSTOMER_TEL") + ",通道标识:" + channel.getName(), true);
 		
+		/**
+		 * 2018-09-06 强行加入逻辑，用于处理，提交上来的订单，如果平台渠道为非国美平台，但是日期类型却又是送货日期时，需要强行将送货日期改为安装日期
+		 */
+		int channelSource = bshOrderList.getInt("CHANNEL_SOURCE");           //购物平台，1：京东；2：苏宁；3：天猫；4：国美
+		int timeType = bshOrderList.getInt("TIME_TYPE");                     //日期类型，1：安装日期；2：送货日期
+		if(timeType==2) {    //即等于2，送货日期时
+			if(channelSource!=4) {  //而购物平台却又非国美时（因为只有国美是送货日期类型）
+				bshOrderList.set("TIME_TYPE", 1);
+			}
+		}
+		
 		//playList = getPlayList(bshOrderList);     //组织播放开始语音
 		String readVoiceFileList = getReadVoiceFileToString(bshOrderList);   //Read应用所需语音文件
 		
