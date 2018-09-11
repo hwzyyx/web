@@ -3,14 +3,12 @@ package com.callke8.common;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.quartz.SchedulerException;
-
-import com.callke8.astutils.AgentStateMonitor;
 import com.callke8.astutils.AsteriskConfig;
 import com.callke8.astutils.AsteriskConnectionPool;
 import com.callke8.astutils.AsteriskUtils;
 import com.callke8.autocall.autoblacklist.AutoBlackList;
 import com.callke8.autocall.autoblacklist.AutoBlackListTelephone;
+import com.callke8.autocall.autocallparam.AutoCallParam;
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.autocall.autocalltask.history.AutoCallTaskHistory;
@@ -35,15 +33,11 @@ import com.callke8.call.calltelephone.CallTelephone;
 import com.callke8.call.calltelephone.CallerLocation;
 import com.callke8.call.common.CallRoute;
 import com.callke8.call.incoming.InComing;
-import com.callke8.fastagi.autocontact.AutoContact;
-import com.callke8.fastagi.autocontact.AutoContactRecord;
 import com.callke8.fastagi.blacklist.BlackList;
 import com.callke8.fastagi.blacklist.BlackListInterceptRecord;
 import com.callke8.fastagi.common.FastagiRoute;
 import com.callke8.fastagi.transfer.Transfer;
 import com.callke8.fastagi.transfer.TransferRecord;
-import com.callke8.predialqueue.Predial;
-import com.callke8.pridialqueueforbshbyquartz.BSHPredial;
 import com.callke8.report.cdr.Cdr;
 import com.callke8.report.clientinfo.ClientInfo;
 import com.callke8.report.clienttouch.ClientTouchRecord;
@@ -128,14 +122,6 @@ public class CommonConfig extends JFinalConfig {
 	public void configPlugin(Plugins me) {
 		loadPropertyFile("commonconfig.properties");
 		
-		//将配置中的自动接触中的context和channel的内容加载到内存
-		Map<String,String> map = new HashMap<String,String>();
-		map.put("autoContactContext",getProperty("autoContactContext"));
-		map.put("autoContactChannel",getProperty("autoContactChannel"));
-		map.put("autoContactRecordDir",getProperty("autoContactRecordDir"));
-		
-		MemoryVariableUtil.autoContactMap = map;
-		
 		//将配置中的语音保存路径加载到内存
 		Map<String,String> voiceMap = new HashMap<String,String>();
 		voiceMap.put("cdrVoicePath", getProperty("cdrVoicePath"));
@@ -205,6 +191,7 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("callerloc", CallerLocation.class);
 		
 		//自动外呼管理数据表映射
+		arp.addMapping("ac_call_param", AutoCallParam.class);
 		arp.addMapping("ac_call_task", AutoCallTask.class);
 		arp.addMapping("ac_call_task_history", AutoCallTaskHistory.class);
 		arp.addMapping("ac_call_task_telephone", AutoCallTaskTelephone.class);
@@ -231,8 +218,6 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("sys_blacklist", BlackList.class);
 		arp.addMapping("sys_blacklist_intercept_record", BlackListInterceptRecord.class);
 		arp.addMapping("incoming", InComing.class);
-		arp.addMapping("auto_contact", AutoContact.class);
-		arp.addMapping("auto_contact_record",AutoContactRecord.class);
 		
 		//博世家电数据表
 		arp.addMapping("bsh_orderlist", BSHOrderList.class);
@@ -261,13 +246,11 @@ public class CommonConfig extends JFinalConfig {
 		
 		//五、启动博世电器的自动外呼扫描，并执行自动外呼操作
 		/*BSHPredial bshPredial = new BSHPredial();
-		bshPredial.exec();*/
-		BSHPredial bshPredial = new BSHPredial();
 		try {
 			bshPredial.exec();
 		} catch (SchedulerException e) {
 			e.printStackTrace();
-		}
+		}*/
 		
 	}
 

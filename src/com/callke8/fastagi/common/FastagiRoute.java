@@ -1,7 +1,5 @@
 package com.callke8.fastagi.common;
 
-import com.callke8.fastagi.autocontact.AutoContactController;
-import com.callke8.fastagi.autocontact.AutoContactRecordController;
 import com.callke8.fastagi.blacklist.BlackListController;
 import com.callke8.fastagi.blacklist.BlackListInterceptRecordController;
 import com.callke8.fastagi.transfer.TransferController;
@@ -13,8 +11,6 @@ public class FastagiRoute extends Routes {
 
 	@Override
 	public void config() {
-		add("autoContact",AutoContactController.class,"/fastagi/autocontact");
-		add("autoContactRecord",AutoContactRecordController.class,"/fastagi/autocontactrecord");
 		add("blacklist", BlackListController.class, "/fastagi/blacklist");
 		add("blacklistInterceptRecord", BlackListInterceptRecordController.class, "/fastagi/blacklistinterceptrecord");
 		add("transfer", TransferController.class, "/fastagi/transfer");
