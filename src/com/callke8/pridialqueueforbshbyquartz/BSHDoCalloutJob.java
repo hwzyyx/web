@@ -21,6 +21,7 @@ import com.callke8.astutils.AsteriskConnectionPool;
 import com.callke8.astutils.AsteriskUtils;
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.StringUtil;
 
@@ -42,12 +43,16 @@ public class BSHDoCalloutJob implements Job{
 		
 		StringUtil.log(this, "线程 BSHDoCalloutJob[33333333] : 外呼Job接到一个外呼任务,ID值:" + bshOrderListId + ",任务详情:" + bshOrderList);
 		
+		String trunkInfo = ParamConfig.paramConfigMap.get("paramType_3_trunkInfo");
+		String agiUrl = ParamConfig.paramConfigMap.get("paramType_3_agiUrl");
+		String callerNumber = ParamConfig.paramConfigMap.get("paramType_3_callerNumber");
+		
 		//准备拼接外呼参数
-		String channel = BSHCallParamConfig.getTrunkInfo() + "/" + bshOrderList.get("CALLOUT_TEL");
+		String channel = trunkInfo + "/" + bshOrderList.get("CALLOUT_TEL");
 		String application = "AGI";
-		String applicationData = BSHCallParamConfig.getAgiUrl();
+		String applicationData = agiUrl;
 		long timeout = 30 * 1000L;
-		String callerId = BSHCallParamConfig.getCallerNumber();
+		String callerId = callerNumber;
 		Map<String,String> virablesMap = new HashMap<String,String>();   //设置通道变量
 		virablesMap.put("bshOrderListId", String.valueOf(bshOrderListId));
 		

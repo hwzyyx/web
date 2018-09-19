@@ -17,14 +17,14 @@
 		$(function(){
 			$("#dictGroupDg").datagrid({
 				url:'dictGroup/datagrid',
-				pageSize:15,
+				pageSize:50,
 				pagination:true,      
 				fit:true,
 				singleSelect:false,
 				rowrap:true,
 				striped: true,
 				rownumbers: true,
-				pageList:[10,15,20],
+				pageList:[20,30,50],
 				toolbar:'#searchtool',
 				checkbox:true,
 				idFile:'GROUP_CODE'

@@ -10,6 +10,7 @@ import com.callke8.autocall.voice.Voice;
 import com.callke8.common.CommonController;
 import com.callke8.common.IController;
 import com.callke8.system.operator.Operator;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.MemoryVariableUtil;
@@ -201,7 +202,7 @@ public class QuestionnaireController extends Controller implements IController {
 			Voice voice = Voice.dao.getVoiceByVoiceId(voiceId);    //查询语音信息
 			
 			//设置试听的路径
-			String path =  MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + "/" + voice.get("FILE_NAME") + "." + voice.get("MIME_TYPE");
+			String path =  ParamConfig.paramConfigMap.get("paramType_4_voicePath") + "/" + voice.get("FILE_NAME") + "." + voice.get("MIME_TYPE");
 			
 			List<QuestionItem> questionItemList = QuestionItem.dao.getQuestionItemByQuestionId(questionId); //根据问题ID,取出问题的所有的选项
 			

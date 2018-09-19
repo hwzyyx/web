@@ -10,6 +10,8 @@ import org.asteriskjava.live.CallerId;
 import org.asteriskjava.live.LiveException;
 import org.asteriskjava.live.OriginateCallback;
 
+import com.callke8.system.param.ParamConfig;
+
 /**
  * CtiService 为 CtiUtils 的执行 CTI 线程
  * 
@@ -52,7 +54,7 @@ public class LaunchCtiService implements Runnable{
 	public void doCallOutByAgent(String agentNumber,String clientNumber) {
 		
 		String channel = "SIP/" + agentNumber;
-		String context = AsteriskConfig.getAstCallOutContext();
+		String context = ParamConfig.paramConfigMap.get("paramType_1_defaultCallOutContext");
 		String exten = clientNumber;
 		int priority = 1;
 		int timeout = 30 * 1000;
@@ -60,7 +62,8 @@ public class LaunchCtiService implements Runnable{
 		if(agentNumber.length()<=4) {
 			callerId = new CallerId(agentNumber,agentNumber);
 		}else {
-			callerId = new CallerId(AsteriskConfig.getAstCallerId(),AsteriskConfig.getAstCallerId());
+			String defaultCallerId = ParamConfig.paramConfigMap.get("paramType_1_defaultCallerId");
+			callerId = new CallerId(defaultCallerId,defaultCallerId);
 		}
 		
 		Map variables = new HashMap();

@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 
 public class BSHLoadOrderListThread implements Runnable {
@@ -41,8 +42,8 @@ public class BSHLoadOrderListThread implements Runnable {
 			if(compareResult == 2) {
 				
 				int queueCount = BSHQueueMachineManager.queueCount;				//先查看排队机中的数量
-				int queueMaxCount = BSHCallParamConfig.getQueueMaxCount();      //排队机允许最大的排队数量
-				int scanCount = BSHCallParamConfig.getScanCount();              //单次扫描的数量
+				int queueMaxCount = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_queueMaxCount"));		//排队机允许最大的排队数量
+				int scanCount = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_scanCount"));;              //单次扫描的数量
 				
 				if(queueCount < queueMaxCount) {        //如果排队机中的数量已经大于或是等于允许的最大值，暂不加载数据到排队机
 					
@@ -83,7 +84,8 @@ public class BSHLoadOrderListThread implements Runnable {
 			
 			//修改一定的时间，时间间隔根据 BSHCallParamConfig 配置
 			try {
-				Thread.sleep(BSHCallParamConfig.getScanInterval() * 1000);
+				int scanInterval = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_scanInterval"));
+				Thread.sleep(scanInterval * 1000);
 			}catch (InterruptedException e) {
 				e.printStackTrace();
 			}

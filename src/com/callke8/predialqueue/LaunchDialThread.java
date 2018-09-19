@@ -23,12 +23,12 @@ public class LaunchDialThread extends Thread {
 	private Log log = LogFactory.getLog(LaunchDialThread.class);
 	
 	public LaunchDialThread() {
-		scanInterval = Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_scanInterval"));
-		scanCount = Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_scanCount"));
-		timeout = Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_timeout"));
-		maxConcurrentCount = Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_maxConcurrentCount"));
-		channelPrefix = MemoryVariableUtil.autoCallTaskMap.get("ac_channelPrefix");
-		agiUrl = MemoryVariableUtil.autoCallTaskMap.get("ac_agiUrl");
+		scanInterval = 0;// Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_scanInterval"));
+		scanCount = 0;//Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_scanCount"));
+		timeout = 30;//Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_timeout"));
+		maxConcurrentCount = 0;//Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_maxConcurrentCount"));
+		channelPrefix = "";//MemoryVariableUtil.autoCallTaskMap.get("ac_channelPrefix");
+		agiUrl = "";//MemoryVariableUtil.autoCallTaskMap.get("ac_agiUrl");
 	}
 	
 	public void run() {

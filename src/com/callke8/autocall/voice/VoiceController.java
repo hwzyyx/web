@@ -14,6 +14,7 @@ import com.callke8.autocall.questionnaire.Question;
 import com.callke8.common.CommonController;
 import com.callke8.common.IController;
 import com.callke8.system.operator.Operator;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.HttpRequestUtils;
@@ -76,8 +77,9 @@ public class VoiceController extends Controller implements IController {
 		if(!BlankUtils.isBlank(Voice.dao.getVoiceByVoiceDesc(voiceDesc))) {
 			
 			//错误时，要删除已经上传的文件
-			String autocallVoicePath = MemoryVariableUtil.voicePathMap.get("autocallVoicePath");
-			String uploadDir = PathKit.getWebRootPath() + File.separator + autocallVoicePath + File.separator;
+			//String autocallVoicePath = MemoryVariableUtil.voicePathMap.get("autocallVoicePath");
+			String voicePath = ParamConfig.paramConfigMap.get("paramType_4_voicePath");
+			String uploadDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator;
 			
 			File file = new File(uploadDir + renameFileName + "." + mimeType);
 			
@@ -149,7 +151,7 @@ public class VoiceController extends Controller implements IController {
 		
 		
 		this.renameFileName = String.valueOf(DateFormatUtils.getTimeMillis());     //定义一个文件名，不包括文件名后缀
-		this.mimeType = "mp3";
+		this.mimeType = "wav";
 		
 		//先判断TTS内容是否为空
 		if(BlankUtils.isBlank(ttsContent)) {
@@ -159,21 +161,21 @@ public class VoiceController extends Controller implements IController {
 		
 		String tok = CommonController.getTTSTok();
 		
-		//从内存中取出配置的自动外呼的语音路径配置，主要包括原始语音路径和转换成 vox 存放的路径
-		String autocallVoicePath = MemoryVariableUtil.voicePathMap.get("autocallVoicePath");            
-		String autocallVoiceVoxPath = MemoryVariableUtil.voicePathMap.get("autocallVoiceVoxPath");
+		//从内存中取出配置的自动外呼的语音路径配置，主要包括原始语音路径和转换成 wav(8000)即是single 存放的路径
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_4_voicePath");
+		String voicePathSingle = ParamConfig.paramConfigMap.get("paramType_4_voicePathSingle");
 		
-		//组织上传路径的绝对路径
-		String outputDir = PathKit.getWebRootPath() + File.separator + autocallVoicePath + File.separator + renameFileName + ".mp3";
-		String voxVoiceDir = PathKit.getWebRootPath() + File.separator + autocallVoiceVoxPath + File.separator + renameFileName + ".vox";
+		//组织上传路径的绝对路径()
+		String voicePathFullDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator + renameFileName + "." + mimeType;
+		String voicePathSingleFullDir = PathKit.getWebRootPath() + File.separator + voicePathSingle + File.separator + renameFileName + "." + mimeType;
 		
 		//执行TTS操作,并保存到 outputDir
-		HttpRequestUtils.httpRequestForTTSToFile(tok, ttsContent, outputDir);
+		HttpRequestUtils.httpRequestForTTSToFile(tok, ttsContent, voicePathFullDir);
 		
 		//然后执行sox转换
-		String chmodCmd = "chmod 777 " + outputDir;
+		String chmodCmd = "chmod 777 " + voicePathFullDir;
 		
-		String cmd = "/usr/local/bin/sox " + outputDir + " -r 8000 -c 1 " + voxVoiceDir;
+		String cmd = "/usr/local/bin/sox " + voicePathFullDir + " -r 8000 -c 1 " + voicePathSingleFullDir;
 		System.out.println("执行的 CMD  命令为:" + cmd);
 		
 		try {
@@ -222,12 +224,12 @@ public class VoiceController extends Controller implements IController {
 	public String fileUpload() {
 		
 		//从内存中取出配置的自动外呼的语音路径配置，主要包括原始语音路径和转换成 vox 存放的路径
-		String autocallVoicePath = MemoryVariableUtil.voicePathMap.get("autocallVoicePath");            
-		String autocallVoiceVoxPath = MemoryVariableUtil.voicePathMap.get("autocallVoiceVoxPath");
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_4_voicePath");
+		String voicePathSingle = ParamConfig.paramConfigMap.get("paramType_4_voicePathSingle");
 		
 		//组织上传路径的绝对路径
-		String uploadDir = PathKit.getWebRootPath() + File.separator + autocallVoicePath + File.separator;
-		String voxVoiceDir = PathKit.getWebRootPath() + File.separator + autocallVoiceVoxPath + File.separator;
+		String uploadDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator;
+		String voxVoiceDir = PathKit.getWebRootPath() + File.separator + voicePathSingle + File.separator;
 		
 		//执行上传语音保存
 		UploadFile uf = getFile("voiceFile",uploadDir);
@@ -284,8 +286,8 @@ public class VoiceController extends Controller implements IController {
 		String voiceFileName = voice.get("FILE_NAME") + "." + voice.getStr("MIME_TYPE");   //文件名=文件名 + 后缀
 		String voiceVoxFileName = voice.get("FILE_NAME") + ".vox";                        //再根据文件名，定义 vox 文件
 		
-		File voiceFile = new File(PathKit.getWebRootPath() + File.separator + MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + File.separator + voiceFileName);
-		File voiceVoxFile = new File(PathKit.getWebRootPath() + File.separator + MemoryVariableUtil.voicePathMap.get("autocallVoiceVoxPath") + File.separator + voiceVoxFileName);
+		File voiceFile = new File(PathKit.getWebRootPath() + File.separator + ParamConfig.paramConfigMap.get("paramType_4_voicePath") + File.separator + voiceFileName);
+		File voiceVoxFile = new File(PathKit.getWebRootPath() + File.separator + ParamConfig.paramConfigMap.get("paramType_4_voicePathSingle") + File.separator + voiceVoxFileName);
 		
 		//删除过程
 		if(voiceFile.exists()) {
@@ -412,8 +414,8 @@ public class VoiceController extends Controller implements IController {
 			if(!BlankUtils.isBlank(vId) && !vId.equalsIgnoreCase(voiceId)) {
 				
 				//错误时，要删除已经上传的文件
-				String autocallVoicePath = MemoryVariableUtil.voicePathMap.get("autocallVoicePath");
-				String uploadDir = PathKit.getWebRootPath() + File.separator + autocallVoicePath + File.separator;
+				String voicePath = ParamConfig.paramConfigMap.get("paramType_4_voicePath");
+				String uploadDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator;
 				
 				File file = new File(uploadDir + renameFileName + "." + mimeType);
 				
@@ -485,27 +487,27 @@ public class VoiceController extends Controller implements IController {
 		
 		
 		renameFileName = String.valueOf(DateFormatUtils.getTimeMillis());     //定义一个文件名，不包括文件名后缀
-		mimeType = "mp3";                                                        //定义一个空变量，用上传文件操作赋值用
+		mimeType = "wav";                                                        //定义一个空变量，用上传文件操作赋值用
 		//如果TTS内容不为空时，就要做TTS转换
 		if(!BlankUtils.isBlank(ttsContent)) {
 			
 			String tok = CommonController.getTTSTok();
 			
 			//从内存中取出配置的自动外呼的语音路径配置，主要包括原始语音路径和转换成 vox 存放的路径
-			String autocallVoicePath = MemoryVariableUtil.voicePathMap.get("autocallVoicePath");            
-			String autocallVoiceVoxPath = MemoryVariableUtil.voicePathMap.get("autocallVoiceVoxPath");
+			String voicePath = ParamConfig.paramConfigMap.get("paramType_4_voicePath");            
+			String voicePathSingle = ParamConfig.paramConfigMap.get("paramType_4_voicePathSingle"); 
 			
 			//组织上传路径的绝对路径
-			String outputDir = PathKit.getWebRootPath() + File.separator + autocallVoicePath + File.separator + renameFileName + ".mp3";
-			String voxVoiceDir = PathKit.getWebRootPath() + File.separator + autocallVoiceVoxPath + File.separator + renameFileName + ".vox";
+			String voicePathFullDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator + renameFileName + "." + mimeType;
+			String voicePathSingleFullDir = PathKit.getWebRootPath() + File.separator + voicePathSingle + File.separator + renameFileName + "." + mimeType;
 			
 			//执行TTS操作,并保存到 outputDir
-			HttpRequestUtils.httpRequestForTTSToFile(tok, ttsContent, outputDir);
+			HttpRequestUtils.httpRequestForTTSToFile(tok, ttsContent, voicePathFullDir);
 			
 			//然后执行sox转换
-			String chmodCmd = "chmod 777 " + outputDir;
+			String chmodCmd = "chmod 777 " + voicePathFullDir;
 			
-			String cmd = "/usr/local/bin/sox " + outputDir + " -r 8000 -c 1 " + voxVoiceDir;
+			String cmd = "/usr/local/bin/sox " + voicePathFullDir + " -r 8000 -c 1 " + voicePathSingleFullDir;
 			
 			System.out.println("执行的 CMD  命令为:" + cmd);
 			

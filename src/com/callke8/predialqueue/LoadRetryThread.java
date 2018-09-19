@@ -27,8 +27,8 @@ public class LoadRetryThread extends Thread {
 	
 	public LoadRetryThread() {
 		//将内存中的配置取出
-		scanInterval = Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_scanInterval"));  //扫描时间间隔
-		maxLoadCount = Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_maxLoadCount"));      //加载总数量 
+		scanInterval = 0;//Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_scanInterval"));  //扫描时间间隔
+		maxLoadCount = 0;//Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_maxLoadCount"));      //加载总数量 
 		
 	}
 	

@@ -61,7 +61,7 @@ public class LaunchDialService implements Runnable {
 		//已重试次数
 		retried = Integer.valueOf(autoCallTaskTelephone.get("RETRIED").toString());
 		//超时时间
-		timeout = Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("ac_timeout")) * 1000;
+		timeout = 30 * 1000;
 		
 		//取出任务信息
 		autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
@@ -75,9 +75,9 @@ public class LaunchDialService implements Runnable {
 		retryTimes = Integer.valueOf(autoCallTask.get("RETRY_TIMES").toString());
 		retryInterval = Integer.valueOf(autoCallTask.get("RETRY_INTERVAL").toString());
 		
-		channel = MemoryVariableUtil.autoCallTaskMap.get("ac_channelPrefix") + "/0" + telephone;
+		channel = "SIP/AvayaTrunk/0" + telephone;
 		log.info("外呼通道:" + channel + "------========");
-		data = MemoryVariableUtil.autoCallTaskMap.get("ac_agiUrl");
+		data = null;//MemoryVariableUtil.autoCallTaskMap.get("ac_agiUrl");
 		
 		activeChannelCount++;   //每做一次呼叫,活动的通道变量增加一个
 		

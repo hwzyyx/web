@@ -6,6 +6,7 @@ import java.util.TimerTask;
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHHttpRequestThread;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 
 /**
@@ -60,11 +61,12 @@ public class BSHFeedBackCallResultTimerTask extends TimerTask {
 	 * 				最后一次外呼的结果：NOANSWER(未接);FAILURE(失败);BUSY(线忙);SUCCESS(成功)
 	 */
 	public void updateBSHOrderListStateForFailure(String lastCallResult,int retried) {
-		
-		if(retried < BSHCallParamConfig.getRetryTimes()) {      //如果已重试次数小于限定的重试次数时
+		int retryTimes = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_retryTimes"));
+		int retryInterval = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_retryInterval"));
+		if(retried < retryTimes) {      //如果已重试次数小于限定的重试次数时
 			
 			//设置当前号码的状态为重试状态
-			BSHOrderList.dao.updateBSHOrderListStateToRetry(bshOrderList.getInt("ID"), "3", BSHCallParamConfig.getRetryInterval(), lastCallResult);
+			BSHOrderList.dao.updateBSHOrderListStateToRetry(bshOrderList.getInt("ID"), "3", retryInterval, lastCallResult);
 		}else {
 			
 			//两次都失败同时，将这个未接听的结果反馈给BSH服务器

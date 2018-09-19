@@ -14,11 +14,10 @@ import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.autocall.questionnaire.Question;
 import com.callke8.autocall.questionnaire.QuestionnaireRespond;
 import com.callke8.autocall.voice.Voice;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
-import com.callke8.utils.MemoryVariableUtil;
 import com.callke8.utils.StringUtil;
-import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 
 /**
@@ -31,7 +30,7 @@ import com.jfinal.plugin.activerecord.Record;
 public class AutoCallTaskAgi extends BaseAgiScript {
 
 	private Log log = LogFactory.getLog(AutoCallTaskAgi.class);
-	private String voicePath =  MemoryVariableUtil.voicePathMap.get("autocallVoiceVoxPath");
+	private String voicePathSingle = ParamConfig.paramConfigMap.get("paramType_4_voicePathSingle"); 
 	
 	@Override
 	public void service(AgiRequest request, AgiChannel channel)
@@ -67,7 +66,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			
 		}else {   //如果播放列表为空时,提醒播放无语音文件播放
 			exec("Noop","播放列表为空");
-			exec("PlayBack",voicePath + "/emptyPlayList");
+			exec("PlayBack",voicePathSingle + "/emptyPlayList");
 		}
 		
 		exec("hangup");
@@ -153,7 +152,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		boolean b = false;
 		
 		try {
-			exec("Read","isRepeat," + voicePath + "/repeat,1,s,,10");
+			exec("Read","isRepeat," + voicePathSingle + "/repeat,1,s,,10");
 			
 			String isRepeat = channel.getVariable("isRepeat");
 			
@@ -199,7 +198,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			Voice startVoice = Voice.dao.getVoiceByVoiceId(startVoiceId);
 			
 			String fileName = startVoice.get("FILE_NAME");    //语音文件
-			String startVoicePath = voicePath + "/" + fileName;
+			String startVoicePath = voicePathSingle + "/" + fileName;
 			
 			list.add(setRecord("PlayBack",startVoicePath,null));    // 设置record并加入list
 		}
@@ -212,7 +211,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 				Voice commonVoice = Voice.dao.getVoiceByVoiceId(commonVoiceId);
 				String fileName = commonVoice.get("FILE_NAME");
 				
-				String commonVoicePath = voicePath + "/" + fileName;
+				String commonVoicePath = voicePathSingle + "/" + fileName;
 				
 				list.add(setRecord("PlayBack",commonVoicePath,null));
 				
@@ -238,7 +237,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 							Voice questionVoice = Voice.dao.getVoiceByVoiceId(voiceId);
 							
 							String fileName = questionVoice.get("FILE_NAME");
-							String questionVoicePath = voicePath + "/" + fileName;
+							String questionVoicePath = voicePathSingle + "/" + fileName;
 							
 							list.add(setRecord("Read","question," + questionVoicePath + ",1,,3,10",questionId));
 						}
@@ -267,33 +266,33 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			}
 			
 			//问候语：尊敬的客户您好
-			list.add(setRecord("PlayBack",voicePath + "/greeting",null));
+			list.add(setRecord("PlayBack",voicePathSingle + "/greeting",null));
 			
 			//判断催缴类型
 			if(reminderType.equals("7")) {    //社保催缴
 				
 				//催缴提醒:请及时汇缴
-				list.add(setRecord("PlayBack",voicePath + "/reminderalert",null));
+				list.add(setRecord("PlayBack",voicePathSingle + "/reminderalert",null));
 				
 				//2017年
 				if(!BlankUtils.isBlank(year)) {
-					list.add(setRecord("PlayBack",voicePath + "/" + year,null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/" + year,null));
 				}
 				
 				//5月
 				if(!BlankUtils.isBlank(month)) {
-					list.add(setRecord("PlayBack",voicePath + "/" + month,null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/" + month,null));
 				}
 				
 				//的社保费
-				list.add(setRecord("Play",voicePath + "/socialfees",null));
+				list.add(setRecord("Play",voicePathSingle + "/socialfees",null));
 				
 			}else if(reminderType.equals("6")) {     //交通违章催缴
 				
 				//交通违章催缴的模板：尊敬的客户您好,您2016年03月01日，有交通违章行为,请到交警部门接受处理
 				
 				//您
-				list.add(setRecord("PlayBack",voicePath + "/nin",null));
+				list.add(setRecord("PlayBack",voicePathSingle + "/nin",null));
 				
 				//要重新分解日期
 				if(!BlankUtils.isBlank(period) && period.length()==8) {
@@ -303,15 +302,15 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 					day = period.substring(6,8);
 					
 					//2017年
-					list.add(setRecord("PlayBack",voicePath + "/" + year,null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/" + year,null));
 					//5月
-					list.add(setRecord("PlayBack",voicePath + "/" + month,null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/" + month,null));
 					//1日
-					list.add(setRecord("PlayBack",voicePath + "/" + day + "d",null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/" + day + "d",null));
 				}
 				
 				//有交通违章行为,请到交警部门接受处理：trafficnotice.wav
-				list.add(setRecord("PlayBack",voicePath + "/trafficnotice",null));
+				list.add(setRecord("PlayBack",voicePathSingle + "/trafficnotice",null));
 				
 			}else if(reminderType.equals("5")) {       //物业管理费
 				
@@ -325,7 +324,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 				//日期格式：应该是 201605-201606
 				
 				//您
-				list.add(setRecord("PlayBack",voicePath + "/nin",null));
+				list.add(setRecord("PlayBack",voicePathSingle + "/nin",null));
 				
 				if(!BlankUtils.isBlank(period) && period.length()==13) {
 					
@@ -333,22 +332,22 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 					month1 = period.substring(4,6);
 					
 					//2017年5月
-					list.add(setRecord("PlayBack",voicePath + "/" + year1,null));
-					list.add(setRecord("PlayBack",voicePath + "/" + month1,null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/" + year1,null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/" + month1,null));
 					
 					//至 
-					list.add(setRecord("PlayBack",voicePath + "/zhi",null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/zhi",null));
 					
 					year2 = period.substring(7,11);
 					month2 = period.substring(11,13);
 					
 					//2017年6月
-					list.add(setRecord("PlayBack",voicePath + "/" + year2,null));
-					list.add(setRecord("PlayBack",voicePath + "/" + month2,null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/" + year2,null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/" + month2,null));
 				}
 				
 				//的物业管理费是
-				list.add(setRecord("PlayBack",voicePath + "/propertyfees",null));
+				list.add(setRecord("PlayBack",voicePathSingle + "/propertyfees",null));
 				
 				//读费用
 				//先转换,将费用转换成金钱读数: 如 103.24 返回  1b03d24y
@@ -358,7 +357,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 					
 					for(char c:chars) {      
 						//组织文件
-						list.add(setRecord("PlayBack",voicePath + "/" + c,null));
+						list.add(setRecord("PlayBack",voicePathSingle + "/" + c,null));
 					}
 					
 				}
@@ -366,24 +365,24 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			}else {
 				
 				//您
-				list.add(setRecord("PlayBack",voicePath + "/nin",null));
+				list.add(setRecord("PlayBack",voicePathSingle + "/nin",null));
 				
 				//2017年6月
-				list.add(setRecord("PlayBack",voicePath + "/" + year,null));
-				list.add(setRecord("PlayBack",voicePath + "/" + month,null));
+				list.add(setRecord("PlayBack",voicePathSingle + "/" + year,null));
+				list.add(setRecord("PlayBack",voicePathSingle + "/" + month,null));
 				
 				if(reminderType.equals("1")) {          //电话费
 					//的电话费是
-					list.add(setRecord("PlayBack",voicePath + "/telephonefees",null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/telephonefees",null));
 				}else if(reminderType.equals("2")) {    //电费
 					//的电费是
-					list.add(setRecord("PlayBack",voicePath + "/electricfees",null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/electricfees",null));
 				}else if(reminderType.equals("3")) {    //水费
 					//的水费是
-					list.add(setRecord("PlayBack",voicePath + "/waterfees",null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/waterfees",null));
 				}else if(reminderType.equals("4")) {    //燃气费
 					//的燃气费是
-					list.add(setRecord("PlayBack",voicePath + "/gasfees",null));
+					list.add(setRecord("PlayBack",voicePathSingle + "/gasfees",null));
 				}
 				
 				//读费用
@@ -393,7 +392,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 					char[] chars = moneyStr.toCharArray();
 					for(char c:chars) {      
 						//组织文件
-						list.add(setRecord("PlayBack",voicePath + "/" + c,null));
+						list.add(setRecord("PlayBack",voicePathSingle + "/" + c,null));
 					}
 					
 				}
@@ -408,7 +407,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			Voice endVoice = Voice.dao.getVoiceByVoiceId(endVoiceId);
 			
 			String fileName = endVoice.get("FILE_NAME");    //语音文件
-			String endVoicePath = voicePath + "/" + fileName;
+			String endVoicePath = voicePathSingle + "/" + fileName;
 			
 			Record endVoiceRecord = new Record();
 			

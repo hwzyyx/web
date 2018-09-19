@@ -4,18 +4,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.callke8.bsh.bshcallflow.BSHCallFlowController;
-import com.callke8.bsh.bshcallparam.BSHCallParam;
-import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.bsh.bshvoice.BSHVoice;
 import com.callke8.bsh.bshvoice.BSHVoiceConfig;
-import com.callke8.common.CommonConfig;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.DateFormatUtils;
-import com.jfinal.config.Plugins;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.Record;
-import com.jfinal.plugin.c3p0.C3p0Plugin;
 import com.jfinal.plugin.druid.DruidPlugin;
 
 public class StringTest {
@@ -28,13 +23,13 @@ public class StringTest {
 		
 		arp.addMapping("bsh_orderList", BSHOrderList.class);
 		arp.addMapping("bsh_voice", BSHVoice.class);
-		arp.addMapping("bsh_call_param", BSHCallParam.class);
+		//arp.addMapping("bsh_call_param", BSHCallParam.class);
 		
 		dp.start();
 		arp.start();
 		
 		BSHVoice.dao.loadBSHVoiceDataToMemoryTest();
-		BSHCallParam.dao.loadCallParamDataToMemory();
+		//BSHCallParam.dao.loadCallParamDataToMemory();
 		
 		String bshOrderListId = "220219";
 		
@@ -84,7 +79,7 @@ public class StringTest {
 	public static String getReadVoiceFileToString(BSHOrderList bshOrderList) {
 		
 		StringBuilder sb = new StringBuilder();
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();   //取出配置的语音文件（单声道）路径
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");   //取出配置的语音文件（单声道）路径
 		
 		int brand = bshOrderList.getInt("BRAND");                            //品牌，0：西门子；1：博世
 		int channelSource = bshOrderList.getInt("CHANNEL_SOURCE");           //购物平台，1：京东；2：苏宁；3：天猫；4：国美
@@ -232,7 +227,7 @@ public class StringTest {
 	
 	public static List<Record> getRespond1PlayList(BSHOrderList bshOrderList) {
 		
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");
 		List<Record> list = new ArrayList<Record>();
 		
 		//（1）您的机器安装日期已确认为
@@ -285,7 +280,7 @@ public class StringTest {
 	
 	public static List<Record> getRespond2PlayList(BSHOrderList bshOrderList) {
 		
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");
 		List<Record> list = new ArrayList<Record>();
 		
 		int brand = bshOrderList.getInt("BRAND");           //取得品牌
@@ -301,7 +296,7 @@ public class StringTest {
 	
 	public static List<Record> getRespond3PlayList(BSHOrderList bshOrderList) {
 		
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");
 		List<Record> list = new ArrayList<Record>();
 		
 		//(1) 
@@ -316,7 +311,7 @@ public class StringTest {
 	
 	public static List<Record> getRespond4PlayList(BSHOrderList bshOrderList) {
 		
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");
 		List<Record> list = new ArrayList<Record>();
 		
 		int brand = bshOrderList.getInt("BRAND");           //取得品牌
@@ -332,7 +327,7 @@ public class StringTest {
 	
 	public static List<Record> getRespondErrorPlayList(BSHOrderList bshOrderList) {
 		
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");
 		List<Record> list = new ArrayList<Record>();
 		
 		String voiceName = "respond_error";

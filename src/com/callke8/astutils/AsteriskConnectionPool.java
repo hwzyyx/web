@@ -1,14 +1,12 @@
 package com.callke8.astutils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.asteriskjava.manager.AuthenticationFailedException;
 import org.asteriskjava.manager.ManagerConnection;
 import org.asteriskjava.manager.ManagerConnectionFactory;
-import org.asteriskjava.manager.TimeoutException;
 
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 
 /**
@@ -34,8 +32,8 @@ public class AsteriskConnectionPool {
 		if(BlankUtils.isBlank(pool)) {
 			pool = new ArrayList<ManagerConnection>();
 		}
-		
-		while(pool.size() < AsteriskConfig.getAstPoolMinSize()) {
+		int astPoolMinSize = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_1_astPoolMinSize"));
+		while(pool.size() < astPoolMinSize) {
 			
 			ManagerConnection conn = factory.createManagerConnection();
 			
@@ -107,6 +105,7 @@ public class AsteriskConnectionPool {
 		if(pool.size() <= 0) {
 			addConnection();
 		}
+		System.out.println("pool.size():" + pool.size());
 		
 		int last_index = pool.size() - 1;
 		
@@ -128,8 +127,8 @@ public class AsteriskConnectionPool {
 	 * @param conn
 	 */
 	public synchronized void close(ManagerConnection conn) {
-		
-		if(pool.size() >= AsteriskConfig.getAstPoolMaxSize()) {
+		int astPoolMaxSize = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_1_astPoolMaxSize"));
+		if(pool.size() >= astPoolMaxSize) {
 			conn.logoff();
 			conn = null;
 		}else {
@@ -155,7 +154,8 @@ public class AsteriskConnectionPool {
 		/**
 		 * 只有当连接池数小于允许最大数量时，才新增连接
 		 */
-		if(pool.size() < AsteriskConfig.getAstPoolMaxSize()) {
+		int astPoolMaxSize = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_1_astPoolMaxSize"));
+		if(pool.size() < astPoolMaxSize) {
 			
 			ManagerConnection conn = factory.createManagerConnection();
 			

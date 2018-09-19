@@ -9,6 +9,7 @@ import org.quartz.SchedulerException;
 
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.StringUtil;
 
@@ -33,8 +34,8 @@ public class BSHLoadOrderListJob implements Job {
 		if(compareResult == 2) {   // 1表示 00:00 至 09:00; 2 表示  09:00 至 20:00;  3 表示 20:00 至 24:00
 			
 			int queueCount = BSHQueueMachineManager.queueCount;				//先查看排队机中的数量
-			int queueMaxCount = BSHCallParamConfig.getQueueMaxCount();      //排队机允许最大的排队数量
-			int scanCount = BSHCallParamConfig.getScanCount();              //单次扫描的数量
+			int queueMaxCount = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_queueMaxCount"));		//排队机允许最大的排队数量
+			int scanCount = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_scanCount"));;              //单次扫描的数量
 			
 			if(queueCount < queueMaxCount) {      //如果排队机中的数量已经大于或是等于允许的最大值，暂不加载数据到排队机
 				

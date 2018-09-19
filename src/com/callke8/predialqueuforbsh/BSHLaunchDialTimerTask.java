@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.StringUtil;
@@ -24,7 +25,7 @@ public class BSHLaunchDialTimerTask extends TimerTask {
 	public void run() {
 		
 		int activeChannelCount = BSHLaunchDialService.activeChannelCount;       //当前活动的通道数量
-		int trunkMaxCapacity = BSHCallParamConfig.getTrunkMaxCapacity();		//中继的最大并发量
+		int trunkMaxCapacity = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_trunkMaxCapacity"));		//中继的最大并发量
 		
 		if(BSHQueueMachineManager.queueCount > 0) {        //如果排队机中有未外呼的号码时
 			
@@ -49,7 +50,7 @@ public class BSHLaunchDialTimerTask extends TimerTask {
 				}
 				
 			}else {
-				StringUtil.log(this, "排队机中有未外呼数据:" + BSHQueueMachineManager.queueCount + " 条，但当前活跃通道已达到最大并发量：" + BSHCallParamConfig.getTrunkMaxCapacity() + "，系统暂不执行外呼!");
+				StringUtil.log(this, "排队机中有未外呼数据:" + BSHQueueMachineManager.queueCount + " 条，但当前活跃通道已达到最大并发量：" + trunkMaxCapacity + "，系统暂不执行外呼!");
 			}
 			
 		}else {

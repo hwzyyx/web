@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHHttpRequestThread;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 
@@ -84,7 +85,8 @@ public class BSHHandleTimeOutThread implements Runnable {
 			
 			//休息3秒钟
 			try {
-				Thread.sleep(BSHCallParamConfig.getScanInterval() * 1000);
+				int scanInterval = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_scanInterval"));
+				Thread.sleep(scanInterval * 1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

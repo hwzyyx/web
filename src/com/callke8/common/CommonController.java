@@ -25,6 +25,7 @@ import com.callke8.system.module.ModuleController;
 import com.callke8.system.operator.OperRole;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.org.Org;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.ComboboxJson;
 import com.callke8.utils.DateFormatUtils;
@@ -574,17 +575,17 @@ public class CommonController extends Controller {
 	 */
 	public static String getTTSTok() {
 		
-		String tok = MemoryVariableUtil.ttsParamMap.get("tok");
-		String getTokDate = MemoryVariableUtil.ttsParamMap.get("getTokDate");   //最后一次获取 tok 的时间
+		//String tok = MemoryVariableUtil.ttsParamMap.get("tok");
+		String tok = ParamConfig.paramConfigMap.get("paramType_2_tok");
+		String getTokDate = ParamConfig.paramConfigMap.get("paramType_2_getTokDate");    //最后一次获取 tok 的时间
 		
 		if(BlankUtils.isBlank(tok)) {       //如果 tok 为空时,则重新获取 tok 一次，并设置获取 tok 的时间
 			
 			String requestTok = HttpRequestUtils.httpRequestForTok();
 			
-			if(!BlankUtils.isBlank(requestTok)) {   
-				MemoryVariableUtil.ttsParamMap.put("tok", requestTok);
-				MemoryVariableUtil.ttsParamMap.put("getTokDate", DateFormatUtils.getFormatDate());
-				
+			if(!BlankUtils.isBlank(requestTok)) {
+				ParamConfig.paramConfigMap.put("paramType_2_tok", requestTok);
+				ParamConfig.paramConfigMap.put("paramType_2_getTokDate",DateFormatUtils.getFormatDate());
 				return requestTok;
 			}else {
 				return null;    //否则返回空值
@@ -603,14 +604,14 @@ public class CommonController extends Controller {
 					
 					String requestTok = HttpRequestUtils.httpRequestForTok();
 					
-					if(!BlankUtils.isBlank(requestTok)) {   
-						MemoryVariableUtil.ttsParamMap.put("tok", requestTok);
-						MemoryVariableUtil.ttsParamMap.put("getTokDate", DateFormatUtils.getFormatDate());
+					if(!BlankUtils.isBlank(requestTok)) {
+						ParamConfig.paramConfigMap.put("paramType_2_tok", requestTok);
+						ParamConfig.paramConfigMap.put("paramType_2_getTokDate",DateFormatUtils.getFormatDate());
 						
 						return requestTok;
 					}else {                 //如果请求不到时，将内存中的 tok 清空
-						MemoryVariableUtil.ttsParamMap.put("tok", null);
-						MemoryVariableUtil.ttsParamMap.put("getTokDate", null);
+						ParamConfig.paramConfigMap.put("paramType_2_tok", null);
+						ParamConfig.paramConfigMap.put("paramType_2_getTokDate",null);
 						
 						return null;
 					}
@@ -654,11 +655,11 @@ public class CommonController extends Controller {
 		System.out.println("准备执行外呼，外呼座席号为： " + agentNumber + ",客户号码为: " + telephone);
 		
 		String channel = "SIP/" +agentNumber;
-		String context = "from-exten-sip";
+		String context = ParamConfig.paramConfigMap.get("paramType_1_defaultCallOutContext");
 		String exten = telephone;
 		int priority = 1;
 		long timeout = 30 * 1000;
-		CallerId cid = new CallerId(AsteriskConfig.getAstCallerId(),AsteriskConfig.getAstCallerId());
+		CallerId cid = new CallerId(ParamConfig.paramConfigMap.get("paramType_1_defaultCallerId"),ParamConfig.paramConfigMap.get("paramType_1_defaultCallerId"));
 		Map m = new HashMap();
 		
 		String rs = CtiUtils.doCallOutByAgent(agentNumber, channel, context, exten, priority, timeout, cid, m, new OriginateCallback(){

@@ -8,6 +8,7 @@ import java.util.List;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import com.callke8.system.param.ParamConfig;
 import com.jfinal.plugin.activerecord.Record;
 
 
@@ -33,7 +34,7 @@ public class ExcelExportUtil {
 	private String fileName = "exportExcel";	//默认导出的文件名字
 	private String sheetName = "Sheet";   		//默认表的名字
 	private int cellWidth = 54;           		//字段的默认宽度54
-	private int sheetSize = Integer.valueOf(MemoryVariableUtil.autoCallTaskMap.get("sheet_size"));                  //每页的数据数量
+	private int sheetSize = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_1_sheetSize"));                  //每页的数据数量
 	
 	private ServletOutputStream sos = null;
 	private HttpServletResponse res = null;

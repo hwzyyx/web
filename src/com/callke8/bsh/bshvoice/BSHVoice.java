@@ -9,6 +9,7 @@ import java.util.Map;
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.org.Org;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.JplayerUtils;
@@ -195,7 +196,7 @@ public class BSHVoice extends Model<BSHVoice> {
 			r.set("VOICE_TYPE_DESC", vTypeDesc);
 			
 			//设置试听的路径
-			String path =  BSHCallParamConfig.getVoicePath() + "/" + r.get("FILE_NAME") + "." + r.get("MIME_TYPE");
+			String path =  ParamConfig.paramConfigMap.get("paramType_3_voicePath") + "/" + r.get("FILE_NAME") + "." + r.get("MIME_TYPE");
 			
 			//判断文件是否存在,如果不存在时,在输出的列表中标识一下，当客户点击试听时，提示文件不存在
 			File file = new File(PathKit.getWebRootPath() + File.separator + path);
@@ -251,7 +252,7 @@ public class BSHVoice extends Model<BSHVoice> {
 		
 		//设置试听的路径
 		String title = "[" + notice + "]" + voice.get("VOICE_DESC");
-		String path =  MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + "/" + voice.get("FILE_NAME") + "." + voice.get("MIME_TYPE");
+		String path =  ParamConfig.paramConfigMap.get("paramType_3_voicePath") + "/" + voice.get("FILE_NAME") + "." + voice.get("MIME_TYPE");
 		
 		voiceRecord.set("title", title);
 		voiceRecord.set("path", path);
@@ -272,7 +273,8 @@ public class BSHVoice extends Model<BSHVoice> {
 		
 		//设置试听的路径
 		String title = fileName;
-		String path = MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + "/" + fileName + "." + mimeType;
+		//String path = MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + "/" + fileName + "." + mimeType;
+		String path = ParamConfig.paramConfigMap.get("paramType_3_voicePath") + "/" + fileName + "." + mimeType;
 		
 		voiceRecord.set("title",title);
 		voiceRecord.set("path",path);

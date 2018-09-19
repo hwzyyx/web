@@ -9,13 +9,13 @@ import org.asteriskjava.fastagi.AgiException;
 import org.asteriskjava.fastagi.AgiRequest;
 import org.asteriskjava.fastagi.BaseAgiScript;
 
-import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHHttpRequestThread;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.bsh.bshvoice.BSHVoice;
 import com.callke8.bsh.bshvoice.BSHVoiceConfig;
 import com.callke8.predialqueuforbsh.BSHLaunchDialService;
 import com.callke8.pridialqueueforbshbyquartz.BSHPredial;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.StringUtil;
@@ -92,7 +92,7 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 		
 		try {
 			
-			String voicePath = BSHCallParamConfig.getVoicePathSingle();   //取出配置的语音文件（单声道）路径
+			String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle");   //取出配置的语音文件（单声道）路径
 			
 			exec("Read","respond," + readVoiceFileList + ",1,,1,8");
 			
@@ -326,7 +326,7 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 	public String getReadVoiceFileToString(BSHOrderList bshOrderList) {
 		
 		StringBuilder sb = new StringBuilder();
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();   //取出配置的语音文件（单声道）路径
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle");   //取出配置的语音文件（单声道）路径
 		
 		int brand = bshOrderList.getInt("BRAND");                            //品牌，0：西门子；1：博世
 		int channelSource = bshOrderList.getInt("CHANNEL_SOURCE");           //购物平台，1：京东；2：苏宁；3：天猫；4：国美
@@ -489,7 +489,8 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 	 */
 	public List<Record> getPlayList(BSHOrderList bshOrderList) {
 		
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle");   //取出配置的语音文件（单声道）路径
+		
 		List<Record> list = new ArrayList<Record>();        //新建一个List，用于储存语音
 		//(1)您好，这里是西门子家电客服中心,来电跟您确认
 		//	 您好，这里是博世家电客服中心,来电跟您确认
@@ -573,7 +574,8 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 	 */
 	public List<Record> getRespond1PlayList(BSHOrderList bshOrderList) {
 		
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle");   //取出配置的语音文件（单声道）路径
+		
 		List<Record> list = new ArrayList<Record>();
 		
 		//（1）您的机器安装日期已确认为
@@ -637,7 +639,8 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 	 */
 	public List<Record> getRespond2PlayList(BSHOrderList bshOrderList) {
 		
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle");   //取出配置的语音文件（单声道）路径
+		
 		List<Record> list = new ArrayList<Record>();
 		
 		int brand = bshOrderList.getInt("BRAND");           //取得品牌
@@ -660,7 +663,8 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 	 */
 	public List<Record> getRespond3PlayList(BSHOrderList bshOrderList) {
 		
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle");   //取出配置的语音文件（单声道）路径
+		
 		List<Record> list = new ArrayList<Record>();
 		
 		//(1) 
@@ -675,7 +679,8 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 	
 	public List<Record> getRespond4PlayList(BSHOrderList bshOrderList) {
 		
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle");   //取出配置的语音文件（单声道）路径
+		
 		List<Record> list = new ArrayList<Record>();
 		
 		int brand = bshOrderList.getInt("BRAND");           //取得品牌
@@ -691,7 +696,8 @@ public class BSHCallFlowAgi extends BaseAgiScript {
 	
 	public List<Record> getRespondErrorPlayList(BSHOrderList bshOrderList) {
 		
-		String voicePath = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle");   //取出配置的语音文件（单声道）路径
+		
 		List<Record> list = new ArrayList<Record>();
 		
 		String voiceName = "respond_error";

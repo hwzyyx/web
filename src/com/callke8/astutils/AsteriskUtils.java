@@ -22,6 +22,7 @@ import org.asteriskjava.manager.action.RedirectAction;
 import org.asteriskjava.manager.response.CommandResponse;
 import org.asteriskjava.manager.response.ManagerResponse;
 
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.StringUtil;
@@ -45,9 +46,7 @@ public class AsteriskUtils {
 	private ManagerConnection conn;
 	
 	public AsteriskUtils() {
-		
 		conn = connPool.getConnection();
-		
 	}
 	
 	/**
@@ -109,7 +108,7 @@ public class AsteriskUtils {
 	 */
 	public void doTransfer(String dstChannel,String forwardNumber) {
 		
-		RedirectAction action = new RedirectAction(dstChannel,AsteriskConfig.getAstCallOutContext(),forwardNumber,1);
+		RedirectAction action = new RedirectAction(dstChannel,ParamConfig.paramConfigMap.get("paramType_1_defaultCallOutContext"),forwardNumber,1);
 		
 		try {
 			

@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.common.CommonController;
 import com.callke8.common.IController;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.ExcelExportUtil;
@@ -250,7 +251,7 @@ public class BSHOrderListController extends Controller implements IController {
 				
 				String searchNumber = customerTel.substring(1, customerTel.length());
 				
-				Map<String,String> locationMap = TelephoneLocationUtils.getTelephoneLocation(searchNumber,BSHCallParamConfig.getJuHeUrl(), BSHCallParamConfig.getJuHeAppKey());
+				Map<String,String> locationMap = TelephoneLocationUtils.getTelephoneLocation(searchNumber,ParamConfig.paramConfigMap.get("paramType_1_juHeUrl"), ParamConfig.paramConfigMap.get("paramType_1_juHeAppKey"));
 				
 				if(!BlankUtils.isBlank(locationMap)) {
 					String province = locationMap.get("province");
@@ -296,7 +297,7 @@ public class BSHOrderListController extends Controller implements IController {
 					return;
 				}
 				
-				Map<String,String> locationMap = TelephoneLocationUtils.getTelephoneLocation(customerTel,BSHCallParamConfig.getJuHeUrl(), BSHCallParamConfig.getJuHeAppKey());
+				Map<String,String> locationMap = TelephoneLocationUtils.getTelephoneLocation(customerTel,ParamConfig.paramConfigMap.get("paramType_1_juHeUrl"),ParamConfig.paramConfigMap.get("paramType_1_juHeAppKey"));
 				if(!BlankUtils.isBlank(locationMap)) {
 					String province = locationMap.get("province");
 					String city = locationMap.get("city");

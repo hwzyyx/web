@@ -20,6 +20,7 @@ import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHHttpRequestThread;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.predialqueuforbsh.BSHLaunchDialService;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.jfinal.plugin.activerecord.Record;
@@ -210,11 +211,12 @@ public class BSHPredial {
 	 * 				传入订单信息
 	 */
 	public static void updateBSHOrderListStateForFailure(String lastCallResult,int retried,BSHOrderList bshOrderList) {
-		
-		if(retried < BSHCallParamConfig.getRetryTimes()) {      //如果已重试次数小于限定的重试次数时
+		int retryTimes = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_retryTimes"));
+		int retryInterval = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_retryInterval"));
+		if(retried < retryTimes) {      //如果已重试次数小于限定的重试次数时
 			
 			//设置当前号码的状态为重试状态
-			BSHOrderList.dao.updateBSHOrderListStateToRetry(bshOrderList.getInt("ID"), "3", BSHCallParamConfig.getRetryInterval(), lastCallResult);
+			BSHOrderList.dao.updateBSHOrderListStateToRetry(bshOrderList.getInt("ID"), "3", retryInterval, lastCallResult);
 		}else {
 			
 			//两次都失败同时，将这个未接听的结果反馈给BSH服务器
@@ -242,9 +244,12 @@ public class BSHPredial {
 		int retried = bshOrderList.getInt("RETRIED_VALUE");        //已重试
 		String lastCallResult = "UNKNOWN";                   //最后的外呼结果
 		
-		if(retried < BSHCallParamConfig.getRetryTimes()) {      //如果已重试次数小于限定的重试次数时
+		int retryTimes = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_retryTimes"));
+		int retryInterval = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_retryInterval"));
+		
+		if(retried < retryTimes) {      //如果已重试次数小于限定的重试次数时
 			//设置当前号码的状态为重试状态
-			BSHOrderList.dao.updateBSHOrderListStateToRetry(bshOrderList.getInt("ID"), "3", BSHCallParamConfig.getRetryInterval(), lastCallResult);
+			BSHOrderList.dao.updateBSHOrderListStateToRetry(bshOrderList.getInt("ID"), "3", retryInterval, lastCallResult);
 		}else {
 			
 			//两次都失败同时，将这个未接听的结果反馈给BSH服务器

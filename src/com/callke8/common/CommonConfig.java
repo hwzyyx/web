@@ -1,14 +1,12 @@
 package com.callke8.common;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.quartz.SchedulerException;
 
 import com.callke8.astutils.AsteriskConfig;
 import com.callke8.astutils.AsteriskConnectionPool;
 import com.callke8.astutils.AsteriskUtils;
 import com.callke8.autocall.autoblacklist.AutoBlackList;
 import com.callke8.autocall.autoblacklist.AutoBlackListTelephone;
-import com.callke8.autocall.autocallparam.AutoCallParam;
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.autocall.autocalltask.history.AutoCallTaskHistory;
@@ -22,8 +20,6 @@ import com.callke8.autocall.questionnaire.Questionnaire;
 import com.callke8.autocall.questionnaire.QuestionnaireRespond;
 import com.callke8.autocall.schedule.Schedule;
 import com.callke8.autocall.voice.Voice;
-import com.callke8.bsh.bshcallparam.BSHCallParam;
-import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.bsh.bshvoice.BSHVoice;
 import com.callke8.bsh.bshvoice.BSHVoiceConfig;
@@ -38,6 +34,7 @@ import com.callke8.fastagi.blacklist.BlackListInterceptRecord;
 import com.callke8.fastagi.common.FastagiRoute;
 import com.callke8.fastagi.transfer.Transfer;
 import com.callke8.fastagi.transfer.TransferRecord;
+import com.callke8.pridialqueueforbshbyquartz.BSHPredial;
 import com.callke8.report.cdr.Cdr;
 import com.callke8.report.clientinfo.ClientInfo;
 import com.callke8.report.clienttouch.ClientTouchRecord;
@@ -51,6 +48,7 @@ import com.callke8.system.operationlog.OperationLog;
 import com.callke8.system.operator.OperRole;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.org.Org;
+import com.callke8.system.param.Param;
 import com.callke8.system.role.Role;
 import com.callke8.system.rolegroup.RoleGroup;
 import com.callke8.system.rolemodule.RoleModule;
@@ -82,88 +80,35 @@ public class CommonConfig extends JFinalConfig {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void configHandler(Handlers me) {
-		//先判断数据字典的内容是否为空，如果为空时，则需要加载一下数据字典到内存
-		if(BlankUtils.isBlank(MemoryVariableUtil.dictMap)) {    //如果为空时，则将数据字典的内容写入内存变量
-			MemoryVariableUtil.dictMap = DictGroup.dao.loadDictInfo();
-			System.out.println("执行数据字典数据初始化到内存变量!");
-		}
 		
-		//先判断内存数据菜单数据是否为空，如果为空，则需要加载菜单数据到内存
-		if(BlankUtils.isBlank(MemoryVariableUtil.moduleMap)) {
-			MemoryVariableUtil.moduleMap = Module.dao.loadModuleInfo();
-			System.out.println("执行菜单数据初始化到内存变量!");
-		}
-		
-		//先判断内存数据操作员数据是否为空，如果为空，则需要加载操作员数据到内存
-		if(BlankUtils.isBlank(MemoryVariableUtil.operatorMap)) {
-			MemoryVariableUtil.operatorMap = Operator.dao.loadOperatorInfo();
-			System.out.println("执行操作员数据初始化到内存变量!");
-		}
-		
-		//加载博世电器的呼叫参数到内存中，加载成功后，打印配置详情
-		System.out.println("----------=============--------------");
-		System.out.println("准备加载博世电器的呼叫参数到内存!");
-		BSHCallParam.dao.loadCallParamDataToMemory();
-		System.out.println(new BSHCallParamConfig());
-		
-		System.out.println("-----------============-------------");
-		System.out.println("准备加载博世电器的语音数据到内存!");
-		BSHVoice.dao.loadBSHVoiceDataToMemory();
-		System.out.println(new BSHVoiceConfig());
 		
 	}
 
 	@Override
 	public void configInterceptor(Interceptors me) {
 		me.add(new CommonInterceptor());
+		
+		System.out.println("CommonConfig.configInterceptor()");
+		//从数据表加载数据到内存
+		loadDataIntoMemory();
+		
+		//初始化连接池
+		initAstConnectionPool();
+		
+		//启动应用(守护程序)
+		startApplications();
+		
 	}
 
 	@Override
 	public void configPlugin(Plugins me) {
 		loadPropertyFile("commonconfig.properties");
 		
-		//将配置中的语音保存路径加载到内存
-		Map<String,String> voiceMap = new HashMap<String,String>();
-		voiceMap.put("cdrVoicePath", getProperty("cdrVoicePath"));
-		voiceMap.put("autocallVoicePath", getProperty("autocallVoicePath"));
-		voiceMap.put("autocallVoiceVoxPath", getProperty("autocallVoiceVoxPath"));
-		
-		MemoryVariableUtil.voicePathMap = voiceMap;
-		
-		//将配置中的TTS参数加载到内存
-		Map<String,String> ttsParamMap = new HashMap<String,String>();
-		ttsParamMap.put("grant_type", getProperty("tts_grant_type"));
-		ttsParamMap.put("client_id", getProperty("tts_client_id"));
-		ttsParamMap.put("client_secret", getProperty("tts_client_secret"));
-		ttsParamMap.put("access_token_url", getProperty("tts_access_token_url"));
-		ttsParamMap.put("exec_tts_url", getProperty("tts_exec_tts_url"));
-		
-		MemoryVariableUtil.ttsParamMap = ttsParamMap;
-		
-		
-		//将配置中的自动外呼的变量加载到内存
-		Map<String,String> autoCallTaskMap = new HashMap<String,String>();
-		autoCallTaskMap.put("ac_scanInterval", getProperty("ac_scanInterval"));
-		autoCallTaskMap.put("ac_scanCount", getProperty("ac_scanCount"));
-		autoCallTaskMap.put("ac_maxLoadCount", getProperty("ac_maxLoadCount"));
-		autoCallTaskMap.put("ac_maxConcurrentCount", getProperty("ac_maxConcurrentCount"));
-		autoCallTaskMap.put("ac_timeout", getProperty("ac_timeout"));
-		autoCallTaskMap.put("ac_channelPrefix", getProperty("ac_channelPrefix"));
-		autoCallTaskMap.put("ac_agiUrl", getProperty("ac_agiUrl"));
-		autoCallTaskMap.put("sheet_size", getProperty("sheet_size"));
-		
-		MemoryVariableUtil.autoCallTaskMap = autoCallTaskMap;
-		
 		//顺便将 Asterisk配置信息设置了一下
 		AsteriskConfig.setAstHost(getProperty("asthost"));
 		AsteriskConfig.setAstPort(Integer.valueOf(getProperty("astport")));
 		AsteriskConfig.setAstUser(getProperty("astuser"));
 		AsteriskConfig.setAstPassword(getProperty("astpass"));
-		AsteriskConfig.setAstCallOutContext(getProperty("from-internal"));
-		AsteriskConfig.setAstCallerId(getProperty("astcallerid"));
-		AsteriskConfig.setAstHoldOnContext(getProperty("astholdoncontext"));
-		AsteriskConfig.setAstPoolMinSize(Integer.valueOf(getProperty("astpoolminsize")));
-		AsteriskConfig.setAstPoolMaxSize(Integer.valueOf(getProperty("astpoolmaxsize")));
 		
 		C3p0Plugin c3p0Plugin = new C3p0Plugin(getProperty("dburl"),getProperty("dbuser"),getProperty("dbpassword"));
 		me.add(c3p0Plugin);
@@ -184,6 +129,7 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("sys_dict_item", DictItem.class);
 		arp.addMapping("sys_dict_group", DictGroup.class);
 		arp.addMapping("sys_operation_log", OperationLog.class);
+		arp.addMapping("sys_param", Param.class);
 		
 		//外呼管理表映射
 		arp.addMapping("call_task", CallTask.class);
@@ -191,7 +137,6 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("callerloc", CallerLocation.class);
 		
 		//自动外呼管理数据表映射
-		arp.addMapping("ac_call_param", AutoCallParam.class);
 		arp.addMapping("ac_call_task", AutoCallTask.class);
 		arp.addMapping("ac_call_task_history", AutoCallTaskHistory.class);
 		arp.addMapping("ac_call_task_telephone", AutoCallTaskTelephone.class);
@@ -222,14 +167,56 @@ public class CommonConfig extends JFinalConfig {
 		//博世家电数据表
 		arp.addMapping("bsh_orderlist", BSHOrderList.class);
 		arp.addMapping("bsh_voice", BSHVoice.class);
-		arp.addMapping("bsh_call_param", BSHCallParam.class);
 		
-		//在启动守护进程之前，先执行 Asterisk连接池初始化，以便在后期可以随时获取连接
+	}
+	
+	/**
+	 * 从数据表中加载数据到内存
+	 * 
+	 * 在后期系统需要使用相关表数据时，可以直接取出，无需再从数据表中查询，增加系统的效率。
+	 * 
+	 */
+	public void loadDataIntoMemory() {
+		
+		
+		System.out.println("-----------从数据表加载数据到内存!------------");
+		//(1)执行数据字典数据初始化到内存变量!
+		if(BlankUtils.isBlank(MemoryVariableUtil.dictMap)) {    //如果为空时，则将数据字典的内容写入内存变量
+			MemoryVariableUtil.dictMap = DictGroup.dao.loadDictInfo();
+			System.out.println("(1)执行数据字典数据初始化到内存变量!");
+		}
+		
+		//(2)执行菜单数据初始化到内存变量!
+		if(BlankUtils.isBlank(MemoryVariableUtil.moduleMap)) {
+			MemoryVariableUtil.moduleMap = Module.dao.loadModuleInfo();
+			System.out.println("(2)执行菜单数据初始化到内存变量!");
+		}
+		
+		//(3)执行操作员数据初始化到内存变量!
+		if(BlankUtils.isBlank(MemoryVariableUtil.operatorMap)) {
+			MemoryVariableUtil.operatorMap = Operator.dao.loadOperatorInfo();
+			System.out.println("(3)执行操作员数据初始化到内存变量!");
+		}
+		
+		//(4)准备加载系统配置参数到内存!
+		System.out.println("(4)准备加载系统配置参数到内存!");
+		Param.dao.loadParamDataToMemory();
+	
+	}
+	
+	/**
+	 * 初始化 Asterisk 连接池
+	 */
+	public void initAstConnectionPool() {
 		System.out.println("初始化Asterisk之前。。。");
 		AsteriskUtils.connPool = AsteriskConnectionPool.newInstance() ;
 		System.out.println("初始化Asterisk之后。。。");
-		//--------以下为自动执行的守护进程------------
-		
+	}
+	
+	/**
+	 * 启动相关应用
+	 */
+	public void startApplications() {
 		//一、用于启动事件监控线程，用于监控来电信息，用于前端弹屏
 		/*AstMonitor amt = new AstMonitor();
 		Thread monitorThread = new Thread(amt); 
@@ -245,13 +232,16 @@ public class CommonConfig extends JFinalConfig {
 		predial.execDial();*/
 		
 		//五、启动博世电器的自动外呼扫描，并执行自动外呼操作
-		/*BSHPredial bshPredial = new BSHPredial();
+		/*System.out.println("启动博世电器守护程序前，先加载博世电器的语音数据到内存!");
+		BSHVoice.dao.loadBSHVoiceDataToMemory();      //执行加载数据到内存
+		System.out.println(new BSHVoiceConfig());
+		
+		BSHPredial bshPredial = new BSHPredial();     //创建博世家电守护程序并准备启动守护程序
 		try {
 			bshPredial.exec();
 		} catch (SchedulerException e) {
 			e.printStackTrace();
 		}*/
-		
 	}
 
 	@Override

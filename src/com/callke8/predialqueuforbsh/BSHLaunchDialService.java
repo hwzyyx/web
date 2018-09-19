@@ -20,6 +20,7 @@ import com.callke8.astutils.CtiUtils;
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHHttpRequestThread;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.StringUtil;
 
@@ -44,11 +45,15 @@ public class BSHLaunchDialService implements Runnable {
 		
 		retried = bshOrderList.getInt("RETRIED");    //已重试次数
 		
-		dialPC.setChannel(BSHCallParamConfig.getTrunkInfo() + "/" + bshOrderList.get("CALLOUT_TEL"));
+		String trunkInfo = ParamConfig.paramConfigMap.get("paramType_3_trunkInfo");
+		String agiUrl = ParamConfig.paramConfigMap.get("paramType_3_agiUrl");
+		String callerNumber = ParamConfig.paramConfigMap.get("paramType_3_callerNumber");
+		
+		dialPC.setChannel(trunkInfo + "/" + bshOrderList.get("CALLOUT_TEL"));
 		dialPC.setApplication("AGI");
-		dialPC.setApplicationData(BSHCallParamConfig.getAgiUrl());
+		dialPC.setApplicationData(agiUrl);
 		dialPC.setTimeout(30 * 1000);
-		dialPC.setCallerId(new CallerId(BSHCallParamConfig.getCallerNumber(), BSHCallParamConfig.getCallerNumber()));
+		dialPC.setCallerId(new CallerId(callerNumber, callerNumber));
 		Map<String,String> vm = new HashMap<String,String>();
 		vm.put("bshOrderListId", bshOrderList.get("ID").toString());    //设置通道变量,以便在 BSHCallFlowAGI 中用于查询订单信息
 		dialPC.setVariables(vm);
@@ -153,11 +158,12 @@ public class BSHLaunchDialService implements Runnable {
 	 * 				最后一次外呼的结果：NOANSWER(未接);FAILURE(失败);BUSY(线忙);SUCCESS(成功)
 	 */
 	public void updateBSHOrderListStateForFailure(String lastCallResult) {
-		
-		if(retried < BSHCallParamConfig.getRetryTimes()) {      //如果已重试次数小于限定的重试次数时
+		int retryTimes = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_retryTimes"));
+		int retryInterval = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_3_retryInterval"));
+		if(retried < retryTimes) {      //如果已重试次数小于限定的重试次数时
 			
 			//设置当前号码的状态为重试状态
-			BSHOrderList.dao.updateBSHOrderListStateToRetry(bshOrderList.getInt("ID"), "3", BSHCallParamConfig.getRetryInterval(), lastCallResult);
+			BSHOrderList.dao.updateBSHOrderListStateToRetry(bshOrderList.getInt("ID"), "3", retryInterval, lastCallResult);
 		}else {
 			
 			//两次都失败同时，将这个未接听的结果反馈给BSH服务器

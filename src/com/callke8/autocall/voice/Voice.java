@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.callke8.system.operator.Operator;
 import com.callke8.system.org.Org;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.JplayerUtils;
@@ -186,7 +187,8 @@ public class Voice extends Model<Voice> {
 			r.set("VOICE_TYPE_DESC", vTypeDesc);
 			
 			//设置试听的路径
-			String path =  MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + "/" + r.get("FILE_NAME") + "." + r.get("MIME_TYPE");
+			//String path =  MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + "/" + r.get("FILE_NAME") + "." + r.get("MIME_TYPE");
+			String path =  ParamConfig.paramConfigMap.get("paramType_4_voicePath") + "/" + r.get("FILE_NAME") + "." + r.get("MIME_TYPE");
 			
 			r.set("path", path);
 			r.set("listenFileName", r.get("FILE_NAME") + "." + r.get("MIME_TYPE"));
@@ -233,7 +235,8 @@ public class Voice extends Model<Voice> {
 		
 		//设置试听的路径
 		String title = "[" + notice + "]" + voice.get("VOICE_DESC");
-		String path =  MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + "/" + voice.get("FILE_NAME") + "." + voice.get("MIME_TYPE");
+		//String path =  MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + "/" + voice.get("FILE_NAME") + "." + voice.get("MIME_TYPE");
+		String path =  ParamConfig.paramConfigMap.get("paramType_4_voicePath") + "/" + voice.get("FILE_NAME") + "." + voice.get("MIME_TYPE");
 		
 		voiceRecord.set("title", title);
 		voiceRecord.set("path", path);
@@ -254,7 +257,8 @@ public class Voice extends Model<Voice> {
 		
 		//设置试听的路径
 		String title = fileName;
-		String path = MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + "/" + fileName + "." + mimeType;
+		//String path = MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + "/" + fileName + "." + mimeType;
+		String path = ParamConfig.paramConfigMap.get("paramType_4_voicePath") + "/" + fileName + "." + mimeType;
 		
 		voiceRecord.set("title",title);
 		voiceRecord.set("path",path);

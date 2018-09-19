@@ -7,6 +7,7 @@ import com.callke8.system.module.ModuleController;
 import com.callke8.system.operationlog.OperationLogController;
 import com.callke8.system.operator.OperatorController;
 import com.callke8.system.org.OrgController;
+import com.callke8.system.param.ParamController;
 import com.callke8.system.role.RoleController;
 import com.callke8.system.rolegroup.RoleGroupController;
 import com.callke8.system.rolemodule.RoleModuleController;
@@ -26,6 +27,7 @@ public class SystemRoute extends Routes {
 		add("/dictGroup",DictGroupController.class,"system/dictgroup");
 		add("/dictItem",DictItemController.class,"system/dictgroup");
 		add("/operationLog",OperationLogController.class,"system/operationlog");
+		add("/param",ParamController.class,"system/param");
 		
 		
 	}

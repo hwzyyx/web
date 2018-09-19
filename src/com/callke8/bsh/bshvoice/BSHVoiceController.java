@@ -17,6 +17,7 @@ import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.common.CommonController;
 import com.callke8.common.IController;
 import com.callke8.system.operator.Operator;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.HttpRequestUtils;
@@ -95,7 +96,7 @@ public class BSHVoiceController extends Controller implements IController {
 		if(!BlankUtils.isBlank(checkBshVoiceByVoiceDesc)) {     //如果已经能从数据库中查询到有数据，则表示已经存在相同的语音描述
 			
 			//错误时，要删除已经上传的文件
-			String voicePath = BSHCallParamConfig.getVoicePath();
+			String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");
 			String uploadDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator;
 			
 			File file = new File(uploadDir + renameFileName + "." + mimeType);
@@ -113,7 +114,7 @@ public class BSHVoiceController extends Controller implements IController {
 		if(!BlankUtils.isBlank(checkBSHVoiceByVoiceName)) {
 			
 			//错误时，要删除已经上传的文件
-			String voicePath = BSHCallParamConfig.getVoicePath();
+			String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");
 			String uploadDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator;
 			
 			File file = new File(uploadDir + renameFileName + "." + mimeType);
@@ -182,7 +183,7 @@ public class BSHVoiceController extends Controller implements IController {
 			if(!BlankUtils.isBlank(vIdVD) && !vIdVD.equalsIgnoreCase(voiceId)) {
 				
 				//错误时，要删除已经上传的文件
-				String voicePath = BSHCallParamConfig.getVoicePath();
+				String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");
 				String uploadDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator;
 				
 				File file = new File(uploadDir + renameFileName + "." + mimeType);
@@ -202,7 +203,7 @@ public class BSHVoiceController extends Controller implements IController {
 			if(!BlankUtils.isBlank(vIdVN) && !vIdVN.equalsIgnoreCase(voiceId)) {
 				
 				//错误时，要删除已经上传的文件
-				String voicePath = BSHCallParamConfig.getVoicePath();
+				String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");
 				String uploadDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator;
 				
 				File file = new File(uploadDir + renameFileName + "." + mimeType);
@@ -317,10 +318,10 @@ public class BSHVoiceController extends Controller implements IController {
 		String tok = CommonController.getTTSTok();
 		
 		//查看配置
-		String voicePath = BSHCallParamConfig.getVoicePath();
-		String voicePathSingle = BSHCallParamConfig.getVoicePathSingle();
-		String mimeTypeForSingle = BSHCallParamConfig.getMimeTypeForSingle();
-		String soxBinPath = BSHCallParamConfig.getSoxBinPath();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");
+		String voicePathSingle = ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle");
+		String mimeTypeForSingle = ParamConfig.paramConfigMap.get("paramType_3_mimeTypeForSingle");
+		String soxBinPath = ParamConfig.paramConfigMap.get("paramType_1_soxBinPath");   //全局变量
 		
 		//组织成绝对路径
 		String outputDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator + renameFileName + ".mp3";
@@ -417,10 +418,10 @@ public class BSHVoiceController extends Controller implements IController {
 			String tok = CommonController.getTTSTok();
 			
 			//从内存中取出配置的自动外呼的语音路径配置，主要包括原始语音路径和转换成 vox 存放的路径
-			String voicePath = BSHCallParamConfig.getVoicePath();
-			String voicePathSingle = BSHCallParamConfig.getVoicePathSingle();
-			String mimeTypeForSingle = BSHCallParamConfig.getMimeTypeForSingle();
-			String soxBinPath = BSHCallParamConfig.getSoxBinPath();
+			String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");
+			String voicePathSingle = ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle");
+			String mimeTypeForSingle = ParamConfig.paramConfigMap.get("paramType_3_mimeTypeForSingle");
+			String soxBinPath = ParamConfig.paramConfigMap.get("paramType_1_soxBinPath");
 			
 			//组织上传路径的绝对路径
 			String outputDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator + renameFileName + ".mp3";
@@ -478,8 +479,8 @@ public class BSHVoiceController extends Controller implements IController {
 	public String fileUpload() {
 		
 		//从内存中取出配置的语音路径配置，主要包括原始语音路径和转换成 vox 或是  wav 存放的路径
-		String voicePath = BSHCallParamConfig.getVoicePath();           
-		String voicePathSingle = BSHCallParamConfig.getVoicePathSingle();
+		String voicePath = ParamConfig.paramConfigMap.get("paramType_3_voicePath");      
+		String voicePathSingle = ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle");
 		
 		//组织上传路径的绝对路径
 		String uploadDir = PathKit.getWebRootPath() + File.separator + voicePath + File.separator;
@@ -512,8 +513,8 @@ public class BSHVoiceController extends Controller implements IController {
 		//重命名文件名后，对语音文件进行语音格式转换，由 wav 转为 vox, wav 用于语音试听， vox 用于 asterisk 使用
 		String chmodCmd = "chmod 777 " + uploadDir + renameFileName + "." + mimeType;
 		
-		String singleFile = singleVoiceDir + renameFileName + "." + BSHCallParamConfig.getMimeTypeForSingle();
-		String cmd = BSHCallParamConfig.getSoxBinPath() + " " + uploadDir + renameFileName + "." + mimeType + " -r 8000 -c 1 " + singleFile;
+		String singleFile = singleVoiceDir + renameFileName + "." + ParamConfig.paramConfigMap.get("paramType_3_mimeTypeForSingle");
+		String cmd = ParamConfig.paramConfigMap.get("paramType_1_soxBinPath") + " " + uploadDir + renameFileName + "." + mimeType + " -r 8000 -c 1 " + singleFile;
 		System.out.println("执行的 CMD  命令为:" + cmd);
 		
 		try {
@@ -541,9 +542,9 @@ public class BSHVoiceController extends Controller implements IController {
 		String voiceVoxFileName = bshVoice.get("FILE_NAME") + ".vox";                        //再根据文件名，定义 vox 文件
 		String voiceWavFileName = bshVoice.get("FILE_NAME") + ".wav";
 		
-		File voiceFile = new File(PathKit.getWebRootPath() + File.separator + BSHCallParamConfig.getVoicePath() + File.separator + voiceFileName);
-		File voiceVoxFile = new File(PathKit.getWebRootPath() + File.separator + BSHCallParamConfig.getVoicePathSingle() + File.separator + voiceVoxFileName);
-		File voiceWavFile = new File(PathKit.getWebRootPath() + File.separator + BSHCallParamConfig.getVoicePathSingle() + File.separator + voiceWavFileName);
+		File voiceFile = new File(PathKit.getWebRootPath() + File.separator + ParamConfig.paramConfigMap.get("paramType_3_voicePath") + File.separator + voiceFileName);
+		File voiceVoxFile = new File(PathKit.getWebRootPath() + File.separator + ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle") + File.separator + voiceVoxFileName);
+		File voiceWavFile = new File(PathKit.getWebRootPath() + File.separator + ParamConfig.paramConfigMap.get("paramType_3_voicePathSingle") + File.separator + voiceWavFileName);
 		
 		//删除过程
 		if(voiceFile.exists()) {

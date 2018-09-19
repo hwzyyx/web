@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.callke8.autocall.voice.Voice;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.JplayerUtils;
@@ -91,7 +92,7 @@ public class Question extends Model<Question> {
 				r.set("VOICE_DESC", voice.get("VOICE_DESC"));
 				
 				//设置试听的路径
-				String path =  MemoryVariableUtil.voicePathMap.get("autocallVoicePath") + "/" + voice.get("FILE_NAME") + "." + voice.get("MIME_TYPE");
+				String path =  ParamConfig.paramConfigMap.get("paramType_4_voicePath") + "/" + voice.get("FILE_NAME") + "." + voice.get("MIME_TYPE");
 				
 				r.set("path", path);  //下载地址
 				

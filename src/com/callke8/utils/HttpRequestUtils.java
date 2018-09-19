@@ -11,7 +11,10 @@ import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.GetMethod;
+
+import com.callke8.system.param.ParamConfig;
 
 public class HttpRequestUtils {
 	
@@ -38,21 +41,23 @@ public class HttpRequestUtils {
 	 * 			语音性别
 	 * @param tok
 	 * 			验证码标识符
+	 * @param aue
+	 * 			语音文件格式：3为mp3格式(默认)； 4为pcm-16k；5为pcm-8k；6为wav（内容同pcm-16k）;
 	 * @param tex
 	 * 			TTS内容
 	 * @return
 	 */
-	public static InputStream httpRequestForTTS(String lan,String cuid,String ctp,String spd,String vol,String per,String tok,String tex) {
+	public static InputStream httpRequestForTTS(String lan,String cuid,String ctp,String spd,String vol,String per,String tok,String aue,String tex) {
 		
 		//String execTtsUrl = MemoryVariableUtil.ttsParamMap.get("exec_tts_url");   //执行TTS转换的URL
-		String execTtsUrl = "http://tsn.baidu.com";   //执行TTS转换的URL
+		String ttsExecTtsUrl = ParamConfig.paramConfigMap.get("paramType_2_ttsExecTtsUrl");   //执行TTS转换的URL
 		
 		InputStream is = null;
 		
 		HttpClient httpClient = new HttpClient();
 		
-		HttpMethod method = new GetMethod(execTtsUrl + "/text2audio?lan=" + lan + "&cuid=" + cuid + "&ctp=" + ctp + "&spd=" + spd + "&vol=" + vol + "&per=" + per + "&tok=" + tok + "&tex=" + tex);
-		System.out.println("URL地址：" + execTtsUrl + "/text2audio?lan=" + lan + "&cuid=" + cuid + "&ctp=" + ctp + "&spd=" + spd + "&vol=" + vol + "&per=" + per + "&tok=" + tok + "&tex=" + tex);
+		HttpMethod method = new GetMethod(ttsExecTtsUrl + "/text2audio?lan=" + lan + "&cuid=" + cuid + "&ctp=" + ctp + "&spd=" + spd + "&vol=" + vol + "&per=" + per + "&tok=" + tok + "&aue=" + aue + "&tex=" + tex);
+		System.out.println("URL地址：" + ttsExecTtsUrl + "/text2audio?lan=" + lan + "&cuid=" + cuid + "&ctp=" + ctp + "&spd=" + spd + "&vol=" + vol + "&per=" + per + "&tok=" + tok + "&aue=" + aue + "&tex=" + tex);
 		try {
 			httpClient.executeMethod(method);
 		
@@ -82,14 +87,15 @@ public class HttpRequestUtils {
 	 */
 	public static void httpRequestForTTSToFile(String tok,String tex,String file) {
 		
-		String lan = "zh";          //语言：zh表示中文
-		String cuid = "13512771995";        //唯一标识符
-		String ctp = "1";          //ctp 1表示web 端访问
-		String spd = "5";          //语速，正常为5，较慢为3，最慢为1，7为较快，最快为9
-		String vol = "5";  //音量：5为正常，9最大
-		String per = "0";          //男性女性
+		String lan = "zh";          	//语言：zh表示中文
+		String cuid = "13512771995";    //唯一标识符
+		String ctp = "1";          		//ctp 1表示web 端访问
+		String spd = "5";          		//语速，正常为5，较慢为3，最慢为1，7为较快，最快为9
+		String vol = "5";          		//音量：5为正常，9最大
+		String per = "0";          		//１：男性  ０：女性
+		String aue = "6";               //语音文件格式：3为mp3格式(默认)； 4为pcm-16k；5为pcm-8k；6为wav（内容同pcm-16k）;
 		
-		String execTtsUrl = MemoryVariableUtil.ttsParamMap.get("exec_tts_url");   //执行TTS转换的URL
+		String execTtsUrl = ParamConfig.paramConfigMap.get("paramType_2_ttsExecTtsUrl");   //执行TTS转换的URL
 		
 		InputStream is = null;
 		FileOutputStream fos = null;
@@ -100,7 +106,7 @@ public class HttpRequestUtils {
 			
 			HttpClient httpClient = new HttpClient();
 			
-			HttpMethod method = new GetMethod(execTtsUrl + "/text2audio?lan=" + lan + "&cuid=" + cuid + "&ctp=" + ctp + "&spd=" + spd + "&vol=" + vol + "&per=" + per + "&tok=" + tok + "&tex=" + tex);
+			HttpMethod method = new GetMethod(execTtsUrl + "/text2audio?lan=" + lan + "&cuid=" + cuid + "&ctp=" + ctp + "&spd=" + spd + "&vol=" + vol + "&per=" + per + "&tok=" + tok + "&aue=" + aue + "&tex=" + tex);
 		
 			
 			httpClient.executeMethod(method);
@@ -159,15 +165,19 @@ public class HttpRequestUtils {
 		
 		String tok = null;
 		
-		String grant_type = MemoryVariableUtil.ttsParamMap.get("grant_type");
-		String client_id = MemoryVariableUtil.ttsParamMap.get("client_id");
-		String client_secret = MemoryVariableUtil.ttsParamMap.get("client_secret");
-		String access_token_url = MemoryVariableUtil.ttsParamMap.get("access_token_url");
+		String grant_type = ParamConfig.paramConfigMap.get("paramType_2_ttsGrantType");
+		String client_id = ParamConfig.paramConfigMap.get("paramType_2_ttsClientId");
+		String client_secret = ParamConfig.paramConfigMap.get("paramType_2_ttsClientSecret");
+		String access_token_url = ParamConfig.paramConfigMap.get("paramType_2_ttsAccessTokenUrl");
 		
 		HttpClient httpClient = new HttpClient();
 		
 		HttpMethod method = new GetMethod(access_token_url + "/token?grant_type=" + grant_type + "&client_id=" + client_id + "&client_secret=" + client_secret);
-		
+		try {
+			System.out.println("method:----" + method.getName() + "," + method.getURI());
+		} catch (URIException e1) {
+			e1.printStackTrace();
+		}
 		try {
 			httpClient.executeMethod(method);
 		

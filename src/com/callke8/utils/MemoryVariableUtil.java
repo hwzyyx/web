@@ -20,9 +20,9 @@ public class MemoryVariableUtil {
 	public static Map<String,List<Record>> dictMap;    //储存于内存中的数据字典，前面的String,是指数据字典组编码
 	public static Map<String,Record> moduleMap;        //储存于内存中的菜单数据, 前面的String,是指菜单编码
 	public static Map<String,Record> operatorMap;      //储存于内存中的操作员的数据,前面的String,是指操作员工号
-	public static Map<String,String> voicePathMap;     //储存于内存中的语音路径，主要是用于试听语音和上传语音（及转换格式）文件时用
-	public static Map<String,String> autoCallTaskMap;  //储存于内存中的自动外呼任务的配置
-	public static Map<String,String> ttsParamMap;      //储存于内存中 TTS 的参数情况
+	//public static Map<String,String> voicePathMap;     //储存于内存中的语音路径，主要是用于试听语音和上传语音（及转换格式）文件时用
+	//public static Map<String,String> autoCallTaskMap;  //储存于内存中的自动外呼任务的配置
+	//public static Map<String,String> ttsParamMap;      //储存于内存中 TTS 的参数情况
 	
 	/**
 	 * 储存于内存中的座席状态

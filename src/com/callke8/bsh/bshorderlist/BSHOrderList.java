@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
@@ -217,7 +218,7 @@ public class BSHOrderList extends Model<BSHOrderList> {
 			int productNameResult = r.getInt("PRODUCT_NAME");
 			r.set("PRODUCT_NAME_DESC", MemoryVariableUtil.getDictName("BSH_PRODUCT_NAME", String.valueOf(productNameResult)));
 			
-			r.set("RETRIED", r.getInt("RETRIED") + "/" + BSHCallParamConfig.getRetryTimes());
+			r.set("RETRIED", r.getInt("RETRIED") + "/" + ParamConfig.paramConfigMap.get("paramType_3_retryTimes"));
 			
 			newList.add(r);
 			
@@ -821,8 +822,8 @@ public class BSHOrderList extends Model<BSHOrderList> {
 			r.set("TIME_TYPE_DESC", MemoryVariableUtil.getDictName("BSH_TIME_TYPE", String.valueOf(timeTypeResult)));
 			
 			r.set("RETRIED_VALUE", r.getInt("RETRIED"));
-			r.set("RETRIED", r.getInt("RETRIED") + "/" + BSHCallParamConfig.getRetryTimes());
-			
+			//r.set("RETRIED", r.getInt("RETRIED") + "/" + BSHCallParamConfig.getRetryTimes());
+			r.set("RETRIED", r.getInt("RETRIED") + "/" + ParamConfig.paramConfigMap.get("paramType_3_retryTimes"));
 			
 			newList.add(r);
 			

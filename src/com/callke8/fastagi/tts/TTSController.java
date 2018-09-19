@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.callke8.common.CommonController;
 import com.callke8.common.IController;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.HttpRequestUtils;
 import com.callke8.utils.MemoryVariableUtil;
 import com.jfinal.core.Controller;
@@ -24,7 +25,8 @@ public class TTSController extends Controller implements IController {
 		
 		String tok = CommonController.getTTSTok();
 		setAttr("tokInfo",tok);
-		setAttr("execTtsUrl",MemoryVariableUtil.ttsParamMap.get("exec_tts_url"));
+		
+		setAttr("execTtsUrl",ParamConfig.paramConfigMap.get("paramType_2_ttsExecTtsUrl"));
 		
 		render("list.jsp");
 	}
@@ -42,6 +44,7 @@ public class TTSController extends Controller implements IController {
 		String vol = getPara("voiceVolume");  //音量：5为正常，9最大
 		String per = getPara("per");          //男性女性
 		String tok = getPara("tok");          //taken session 授权码
+		String aue = "6";                     //语音文件格式：3为mp3格式(默认)； 4为pcm-16k；5为pcm-8k；6为wav（内容同pcm-16k）; 注意aue=4或者6是语音识别要求的格式，但是音频内容不是语音识别要求的自然人发音，所以识别效果会受影响。
 		String tex = null;
 		try {   //要进行 TTS 的内容
 			tex = URLDecoder.decode(getPara("tex").toString(),"utf-8");
@@ -65,10 +68,10 @@ public class TTSController extends Controller implements IController {
 		System.out.println("tex:" + tex );
 		
 		try {
-			inputStream = HttpRequestUtils.httpRequestForTTS(lan, cuid, ctp, spd, vol, per, tok, tex);
+			inputStream = HttpRequestUtils.httpRequestForTTS(lan, cuid, ctp, spd, vol, per, tok,aue,tex);
 			
 			HttpServletResponse res = getResponse();
-			res.setHeader("Content-Disposition", "attachment;filename=voice_download.mp3");
+			res.setHeader("Content-Disposition", "attachment;filename=voice_download.wav");
 			res.setContentType("application/octet-stream");
 			res.setContentType("application/OCTET-STREAM;charset=UTF-8");
 			
