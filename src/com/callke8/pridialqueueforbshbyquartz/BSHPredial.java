@@ -10,16 +10,13 @@ import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
 
-import com.callke8.bsh.bshcallparam.BSHCallParamConfig;
 import com.callke8.bsh.bshorderlist.BSHHttpRequestThread;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
-import com.callke8.predialqueuforbsh.BSHLaunchDialService;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
