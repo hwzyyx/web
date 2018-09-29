@@ -92,8 +92,8 @@
 
 		$("#autoBlackListTelephoneDg").datagrid("load",{
     		blackListId:currBlackListId,
-    		telephone:$('#blackListTelephone_telephone').textbox('getValue'),
-			clientName:$('#blackListTelephone_clientName').textbox('getValue')
+    		customerTel:$('#blackListTelephone_customerTel').textbox('getValue'),
+			customerName:$('#blackListTelephone_customerName').textbox('getValue')
     	});
 		
 	}
@@ -158,10 +158,10 @@
 		<div data-options="region:'north',split:true,border:true" style="height:45px;padding-top:5px;padding-left:5px;">
 			<table>
 				<tr style="vertical-align: top;">
-					<td>电话号码：<input id="blackListTelephone_telephone" type="text" class="easyui-textbox" style="width:150px;"/>
+					<td>电话号码：<input id="blackListTelephone_customerTel" type="text" class="easyui-textbox" style="width:150px;"/>
 					
 						<span style="padding-left:20px;">
-							客户姓名：<input id="blackListTelephone_clientName" type="text" class="easyui-textbox" style="width:150px;"/>
+							客户姓名：<input id="blackListTelephone_customerName" type="text" class="easyui-textbox" style="width:150px;"/>
 						</span>
 						<span style="padding-left:10px;">
 							<a href="javascript:blackList_findDataForTelephone()" style="width:80px;" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
@@ -177,8 +177,8 @@
 			<table id="autoBlackListTelephoneDg">
 				<thead>
 					<tr style="height:12px;">		
-						<th data-options="field:'TELEPHONE',width:200,align:'center'">电话号码</th>
-						<th data-options="field:'CLIENT_NAME',width:200,align:'center'">客户姓名</th>
+						<th data-options="field:'CUSTOMER_TEL',width:200,align:'center'">电话号码</th>
+						<th data-options="field:'CUSTOMER_NAME',width:200,align:'center'">客户姓名</th>
 					</tr>
 				</thead>
 			</table>	

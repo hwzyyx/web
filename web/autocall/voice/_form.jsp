@@ -40,7 +40,7 @@
 							<input class="easyui-filebox" id="voiceFile" name="voiceFile" data-options="prompt:'选择一个语音文件进行上传'" style="width:400px;">
 						</div>
 						<div style="padding-left:10px;padding-top:10px;padding-bottom:15px;">
-							<span style="color: red;">** 注意：语音格式限于 wav、mp3 **</span>
+							<span style="color: red;">** 注意：语音格式限定为 wav</span>
 				        </div>
 			        </div>
 			        <div style="padding-top:10px;display:none;" id="ttsDiv">

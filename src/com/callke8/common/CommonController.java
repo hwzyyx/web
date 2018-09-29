@@ -48,7 +48,11 @@ public class CommonController extends Controller {
 	public void index() {
 		if(BlankUtils.isBlank(getSession().getAttribute("currOperId"))) {
 			//render("login.jsp");
-			redirect("/login");
+			setAttr("webSiteName",ParamConfig.paramConfigMap.get("paramType_1_webSiteName"));
+			setAttr("copyrightInfo",ParamConfig.paramConfigMap.get("paramType_1_copyrightInfo"));
+			System.out.println("网站名称:" + ParamConfig.paramConfigMap.get("paramType_1_webSiteName") + "=====版本信息:" + ParamConfig.paramConfigMap.get("paramType_1_copyrightInfo") );
+			//redirect("/login");
+			render("login.jsp");
 		}else {
 			//当前座席号码
 			String currAgentNumber = BlankUtils.isBlank(getSession().getAttribute("currAgentNumber"))?null:getSession().getAttribute("currAgentNumber").toString();
@@ -59,7 +63,9 @@ public class CommonController extends Controller {
 			
 			setAttr("currAgentNumber",currAgentNumber);
 			
-			render("index.jsp");
+			setAttr("webSiteName",ParamConfig.paramConfigMap.get("paramType_1_webSiteName"));
+			
+			render("index-simple.jsp");
 		}
 	}
 	
@@ -201,6 +207,9 @@ public class CommonController extends Controller {
 		//render(RenderJson.success("注销成功"));
 		//forwardAction("/index");
 		render(RenderJson.success("注销成功"));
+		//index();   //转到 index() 中去执行
+		//forward
+		//forwardAction("/index");
 	}
 	
 	/**

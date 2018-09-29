@@ -38,8 +38,8 @@
 						<tr style="height:12px;">                
 							<th data-options="field:'ckct',checkbox:true"></th>                       
 							<th data-options="field:'ITEM_CODE',width:200,align:'center'">响应按键</th>                
-							<th data-options="field:'ITEM_DESC',width:200,align:'center'">选项内容</th>                
-							<th data-options="field:'id',width:100,align:'center',formatter:item_rowformatter">操作</th>                
+							<th data-options="field:'ITEM_DESC',width:400,align:'center'">选项内容</th>                
+							<th data-options="field:'id',width:200,align:'center',formatter:item_rowformatter">操作</th>                
 						</tr>        
 					</thead>
 			</table>

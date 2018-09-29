@@ -44,10 +44,10 @@
 					<table id="questionDg">
 						<thead>
 							<tr style="height:12px;">		
-								<th data-options="field:'QUESTION_DESC',width:350,align:'left'">题目</th>
-								<th data-options="field:'listen',width:35,align:'center',formatter:listenrowformatter">试听</th>
-								<th data-options="field:'download',width:50,align:'center',formatter:downloadrowformatter">下载</th>
-								<th data-options="field:'id',width:100,align:'center',formatter:question_rowformatter">操作</th>
+								<th data-options="field:'QUESTION_DESC',width:600,align:'left'">题目</th>
+								<th data-options="field:'listen',width:40,align:'center',formatter:listenrowformatter">试听</th>
+								<th data-options="field:'download',width:60,align:'center',formatter:downloadrowformatter">下载</th>
+								<th data-options="field:'id',width:120,align:'center',formatter:question_rowformatter">操作</th>
 							</tr>
 						</thead>
 					</table>

@@ -237,6 +237,106 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
+	 * 根据任务和状态集，查找在状态集内该任务的数量
+	 * 
+	 * 即是传入任务ID,及多个状态集（用逗号分隔），查找数量
+	 * 
+	 * 传入的 states 如： 1,2,3 字符串
+	 * 
+	 * @param taskId
+	 * 			任务ID
+	 * @param states
+	 * 			状态集，用逗号分隔
+	 * @return
+	 */
+	public int getTelephoneCountByInStates(String taskId,String states) {
+		
+		StringBuilder sb = new StringBuilder();
+		Object[] pars = new Object[5];
+		int index = 0;
+		
+		sb.append("select count(*) as count from ac_call_task_telephone where 1=1");
+		
+		if(!BlankUtils.isBlank(taskId)) {
+			sb.append(" and TASK_ID=?");
+			pars[index] = taskId;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(states)) {
+			String[] stateArr = states.split(",");
+			String markN = "";    //问号的数量
+			for(String s:stateArr) {
+				markN += "?,";
+				pars[index] = Integer.valueOf(s);
+				index++;
+			}
+			
+			//将 markN的最后一个逗号去掉
+			markN = markN.substring(0, markN.length() - 1);
+			
+			//拼接sql语句
+			sb.append(" and STATE in(" + markN + ")");
+		}
+		
+		Record r = Db.findFirst(sb.toString(),ArrayUtils.copyArray(index, pars));
+		//System.out.println("查询的SQL语句:" + sb.toString());
+		
+		return Integer.valueOf(r.get("count").toString());
+		
+	}
+	
+	/**
+	 * 根据任务和状态集，查找不在状态集内该任务的数量
+	 * 
+	 * 即是传入任务ID,及多个状态集（用逗号分隔），查找非这些状态的数量。
+	 * 
+	 * 传入的 states 如： 1,2,3 字符串
+	 * 
+	 * @param taskId
+	 * 			任务ID
+	 * @param states
+	 * 			状态集，用逗号分隔
+	 * @return
+	 */
+	public int getTelephoneCountByNotInState(String taskId,String states) {
+		
+		StringBuilder sb = new StringBuilder();
+		Object[] pars = new Object[5];
+		int index = 0;
+		
+		sb.append("select count(*) as count from ac_call_task_telephone where 1=1");
+		
+		if(!BlankUtils.isBlank(taskId)) {
+			sb.append(" and TASK_ID=?");
+			pars[index] = taskId;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(states)) {
+			String[] stateArr = states.split(",");
+			String markN = "";    //问号的数量
+			for(String s:stateArr) {
+				markN += "?,";
+				pars[index] = Integer.valueOf(s);
+				index++;
+			}
+			
+			//将 markN的最后一个逗号去掉
+			markN = markN.substring(0, markN.length() - 1);
+			
+			//拼接sql语句
+			sb.append(" and STATE not in(" + markN + ")");
+		}
+		
+		Record r = Db.findFirst(sb.toString(),ArrayUtils.copyArray(index, pars));
+		
+		//System.out.println("查询的SQL语句:" + sb.toString());
+		
+		return Integer.valueOf(r.get("count").toString());
+	}
+	
+	/**
 	 * 根据外呼任务ID及状态,取得数据列表
 	 * 
 	 * state:状态    0：未处理; 1：已载入; 2：已成功; 3：待重呼; 4:已失败    （可以为空）

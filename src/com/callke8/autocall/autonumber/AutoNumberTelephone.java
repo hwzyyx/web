@@ -19,7 +19,7 @@ public class AutoNumberTelephone extends Model<AutoNumberTelephone> {
 	public static AutoNumberTelephone dao = new AutoNumberTelephone();
 	
 	
-	public Page<Record> getAutoNumberTelephoneByPaginate(int pageNumber,int pageSize,String numberId,String telephone,String clientName)
+	public Page<Record> getAutoNumberTelephoneByPaginate(int pageNumber,int pageSize,String numberId,String customerTel,String customerName)
 	{
 	
 		StringBuilder sb = new StringBuilder();
@@ -34,15 +34,15 @@ public class AutoNumberTelephone extends Model<AutoNumberTelephone> {
 			index++;
 		}
 		
-		if(!BlankUtils.isBlank(telephone)) {
-			sb.append(" and TELEPHONE like ?");
-			pars[index] = "%" + telephone + "%";
+		if(!BlankUtils.isBlank(customerTel)) {
+			sb.append(" and CUSTOMER_TEL like ?");
+			pars[index] = "%" + customerTel + "%";
 			index++;
 		}
 		
-		if(!BlankUtils.isBlank(clientName)) {
-			sb.append(" and CLIENT_NAME like ?");
-			pars[index] = "%" + clientName + "%";
+		if(!BlankUtils.isBlank(customerName)) {
+			sb.append(" and CUSTOMER_NAME like ?");
+			pars[index] = "%" + customerName + "%";
 			index++;
 		}
 		
@@ -52,7 +52,7 @@ public class AutoNumberTelephone extends Model<AutoNumberTelephone> {
 		
 	}
 	
-	public Map<String,Object> getAutoNumberTelephoneByPaginateToMap(int pageNumber,int pageSize,String numberId,String telephone,String clientName) {
+	public Map<String,Object> getAutoNumberTelephoneByPaginateToMap(int pageNumber,int pageSize,String numberId,String customerTel,String customerName) {
 		
 		Map<String,Object> m = new HashMap<String,Object>();
 		
@@ -62,13 +62,58 @@ public class AutoNumberTelephone extends Model<AutoNumberTelephone> {
 			return m;
 		}
 		
-		Page<Record> page = getAutoNumberTelephoneByPaginate(pageNumber,pageSize,numberId,telephone,clientName);
+		Page<Record> page = getAutoNumberTelephoneByPaginate(pageNumber,pageSize,numberId,customerTel,customerName);
 		
 		int total = page.getTotalRow();   //得到总数量
 		m.put("total", total);
 		m.put("rows", page.getList());
 		
 		return m;
+	}
+	
+	/**
+	 * 根据传入的 numberId,customerTel,customerName 取出所有符合条件的记录
+	 * 
+	 * 主要是用于导出号码数据到 Excel 表
+	 * 
+	 * @param numberId
+	 * @param customerTel
+	 * @param customerName
+	 * @return
+	 */
+	public List<Record> getAutoNumberTelephoneByCondition(String numberId,String customerTel,String customerName)
+	{
+	
+		StringBuilder sb = new StringBuilder();
+		Object[] pars = new Object[6];
+		int index = 0;
+		
+		sb.append("select * from ac_number_telephone where 1=1");
+		
+		if(!BlankUtils.isBlank(numberId)){  //即黑名单ID不为空
+			sb.append(" and NUMBER_ID=?");
+			pars[index] = numberId;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(customerTel)) {
+			sb.append(" and CUSTOMER_TEL like ?");
+			pars[index] = "%" + customerTel + "%";
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(customerName)) {
+			sb.append(" and CUSTOMER_NAME like ?");
+			pars[index] = "%" + customerName + "%";
+			index++;
+		}
+		
+		sb.append(" ORDER BY TEL_ID DESC");
+		
+		List<Record> list = Db.find(sb.toString(), ArrayUtils.copyArray(index, pars));
+		
+		return list;
+		
 	}
 	
 	
@@ -162,7 +207,7 @@ public class AutoNumberTelephone extends Model<AutoNumberTelephone> {
 	/**
 	 * 批量添加数据
 	 * 
-	 * @param telephones
+	 * @param customerTel
 	 * @return
 	 */
 	public int batchSave(ArrayList<Record> telephones) {
@@ -171,21 +216,21 @@ public class AutoNumberTelephone extends Model<AutoNumberTelephone> {
 			return 0;
 		}
 		
-		String sql = "insert into ac_number_telephone(NUMBER_ID,TELEPHONE,CLIENT_NAME) values(?,?,?)";
+		String sql = "insert into ac_number_telephone(NUMBER_ID,CUSTOMER_TEL,CUSTOMER_NAME) values(?,?,?)";
 		
-		int[] insertData = Db.batch(sql,"NUMBER_ID,TELEPHONE,CLIENT_NAME",telephones,5000);
+		int[] insertData = Db.batch(sql,"NUMBER_ID,CUSTOMER_TEL,CUSTOMER_NAME",telephones,5000);
 		
 		return insertData.length;
 		
 	}
 	
-	public boolean update(String telephone,String clientName,int telId) {
+	public boolean update(String customerTel,String customerName,int telId) {
 		
 		boolean b = false;
 		
-		String sql = "update ac_number_telephone set TELEPHONE=?,CLIENT_NAME=? where TEL_ID=?";
+		String sql = "update ac_number_telephone set CUSTOMER_TEL=?,CUSTOMER_NAME=? where TEL_ID=?";
 		
-		int count = Db.update(sql,telephone,clientName,telId);
+		int count = Db.update(sql,customerTel,customerName,telId);
 		
 		if(count > 0) {
 			b = true;
@@ -198,15 +243,15 @@ public class AutoNumberTelephone extends Model<AutoNumberTelephone> {
 	/**
 	 * 根据条件，返回号码组号码的数量
 	 * 
-	 * @param telephone
+	 * @param customerTel
 	 * @param numberId
 	 * @return
 	 */
-	public int getAutoNumberTelephoneCountByCondition(String telephone,String numberId) {
+	public int getAutoNumberTelephoneCountByCondition(String customerTel,String numberId) {
 		
-		String sql = "select count(*) as count from ac_number_telephone where TELEPHONE=? and NUMBER_ID=?";
+		String sql = "select count(*) as count from ac_number_telephone where CUSTOMER_TEL=? and NUMBER_ID=?";
 		
-		Record record = Db.findFirst(sql,telephone,numberId);
+		Record record = Db.findFirst(sql,customerTel,numberId);
 		
 		Integer count = Integer.valueOf(record.get("count").toString());
 		
@@ -231,7 +276,7 @@ public class AutoNumberTelephone extends Model<AutoNumberTelephone> {
 			return list;
 		}
 		
-		String sql = "select TELEPHONE,CLIENT_NAME from ac_number_telephone where NUMBER_ID=?";
+		String sql = "select CUSTOMER_TEL,CUSTOMER_NAME from ac_number_telephone where NUMBER_ID=?";
 		
 		list = Db.find(sql,numberId);
 		

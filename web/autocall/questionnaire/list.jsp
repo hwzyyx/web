@@ -1077,11 +1077,11 @@
 				<tr style="height:12px;">
 							
 					<th data-options="field:'QUESTIONNAIRE_DESC',width:400,align:'center'">问卷标题</th>
-					<th data-options="field:'QUESTION_COUNT',width:80,align:'center'">问题数量</th>
-					<th data-options="field:'CREATE_USERCODE_DESC',width:150,align:'center'">创建人</th>
+					<th data-options="field:'QUESTION_COUNT',width:100,align:'center'">问题数量</th>
+					<th data-options="field:'CREATE_USERCODE_DESC',width:200,align:'center'">创建人</th>
 					<th data-options="field:'ORG_CODE_DESC',width:200,align:'center'">部门(组织)名字</th>
-					<th data-options="field:'CREATE_TIME',width:150,align:'center'">创建时间</th>
-					<th data-options="field:'id',width:150,align:'center',formatter:rowformatter">操作</th>
+					<th data-options="field:'CREATE_TIME',width:200,align:'center'">创建时间</th>
+					<th data-options="field:'id',width:200,align:'center',formatter:rowformatter">操作</th>
 				</tr>
 			</thead>
 		</table>	
@@ -1102,13 +1102,13 @@
 	<a href="#" id="questionItemDelBtn" onclick="questionItemDel()" class="easyui-linkbutton" iconCls='icon-cancel' plain="true">删除问题项</a>
 </div>
 
-<div id="questionnaireDlg" class="easyui-dialog" data-options="title:'添加问卷'" style="width:900px;height:450px;padding:2px;" modal="true" closed="true" buttons="#addQuestionnaireBtn">
+<div id="questionnaireDlg" class="easyui-dialog" data-options="title:'添加问卷'" style="width:1200px;height:600px;padding:2px;" modal="true" closed="true" buttons="#addQuestionnaireBtn">
 		<!-- 包含问卷的表单 -->
 		<%@ include file="/autocall/questionnaire/_form.jsp" %>
 </div>
 
 <!-- 包含问题的表单弹窗 -->
-<div id="questionDlg" class="easyui-dialog" data-options="title:'新增问题'" style="width:700px;height:350px;padding:2px;" modal="true" closed="true" buttons="#addQuestionBtn"> 
+<div id="questionDlg" class="easyui-dialog" data-options="title:'新增问题'" style="width:1000px;height:500px;padding:2px;" modal="true" closed="true" buttons="#addQuestionBtn"> 
 		<!-- 包含问卷的表单 -->
 		<%@ include file="/autocall/questionnaire/_questionform.jsp" %>
 

@@ -14,20 +14,34 @@ public class CallOutDemo {
 	private DefaultAsteriskServer server;
 	
 	public CallOutDemo() {
-		this.server = new DefaultAsteriskServer("localhost",5041,"admin","vvopadmin");
+		this.server = new DefaultAsteriskServer("localhost",6038,"admin","vvopadmin");
+	}
+	
+	public static void main(String[] args) {
+		CallOutDemo cod = new CallOutDemo();
+		cod.doCallOut();
+		
+		try {
+			Thread.sleep(50 * 1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void doCallOut() {
 		
-		String channel = "SIP/AvayaTrunk/0013512771995";
+		String channel = "SIP/Trunk-1432/3056013512771995";
 		
-		String context = "from-sip";
-		String exten = "4400";
+		String context = "playvoice";
+		String exten = "8856";
 		int priority = 1;
-		long timeout = 15 * 1000;
-		CallerId callerId = new CallerId("4009286999","4009286999");
+		long timeout = 30 * 1000;
+		CallerId callerId = new CallerId("008651986626735","008651986626735");
 		Map<String,String> m = new HashMap<String,String>();
-		System.out.println("׼��ִ�к���...");
+		//m.put("voiceName", "helloworld");
+		m.put("voiceName", "1537399539000");
+		System.out.println("准备外呼");
 		server.originateToExtensionAsync(channel,context, exten, priority, timeout, callerId, m, new OriginateCallback() {
 
 			@Override
@@ -63,7 +77,7 @@ public class CallOutDemo {
 			
 		});
 		
-		System.out.println("����ִ�н���...");
+		System.out.println("呼叫结束");
 		
 	}
 	

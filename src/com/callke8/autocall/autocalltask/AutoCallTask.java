@@ -1,5 +1,6 @@
 package com.callke8.autocall.autocalltask;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,7 @@ import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.MemoryVariableUtil;
+import com.callke8.utils.NumberUtils;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Page;
@@ -205,7 +207,11 @@ public class AutoCallTask extends Model<AutoCallTask> {
 				}
 			}
 			
-			
+			//设置呼叫完成率（已呼数量/全部数量）,其中的已呼数量：是指状态为 不为 0(新建)、1(已载入),3(待重呼)
+			String taskId = r.get("TASK_ID");
+			int totalCount = AutoCallTaskTelephone.dao.getTelephoneCountByTaskId(taskId);     			//取得任务的号码数量
+			int finishCount = AutoCallTaskTelephone.dao.getTelephoneCountByNotInState(taskId, "0,1,3");	//取得不为: 0(新建)、1(已载入),3(待重呼)的数量,即表示已经完成的数量
+			r.set("FINISH_RATE", NumberUtils.calculatePercent(finishCount, totalCount));                //设置呼叫完成情况
 			
 			newList.add(r);
 			

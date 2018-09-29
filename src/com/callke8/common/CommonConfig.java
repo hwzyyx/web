@@ -22,7 +22,6 @@ import com.callke8.autocall.schedule.Schedule;
 import com.callke8.autocall.voice.Voice;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.bsh.bshvoice.BSHVoice;
-import com.callke8.bsh.bshvoice.BSHVoiceConfig;
 import com.callke8.bsh.common.BSHRoute;
 import com.callke8.call.calltask.CallTask;
 import com.callke8.call.calltelephone.CallTelephone;
@@ -34,7 +33,7 @@ import com.callke8.fastagi.blacklist.BlackListInterceptRecord;
 import com.callke8.fastagi.common.FastagiRoute;
 import com.callke8.fastagi.transfer.Transfer;
 import com.callke8.fastagi.transfer.TransferRecord;
-import com.callke8.pridialqueueforbshbyquartz.BSHPredial;
+import com.callke8.predialqueueforautocallbyquartz.AutoCallPredial;
 import com.callke8.report.cdr.Cdr;
 import com.callke8.report.clientinfo.ClientInfo;
 import com.callke8.report.clienttouch.ClientTouchRecord;
@@ -228,6 +227,9 @@ public class CommonConfig extends JFinalConfig {
 		agentStateMonitor.start();*/
 		
 		//四、用于启动自动外呼任务扫描,并执行自动外呼操作
+		AutoCallPredial autoCallPredial = new AutoCallPredial();
+		try {  autoCallPredial.exec();   } catch (SchedulerException e) { e.printStackTrace();}
+		
 		/*Predial predial = new Predial();
 		predial.execDial();*/
 		

@@ -8,13 +8,13 @@
 					<td style="padding-left:10px;">
 						客户号码：
 						<input type="hidden" name="autoBlackListTelephone.TEL_ID" id="TEL_ID"/>
-						<input style="width:200px;" id="TELEPHONE" name="autoBlackListTelephone.TELEPHONE" class="easyui-numberbox" type="text" required="true" missingMessage="电话号码不能为空!"></input>
+						<input style="width:200px;" id="CUSTOMER_TEL" name="autoBlackListTelephone.CUSTOMER_TEL" class="easyui-numberbox" type="text" required="true" missingMessage="电话号码不能为空!"></input>
 					</td>
 				</tr>
 				<tr>
 					<td style="padding-left:10px;">
 						客户姓名：
-						<input style="width:200px;" id="CLIENT_NAME" name="autoBlackListTelephone.CLIENT_NAME" class="easyui-textbox" type="text" required="true" missingMessage="客户姓名不能为空!"></input>
+						<input style="width:200px;" id="CUSTOMER_NAME" name="autoBlackListTelephone.CUSTOMER_NAME" class="easyui-textbox" type="text" required="true" missingMessage="客户姓名不能为空!"></input>
 						&nbsp;&nbsp;&nbsp;<a href="javascript:#" id="autoBlackListTelephoneSaveBtn"  class="easyui-linkbutton" data-options="iconCls:'icon-save'" onclick="autoBlackListTelephoneSaveAdd()">保存</a>
 					</td>
 				</tr>

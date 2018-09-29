@@ -19,7 +19,7 @@ public class AutoBlackListTelephone extends Model<AutoBlackListTelephone> {
 	public static AutoBlackListTelephone dao = new AutoBlackListTelephone();
 	
 	
-	public Page<Record> getAutoBlackListTelephoneByPaginate(int pageNumber,int pageSize,String blackListId,String telephone,String clientName)
+	public Page<Record> getAutoBlackListTelephoneByPaginate(int pageNumber,int pageSize,String blackListId,String customerTel,String customerName)
 	{
 	
 		StringBuilder sb = new StringBuilder();
@@ -34,15 +34,15 @@ public class AutoBlackListTelephone extends Model<AutoBlackListTelephone> {
 			index++;
 		}
 		
-		if(!BlankUtils.isBlank(telephone)) {
-			sb.append(" and TELEPHONE like ?");
-			pars[index] = "%" + telephone + "%";
+		if(!BlankUtils.isBlank(customerTel)) {
+			sb.append(" and CUSTOMER_TEL like ?");
+			pars[index] = "%" + customerTel + "%";
 			index++;
 		}
 		
-		if(!BlankUtils.isBlank(clientName)) {
-			sb.append(" and CLIENT_NAME like ?");
-			pars[index] = "%" + clientName + "%";
+		if(!BlankUtils.isBlank(customerName)) {
+			sb.append(" and CUSTOMER_NAME like ?");
+			pars[index] = "%" + customerName + "%";
 			index++;
 		}
 		
@@ -52,7 +52,7 @@ public class AutoBlackListTelephone extends Model<AutoBlackListTelephone> {
 		
 	}
 	
-	public Map<String,Object> getAutoBlackListTelephoneByPaginateToMap(int pageNumber,int pageSize,String blackListId,String telephone,String clientName) {
+	public Map<String,Object> getAutoBlackListTelephoneByPaginateToMap(int pageNumber,int pageSize,String blackListId,String customerTel,String customerName) {
 		
 		Map<String,Object> m = new HashMap<String,Object>();
 		
@@ -62,7 +62,7 @@ public class AutoBlackListTelephone extends Model<AutoBlackListTelephone> {
 			return m;
 		}
 		
-		Page<Record> page = getAutoBlackListTelephoneByPaginate(pageNumber,pageSize,blackListId,telephone,clientName);
+		Page<Record> page = getAutoBlackListTelephoneByPaginate(pageNumber,pageSize,blackListId,customerTel,customerName);
 		
 		int total = page.getTotalRow();   //得到总数量
 		m.put("total", total);
@@ -71,6 +71,50 @@ public class AutoBlackListTelephone extends Model<AutoBlackListTelephone> {
 		return m;
 	}
 	
+	/**
+	 * 根据传入的 blackListId,customerTel,customerName 取出所有符合条件的记录
+	 * 
+	 * 主要是用于导出号码数据到 Excel 表
+	 * 
+	 * @param blackListId
+	 * @param customerTel
+	 * @param customerName
+	 * @return
+	 */
+	public List<Record> getAutoNumberTelephoneByCondition(String blackListId,String customerTel,String customerName)
+	{
+	
+		StringBuilder sb = new StringBuilder();
+		Object[] pars = new Object[6];
+		int index = 0;
+		
+		sb.append("select * from ac_blacklist_telephone where 1=1");
+		
+		if(!BlankUtils.isBlank(blackListId)){  //即黑名单ID不为空
+			sb.append(" and BLACKLIST_ID=?");
+			pars[index] = blackListId;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(customerTel)) {
+			sb.append(" and CUSTOMER_TEL like ?");
+			pars[index] = "%" + customerTel + "%";
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(customerName)) {
+			sb.append(" and CUSTOMER_NAME like ?");
+			pars[index] = "%" + customerName + "%";
+			index++;
+		}
+		
+		sb.append(" ORDER BY TEL_ID DESC");
+		
+		List<Record> list = Db.find(sb.toString(), ArrayUtils.copyArray(index, pars));
+		
+		return list;
+		
+	}
 	
 	/**
 	 * 新增黑名单号码
@@ -171,21 +215,21 @@ public class AutoBlackListTelephone extends Model<AutoBlackListTelephone> {
 			return 0;
 		}
 		
-		String sql = "insert into ac_blacklist_telephone(BLACKLIST_ID,TELEPHONE,CLIENT_NAME) values(?,?,?)";
+		String sql = "insert into ac_blacklist_telephone(BLACKLIST_ID,CUSTOMER_TEL,CUSTOMER_NAME) values(?,?,?)";
 		
-		int[] insertData = Db.batch(sql,"BLACKLIST_ID,TELEPHONE,CLIENT_NAME",telephones,5000);
+		int[] insertData = Db.batch(sql,"BLACKLIST_ID,CUSTOMER_TEL,CUSTOMER_NAME",telephones,5000);
 		
 		return insertData.length;
 		
 	}
 	
-	public boolean update(String telephone,String clientName,int telId) {
+	public boolean update(String customerTel,String customerName,int telId) {
 		
 		boolean b = false;
 		
-		String sql = "update ac_blacklist_telephone set TELEPHONE=?,CLIENT_NAME=? where TEL_ID=?";
+		String sql = "update ac_blacklist_telephone set CUSTOMER_TEL=?,CUSTOMER_NAME=? where TEL_ID=?";
 		
-		int count = Db.update(sql,telephone,clientName,telId);
+		int count = Db.update(sql,customerTel,customerName,telId);
 		
 		if(count > 0) {
 			b = true;
@@ -198,15 +242,15 @@ public class AutoBlackListTelephone extends Model<AutoBlackListTelephone> {
 	/**
 	 * 根据条件，返回黑名单号码的数量
 	 * 
-	 * @param telephone
+	 * @param customerTel
 	 * @param blackListId
 	 * @return
 	 */
-	public int getAutoBlackListTelephoneCountByCondition(String telephone,String blackListId) {
+	public int getAutoBlackListTelephoneCountByCondition(String customerTel,String blackListId) {
 		
-		String sql = "select count(*) as count from ac_blacklist_telephone where TELEPHONE=? and BLACKLIST_ID=?";
+		String sql = "select count(*) as count from ac_blacklist_telephone where CUSTOMER_TEL=? and BLACKLIST_ID=?";
 		
-		Record record = Db.findFirst(sql,telephone,blackListId);
+		Record record = Db.findFirst(sql,customerTel,blackListId);
 		
 		Integer count = Integer.valueOf(record.get("count").toString());
 		
@@ -236,7 +280,7 @@ public class AutoBlackListTelephone extends Model<AutoBlackListTelephone> {
 		List<Record> blackListTelephoneList = Db.find(sql,blackListId);
 		
 		for(Record blackListTelephone:blackListTelephoneList) {
-			list.add(blackListTelephone.get("TELEPHONE").toString());
+			list.add(blackListTelephone.get("CUSTOMER_TEL").toString());
 		}
 		
 		return list;

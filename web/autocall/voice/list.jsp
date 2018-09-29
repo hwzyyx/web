@@ -434,16 +434,16 @@
 			<thead>
 			
 				<tr style="height:12px;">		
-					<th data-options="field:'VOICE_DESC',width:300,align:'center'">语音描述</th>
-					<th data-options="field:'FILE_NAME',width:150,align:'center'">文件名</th>
-					<th data-options="field:'VOICE_TYPE_DESC',width:100,align:'center'">语音类型</th>
-					<th data-options="field:'MIME_TYPE',width:50,align:'center'">格式</th>
-					<th data-options="field:'CREATE_USERCODE_DESC',width:100,align:'center'">创建人</th>
-					<th data-options="field:'ORG_CODE_DESC',width:150,align:'center'">部门(组织)名字</th>
-					<th data-options="field:'CREATE_TIME',width:150,align:'center'">创建时间</th>
-					<th data-options="field:'listen',width:35,align:'center',formatter:listenrowformatter">试听</th>
-					<th data-options="field:'download',width:50,align:'center',formatter:downloadrowformatter">下载</th>
-					<th data-options="field:'id',width:100,align:'center',formatter:rowformatter">操作</th>
+					<th data-options="field:'VOICE_DESC',width:500,align:'center'">语音描述</th>
+					<th data-options="field:'FILE_NAME',width:200,align:'center'">文件名</th>
+					<th data-options="field:'VOICE_TYPE_DESC',width:150,align:'center'">语音类型</th>
+					<th data-options="field:'MIME_TYPE',width:100,align:'center'">格式</th>
+					<th data-options="field:'CREATE_USERCODE_DESC',width:200,align:'center'">创建人</th>
+					<th data-options="field:'ORG_CODE_DESC',width:200,align:'center'">部门(组织)名字</th>
+					<th data-options="field:'CREATE_TIME',width:200,align:'center'">创建时间</th>
+					<th data-options="field:'listen',width:40,align:'center',formatter:listenrowformatter">试听</th>
+					<th data-options="field:'download',width:80,align:'center',formatter:downloadrowformatter">下载</th>
+					<th data-options="field:'id',width:120,align:'center',formatter:rowformatter">操作</th>
 				</tr>
 				
 			</thead>
@@ -458,7 +458,7 @@
 	</div>
 </div>
 
-<div id="voiceDlg" class="easyui-dialog" style="width:700px;height:400px;padding:5px;" modal="true" closed="true" buttons="#addVoiceBtn">
+<div id="voiceDlg" class="easyui-dialog" style="width:1000px;height:600px;padding:5px;" modal="true" closed="true" buttons="#addVoiceBtn">
 		<!-- 包含语音信息的表单 -->
 		<%@ include file="/autocall/voice/_form.jsp" %>
 </div>

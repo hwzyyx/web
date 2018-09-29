@@ -1044,6 +1044,17 @@
 			}
 			
 		}
+		
+		//任务的完成率
+		function finishrateformatter(value,data,index) {
+			htmlstr='<div class="easyui-progressbar progressbar easyui-fluid" style="width: 100%; height: 20px;">'
+		         +'<div class="progressbar-value" style="width: 100%; height: 20px; line-height: 20px;"> '
+		             +'<div class="progressbar-text" style="background-color:#6eff6e;width: '+ value +'; height: 20px; line-height: 20px;">'+ value +'</div>'
+		         +'</div>'
+	       +'</div>';
+   			return htmlstr;
+
+		}
 
 		function telephonestateformatter(value,data,index) {
 
@@ -1546,18 +1557,19 @@
 			<thead>
 				<tr style="height:12px;">
 					<th data-options="field:'ck',checkbox:true"></th>		
-					<th data-options="field:'TASK_NAME',width:200,align:'center'">任务名称</th>
-					<th data-options="field:'taskTypeField',width:100,align:'center',formatter:tasktyperowformatter">任务类型</th>
-					<th data-options="field:'CALLERID_DESC',width:100,align:'center'">主叫号码</th>
-					<th data-options="field:'taskStateField',width:100,align:'center',formatter:taskstaterowformatter">状态</th>
-					<th data-options="field:'validityDate',width:180,align:'center',formatter:validitydaterowformatter">有效期</th>
-					<th data-options="field:'scheduleDetail',width:40,align:'center',formatter:scheduledetailformatter">调度</th>
-					<th data-options="field:'RETRY_TIMES',width:80,align:'center'">重试次数</th>
+					<th data-options="field:'TASK_NAME',width:250,align:'center'">任务名称</th>
+					<th data-options="field:'FINISH_RATE',width:100,align:'center',formatter:finishrateformatter">呼叫情况</th>
+					<th data-options="field:'taskTypeField',width:150,align:'center',formatter:tasktyperowformatter">任务类型</th>
+					<th data-options="field:'CALLERID_DESC',width:150,align:'center'">主叫号码</th>
+					<th data-options="field:'taskStateField',width:120,align:'center',formatter:taskstaterowformatter">状态</th>
+					<th data-options="field:'validityDate',width:220,align:'center',formatter:validitydaterowformatter">有效期</th>
+					<th data-options="field:'scheduleDetail',width:50,align:'center',formatter:scheduledetailformatter">调度</th>
+					<th data-options="field:'RETRY_TIMES',width:80,align:'center'">呼叫次数</th>
 					<th data-options="field:'RETRY_INTERVAL',width:100,align:'center'">重试间隔(分钟)</th>
 					
-					<th data-options="field:'CREATE_USERCODE_DESC',width:100,align:'center'">创建人</th>
+					<th data-options="field:'CREATE_USERCODE_DESC',width:150,align:'center'">创建人</th>
 					<th data-options="field:'ORG_CODE_DESC',width:150,align:'center'">部门(组织)名字</th>
-					<th data-options="field:'CREATE_TIME',width:150,align:'center'">创建时间</th>
+					<th data-options="field:'CREATE_TIME',width:180,align:'center'">创建时间</th>
 					<th data-options="field:'id',width:100,align:'center',formatter:rowformatter">操作</th -->
 				</tr>
 				
@@ -1581,7 +1593,7 @@
 	
 </div>
 
-<div id="autoCallTaskDlg" class="easyui-dialog" style="width:950px;height:550px;padding:5px;" modal="true" closed="true">
+<div id="autoCallTaskDlg" class="easyui-dialog" style="width:1200px;height:700px;padding:5px;" modal="true" closed="true">
 	<!-- 包含外呼任务的表单 -->
 	<%@ include file="/autocall/autocalltask/_form.jsp" %>
 </div>

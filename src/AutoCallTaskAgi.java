@@ -14,6 +14,7 @@ import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.autocall.questionnaire.Question;
 import com.callke8.autocall.questionnaire.QuestionnaireRespond;
 import com.callke8.autocall.voice.Voice;
+import com.callke8.predialqueueforautocallbyquartz.AutoCallPredial;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
@@ -35,17 +36,24 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 	@Override
 	public void service(AgiRequest request, AgiChannel channel)
 			throws AgiException {
+		//从通道变量中，获得 telId
+		String telId =  channel.getVariable("autoCallTaskTelephoneId");
+		//根据 telId，从数据库中取得 autoCallTaskTelephone 数据
+		AutoCallTaskTelephone autoCallTaskTelephone = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneById(telId);
 		
-		String taskId = channel.getVariable("taskId");
-		String telId = channel.getVariable("telId");
+		String taskId = autoCallTaskTelephone.get("TASK_ID");    //再根据该对象，获得任务的 ID
 		List<Record> playList = new ArrayList<Record>();    //定义一个List,用于存储播放列表
 		
 		exec("Noop","任务ID:" + taskId);
 		exec("Noop","号码ID:" + telId);
+		StringUtil.log(this, "[====GASYAGI===]系统执行到了自动外呼的 FASTAGI 流程，任务ID:" + taskId + "; 号码ID:" + telId + "；客户号码为:" + autoCallTaskTelephone.getStr("TELEPHONE"));
+		
+		//执行到这里，表示呼叫已经成功，需要修改状态为2，即是成功
+		AutoCallPredial.updateTelehponeStateForSuccess("SUCCESS", autoCallTaskTelephone);
 		
 		//根据通道变量（任务ID）取出任务信息
 		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
-		AutoCallTaskTelephone autoCallTaskTelephone = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneById(telId);
+		
 		//取出任务类型
 		String taskType = autoCallTask.get("TASK_TYPE");
 	
@@ -54,9 +62,9 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		//如果播放列表不为空
 		if(!BlankUtils.isBlank(playList) && playList.size() > 0) {
 			exec("Noop","播放列表中语音文件的数量为:" + playList.size());
+			StringUtil.log(this, "[====GASYAGI===]播放列表中语音文件的数量为:" + playList.size());
 			//第一次必定先播放一次
 			execPlay(playList, taskId, Integer.valueOf(telId), autoCallTaskTelephone.get("TELEPHONE").toString(), channel);
-			
 			
 			if(!taskType.equals("2")) {    //非问卷调查任务时,需要提示重复播放
 				while(repeat(channel)) {      //如果客户需要重复时,重复播放
@@ -68,6 +76,9 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			exec("Noop","播放列表为空");
 			exec("PlayBack",voicePathSingle + "/emptyPlayList");
 		}
+		
+		//退出之后，需要清理一下，当前的活跃通道，释放资源
+		AutoCallPredial.activeChannelCount--;
 		
 		exec("hangup");
 	}
@@ -212,7 +223,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 				String fileName = commonVoice.get("FILE_NAME");
 				
 				String commonVoicePath = voicePathSingle + "/" + fileName;
-				
+				list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 				list.add(setRecord("PlayBack",commonVoicePath,null));
 				
 			}
@@ -238,7 +249,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 							
 							String fileName = questionVoice.get("FILE_NAME");
 							String questionVoicePath = voicePathSingle + "/" + fileName;
-							
+							list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 							list.add(setRecord("Read","question," + questionVoicePath + ",1,,3,10",questionId));
 						}
 						
@@ -266,32 +277,38 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			}
 			
 			//问候语：尊敬的客户您好
+			list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 			list.add(setRecord("PlayBack",voicePathSingle + "/greeting",null));
 			
 			//判断催缴类型
 			if(reminderType.equals("7")) {    //社保催缴
 				
 				//催缴提醒:请及时汇缴
+				list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 				list.add(setRecord("PlayBack",voicePathSingle + "/reminderalert",null));
 				
 				//2017年
 				if(!BlankUtils.isBlank(year)) {
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/" + year,null));
 				}
 				
 				//5月
 				if(!BlankUtils.isBlank(month)) {
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/" + month,null));
 				}
 				
 				//的社保费
-				list.add(setRecord("Play",voicePathSingle + "/socialfees",null));
+				list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
+				list.add(setRecord("PlayBack",voicePathSingle + "/socialfees",null));
 				
 			}else if(reminderType.equals("6")) {     //交通违章催缴
 				
 				//交通违章催缴的模板：尊敬的客户您好,您2016年03月01日，有交通违章行为,请到交警部门接受处理
 				
 				//您
+				list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 				list.add(setRecord("PlayBack",voicePathSingle + "/nin",null));
 				
 				//要重新分解日期
@@ -302,10 +319,13 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 					day = period.substring(6,8);
 					
 					//2017年
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/" + year,null));
 					//5月
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/" + month,null));
 					//1日
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/" + day + "d",null));
 				}
 				
@@ -324,6 +344,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 				//日期格式：应该是 201605-201606
 				
 				//您
+				list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 				list.add(setRecord("PlayBack",voicePathSingle + "/nin",null));
 				
 				if(!BlankUtils.isBlank(period) && period.length()==13) {
@@ -332,21 +353,27 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 					month1 = period.substring(4,6);
 					
 					//2017年5月
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/" + year1,null));
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/" + month1,null));
 					
 					//至 
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/zhi",null));
 					
 					year2 = period.substring(7,11);
 					month2 = period.substring(11,13);
 					
 					//2017年6月
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/" + year2,null));
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/" + month2,null));
 				}
 				
 				//的物业管理费是
+				list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 				list.add(setRecord("PlayBack",voicePathSingle + "/propertyfees",null));
 				
 				//读费用
@@ -357,6 +384,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 					
 					for(char c:chars) {      
 						//组织文件
+						list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 						list.add(setRecord("PlayBack",voicePathSingle + "/" + c,null));
 					}
 					
@@ -365,23 +393,30 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			}else {
 				
 				//您
+				list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 				list.add(setRecord("PlayBack",voicePathSingle + "/nin",null));
 				
 				//2017年6月
+				list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 				list.add(setRecord("PlayBack",voicePathSingle + "/" + year,null));
+				list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 				list.add(setRecord("PlayBack",voicePathSingle + "/" + month,null));
 				
 				if(reminderType.equals("1")) {          //电话费
 					//的电话费是
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/telephonefees",null));
 				}else if(reminderType.equals("2")) {    //电费
 					//的电费是
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/electricfees",null));
 				}else if(reminderType.equals("3")) {    //水费
 					//的水费是
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/waterfees",null));
 				}else if(reminderType.equals("4")) {    //燃气费
 					//的燃气费是
+					list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 					list.add(setRecord("PlayBack",voicePathSingle + "/gasfees",null));
 				}
 				
@@ -392,6 +427,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 					char[] chars = moneyStr.toCharArray();
 					for(char c:chars) {      
 						//组织文件
+						list.add(setRecord("wait","0.5",null));         //先停顿0.5秒
 						list.add(setRecord("PlayBack",voicePathSingle + "/" + c,null));
 					}
 					

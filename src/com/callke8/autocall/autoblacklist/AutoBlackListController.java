@@ -1,5 +1,6 @@
 package com.callke8.autocall.autoblacklist;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +19,7 @@ import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.RenderJson;
 import com.callke8.utils.TreeJson;
 import com.jfinal.core.Controller;
+import com.jfinal.kit.PathKit;
 import com.jfinal.plugin.activerecord.Record;
 
 public class AutoBlackListController extends Controller implements IController {
@@ -130,6 +132,42 @@ public class AutoBlackListController extends Controller implements IController {
 			render(RenderJson.success("修改黑名单成功!"));
 		}else {
 			render(RenderJson.error("修改黑名单失败!"));
+		}
+		
+	}
+	
+	/*
+	 * 导出模板：上传号码的模板
+	 */
+	public void template() {
+		
+		String type = getPara("type");     //可能是: txt 或是 excel 
+		String fileName = "blacklist_template";
+		String mimeType = null;
+		
+		if(BlankUtils.isBlank(type)) {
+			type = "excel";
+		}
+		
+		
+		
+		String templateDir = File.separator + "template" + File.separator;     //模板所在路径
+		String path_tmp = PathKit.getWebRootPath() + templateDir;              //绝对路径
+		
+		if(type.equalsIgnoreCase("txt")) {
+			mimeType = "txt";
+		}else {
+			mimeType = "xlsx";
+		}
+		
+		String fullFileName = fileName + "." + mimeType;
+		
+		File file = new File(path_tmp + fullFileName);
+		
+		if(file.exists()) {
+			renderFile(file);
+		}else {
+			render(RenderJson.error("下载模板失败,文件不存在"));
 		}
 		
 	}

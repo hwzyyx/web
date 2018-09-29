@@ -5,9 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.callke8.autocall.autonumber.AutoNumber;
+import com.callke8.autocall.autonumber.AutoNumberTelephone;
 import com.callke8.common.IController;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
+import com.callke8.utils.ExcelExportUtil;
 import com.callke8.utils.RenderJson;
 import com.callke8.utils.StringUtil;
 import com.callke8.utils.TxtUtils;
@@ -23,14 +26,14 @@ public class AutoBlackListTelephoneController extends Controller implements ICon
 	public void datagrid() {
 		System.out.println("取AutoBlackListTelephoneController datagrid的开始时间:" + DateFormatUtils.getTimeMillis());
 		String blackListId = getPara("blackListId");
-		String telephone = getPara("telephone");
-		String clientName = getPara("clientName");
+		String customerTel = getPara("customerTel");
+		String customerName = getPara("customerName");
 		
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoBlackListTelephone.dao.getAutoBlackListTelephoneByPaginateToMap(pageNumber, pageSize, blackListId, telephone, clientName);
-		System.out.println("取AutoBlackListTelephoneController datagrid的结束时间:" + DateFormatUtils.getTimeMillis());
+		Map map = AutoBlackListTelephone.dao.getAutoBlackListTelephoneByPaginateToMap(pageNumber, pageSize, blackListId, customerTel, customerName);
+		//System.out.println("取AutoBlackListTelephoneController datagrid的结束时间:" + DateFormatUtils.getTimeMillis());
 		renderJson(map);
 		
 	}
@@ -43,8 +46,8 @@ public class AutoBlackListTelephoneController extends Controller implements ICon
 		Record autoBlackListTelephone = new Record();
 		
 		autoBlackListTelephone.set("BLACKLIST_ID", blackListId);
-		autoBlackListTelephone.set("TELEPHONE", ablt.get("TELEPHONE"));
-		autoBlackListTelephone.set("CLIENT_NAME",ablt.get("CLIENT_NAME"));
+		autoBlackListTelephone.set("CUSTOMER_TEL", ablt.get("CUSTOMER_TEL"));
+		autoBlackListTelephone.set("CUSTOMER_NAME",ablt.get("CUSTOMER_NAME"));
 		
 		boolean b = AutoBlackListTelephone.dao.add(autoBlackListTelephone);
 		
@@ -80,12 +83,12 @@ public class AutoBlackListTelephoneController extends Controller implements ICon
 			render(RenderJson.error("要修改的号码信息为空,修改失败!"));
 		}
 		
-		String telephone = ablt.get("TELEPHONE");
-		String clientName = ablt.get("CLIENT_NAME");
+		String customerTel = ablt.get("CUSTOMER_TEL");
+		String customerName = ablt.get("CUSTOMER_NAME");
 		int telId = Integer.valueOf(ablt.get("TEL_ID").toString());
 		
 		
-		boolean b = AutoBlackListTelephone.dao.update(telephone, clientName, telId);
+		boolean b = AutoBlackListTelephone.dao.update(customerTel, customerName, telId);
 		
 		if(b) {
 			render(RenderJson.success("修改号码成功!"));
@@ -166,20 +169,20 @@ public class AutoBlackListTelephoneController extends Controller implements ICon
 			
 			Record r = list.get(i);
 			
-			String telephone = r.get("0");     //得到号码
-			String clientName = r.get("1");    //得到客户姓名
+			String customerTel = r.get("0");     //得到号码
+			String customerName = r.get("1");    //得到客户姓名
 			
 			//取出两列，然后判断第一列是否是号码,且号码的长度是否大于等于7位数，否则将不储存
-			if(!BlankUtils.isBlank(telephone) && StringUtil.isNumber(telephone) && telephone.length() >= 7) {
+			if(!BlankUtils.isBlank(customerTel) && StringUtil.isNumber(customerTel) && customerTel.length() >= 7) {
 				
-				if(BlankUtils.isBlank(clientName)) {   //如果客户姓名为空时，则号码即为客户号码
-					clientName = telephone;
+				if(BlankUtils.isBlank(customerName)) {   //如果客户姓名为空时，则号码即为客户号码
+					customerName = customerTel;
 				}
 				
 				Record blackListTelephone = new Record();
 				blackListTelephone.set("BLACKLIST_ID", blackListId);
-				blackListTelephone.set("TELEPHONE", telephone);
-				blackListTelephone.set("CLIENT_NAME",clientName);
+				blackListTelephone.set("CUSTOMER_TEL", customerTel);
+				blackListTelephone.set("CUSTOMER_NAME",customerName);
 				
 				listResult.add(blackListTelephone);
 			}else {   //否则，跳过
@@ -192,6 +195,36 @@ public class AutoBlackListTelephoneController extends Controller implements ICon
 		return count;
 	}
 	
+	/**
+	 * 导出为 Excel
+	 */
+	public void exportExcel() {
+		
+		String blackListId = getPara("blackListId");
+		String customerTel = getPara("customerTel");
+		String customerName = getPara("customerName");
+		String fileName = " 黑名单的号码列表"; 
+		
+		//System.out.println("导出号码组号的参数：numberId:" + numberId + ",customerTel:" + customerTel + ",customerName:" + customerName);
+		List<Record> list = AutoBlackListTelephone.dao.getAutoNumberTelephoneByCondition(blackListId, customerTel, customerName);   //根据条件，取出黑名单号码列表
+		
+		AutoBlackList autoBlackList = AutoBlackList.dao.getAutoBlackListByBlackListId(blackListId);    //根据传入的blackListId 取出黑名单的信息
+		if(!BlankUtils.isBlank(autoBlackList)) {
+			fileName = autoBlackList.get("BLACKLIST_NAME") + "的号码列表.xls";
+		}
+		
+		//根据取得的号码列表，组织导出数据
+		String[] headers = {"客户号码","客户姓名"};
+		String[] columns = {"CUSTOMER_TEL","CUSTOMER_NAME"};
+		String sheetName = "号码列表";
+		int cellWidth = 200;
+		
+		ExcelExportUtil export = new ExcelExportUtil(list,getResponse());
+		export.headers(headers).columns(columns).sheetName(sheetName).cellWidth(cellWidth);
+		
+		export.fileName(fileName).execExport();
+		
+	}
 	                                   
 
 }

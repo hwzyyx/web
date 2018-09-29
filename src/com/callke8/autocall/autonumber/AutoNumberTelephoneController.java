@@ -8,6 +8,7 @@ import java.util.Map;
 import com.callke8.common.IController;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
+import com.callke8.utils.ExcelExportUtil;
 import com.callke8.utils.RenderJson;
 import com.callke8.utils.StringUtil;
 import com.callke8.utils.TxtUtils;
@@ -23,13 +24,13 @@ public class AutoNumberTelephoneController extends Controller implements IContro
 	public void datagrid() {
 		
 		String numberId = getPara("numberId");
-		String telephone = getPara("telephone");
-		String clientName = getPara("clientName");
+		String customerTel = getPara("customerTel");
+		String customerName = getPara("customerName");
 		
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoNumberTelephone.dao.getAutoNumberTelephoneByPaginateToMap(pageNumber, pageSize, numberId, telephone, clientName);
+		Map map = AutoNumberTelephone.dao.getAutoNumberTelephoneByPaginateToMap(pageNumber, pageSize, numberId, customerTel, customerName);
 		
 		renderJson(map);
 		
@@ -43,8 +44,8 @@ public class AutoNumberTelephoneController extends Controller implements IContro
 		Record autoNumberTelephone = new Record();
 		
 		autoNumberTelephone.set("NUMBER_ID", numberId);
-		autoNumberTelephone.set("TELEPHONE", ant.get("TELEPHONE"));
-		autoNumberTelephone.set("CLIENT_NAME",ant.get("CLIENT_NAME"));
+		autoNumberTelephone.set("CUSTOMER_TEL", ant.get("CUSTOMER_TEL"));
+		autoNumberTelephone.set("CUSTOMER_NAME",ant.get("CUSTOMER_NAME"));
 		
 		boolean b = AutoNumberTelephone.dao.add(autoNumberTelephone);
 		
@@ -80,12 +81,12 @@ public class AutoNumberTelephoneController extends Controller implements IContro
 			render(RenderJson.error("要修改的号码信息为空,修改失败!"));
 		}
 		
-		String telephone = ant.get("TELEPHONE");
-		String clientName = ant.get("CLIENT_NAME");
+		String customerTel = ant.get("CUSTOMER_TEL");
+		String customerName = ant.get("CUSTOMER_NAME");
 		int telId = Integer.valueOf(ant.get("TEL_ID").toString());
 		
 		
-		boolean b = AutoNumberTelephone.dao.update(telephone, clientName, telId);
+		boolean b = AutoNumberTelephone.dao.update(customerTel, customerName, telId);
 		
 		if(b) {
 			render(RenderJson.success("修改号码成功!"));
@@ -166,20 +167,20 @@ public class AutoNumberTelephoneController extends Controller implements IContro
 			
 			Record r = list.get(i);
 			
-			String telephone = r.get("0");     //得到号码
-			String clientName = r.get("1");    //得到客户姓名
+			String customerTel = r.get("0");     //得到号码
+			String customerName = r.get("1");    //得到客户姓名
 			
 			//取出两列，然后判断第一列是否是号码,且号码的长度是否大于等于7位数，否则将不储存
-			if(!BlankUtils.isBlank(telephone) && StringUtil.isNumber(telephone) && telephone.length() >= 7) {
+			if(!BlankUtils.isBlank(customerTel) && StringUtil.isNumber(customerTel) && customerTel.length() >= 7) {
 				
-				if(BlankUtils.isBlank(clientName)) {   //如果客户姓名为空时，则号码即为客户号码
-					clientName = telephone;
+				if(BlankUtils.isBlank(customerName)) {   //如果客户姓名为空时，则号码即为客户号码
+					customerName = customerTel;
 				}
 				
 				Record numberTelephone = new Record();
 				numberTelephone.set("NUMBER_ID", numberId);
-				numberTelephone.set("TELEPHONE", telephone);
-				numberTelephone.set("CLIENT_NAME",clientName);
+				numberTelephone.set("CUSTOMER_TEL", customerTel);
+				numberTelephone.set("CUSTOMER_NAME",customerName);
 				
 				listResult.add(numberTelephone);
 			}else {   //否则，跳过
@@ -192,6 +193,35 @@ public class AutoNumberTelephoneController extends Controller implements IContro
 		return count;
 	}
 	
-	                                   
+	/**
+	 * 导出为 Excel
+	 */
+	public void exportExcel() {
+		
+		String numberId = getPara("numberId");
+		String customerTel = getPara("customerTel");
+		String customerName = getPara("customerName");
+		String fileName = "号码组的号码列表"; 
+		
+		//System.out.println("导出号码组号的参数：numberId:" + numberId + ",customerTel:" + customerTel + ",customerName:" + customerName);
+		List<Record> list = AutoNumberTelephone.dao.getAutoNumberTelephoneByCondition(numberId, customerTel, customerName);    //根据条件，取出号码列表
+		
+		AutoNumber autoNumber = AutoNumber.dao.getAutoNumberByNumberId(numberId);    //根据传入的numberId 取出任务的信息
+		if(!BlankUtils.isBlank(autoNumber)) {
+			fileName = autoNumber.get("NUMBER_NAME") + "的号码列表.xls";
+		}
+		
+		//根据取得的号码列表，组织导出数据
+		String[] headers = {"客户号码","客户姓名"};
+		String[] columns = {"CUSTOMER_TEL","CUSTOMER_NAME"};
+		String sheetName = "号码列表";
+		int cellWidth = 200;
+		
+		ExcelExportUtil export = new ExcelExportUtil(list,getResponse());
+		export.headers(headers).columns(columns).sheetName(sheetName).cellWidth(cellWidth);
+		
+		export.fileName(fileName).execExport();
+		
+	}
 
 }

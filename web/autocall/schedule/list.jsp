@@ -458,10 +458,10 @@
 			//$("#scheduleTitle").html("调度名称：" + scheduleName);
 			var scheduleDetailHtml = "";
 
-			scheduleDetailHtml += "<h2 style='color:#0099FF;'>调度名称：" + scheduleName + "</h2>";
+			scheduleDetailHtml += "<h2 style='color:#0099FF;padding-top:30px;padding-bottom:20px;'>调度名称：" + scheduleName + "</h2>";
 			scheduleDetailHtml += "<HR style='FILTER:alpha(opacity=100,finishopacity=0,style=3);margin-left:3px;' width='95%' color=#cccccc SIZE=1>";
 			scheduleDetailHtml += "<table border='1' cellspacing='0' cellpadding='0' bordercolor='#c4e1ff' style='margin-left:5px;width:95%;height:220px;'>";
-			scheduleDetailHtml += "<tr><td style='width:50px;vertical-align: top;' rowspan='2'>";
+			scheduleDetailHtml += "<tr><td style='width:80px;vertical-align: top;' rowspan='2'>";
 
 			//循环打印周一至周日
 			if(dateType==2) {   //如果日期类型为星期
@@ -477,16 +477,16 @@
 					}
 
 					if(isContain) {
-						scheduleDetailHtml += "<a href='#' class='easyui-linkbutton linkButtonGray' style='width:50px;background:#11fa5e;margin-top:1px;'>" + weekDayX + "</a><br/>";	
+						scheduleDetailHtml += "<a href='#' class='easyui-linkbutton linkButtonGray' style='width:70px;background:#11fa5e;margin-top:1px;'>" + weekDayX + "</a><br/>";	
 					}else {
-						scheduleDetailHtml += "<a href='#' class='easyui-linkbutton linkButtonGray' style='width:50px;background:#e7e4e4;margin-top:1px;'><span style='color:#c9c5c5'>" + weekDayX + "</span></a><br/>";
+						scheduleDetailHtml += "<a href='#' class='easyui-linkbutton linkButtonGray' style='width:70px;background:#e7e4e4;margin-top:1px;'><span style='color:#c9c5c5'>" + weekDayX + "</span></a><br/>";
 					}
 					
 				}
 			}else {             //如果日期类型为每天
 				for(var i=1;i<=7;i++) {
 					var weekDayX = weekArr[i];
-					scheduleDetailHtml += "<a href='#' class='easyui-linkbutton linkButtonGray' style='width:50px;background:#11fa5e;margin-top:1px;'>" + weekDayX + "</a><br/>";
+					scheduleDetailHtml += "<a href='#' class='easyui-linkbutton linkButtonGray' style='width:70px;background:#11fa5e;margin-top:1px;'>" + weekDayX + "</a><br/>";
 				}
 			}
 			//循环打印周一至周日结束
@@ -643,12 +643,12 @@
 			<thead>
 			
 				<tr style="height:12px;">		
-					<th data-options="field:'SCHEDULE_NAME',width:250,align:'center'">调度名称</th>
-					<th data-options="field:'CREATE_USERCODE',width:100,align:'center'">创建人</th>
-					<th data-options="field:'ORG_CODE_DESC',width:150,align:'center'">部门(组织)名字</th>
-					<th data-options="field:'DATETYPE_DETAIL_DESC',width:400,align:'center'">日期类型</th>
-					<th data-options="field:'CREATETIME',width:150,align:'center'">创建时间</th>
-					<th data-options="field:'id',width:150,align:'center',formatter:rowformatter">操作</th>
+					<th data-options="field:'SCHEDULE_NAME',width:400,align:'center'">调度名称</th>
+					<th data-options="field:'CREATE_USERCODE',width:200,align:'center'">创建人</th>
+					<th data-options="field:'ORG_CODE_DESC',width:200,align:'center'">部门(组织)名字</th>
+					<th data-options="field:'DATETYPE_DETAIL_DESC',width:500,align:'center'">日期类型</th>
+					<th data-options="field:'CREATETIME',width:200,align:'center'">创建时间</th>
+					<th data-options="field:'id',width:200,align:'center',formatter:rowformatter">操作</th>
 				</tr>
 				
 			</thead>

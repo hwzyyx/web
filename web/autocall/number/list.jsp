@@ -77,8 +77,8 @@
 				url:'autoNumberTelephone/datagrid',
 				queryParams:{
 					numberId:currNumberId,
-			    	telephone:$('#telephone').textbox('getValue'),
-	    			clientName:$('#clientName').textbox('getValue')
+			    	customerTel:$('#customerTel').textbox('getValue'),
+	    			customerName:$('#customerName').textbox('getValue')
 				}
 			    
 			});
@@ -265,10 +265,10 @@
 		    
 	    }
 	    
-    	function autoNumberTelephoneEdit(telId,telephone,clientName) {
+    	function autoNumberTelephoneEdit(telId,customerTel,customerName) {
     		$("#TEL_ID").val(telId);
-    		$("#TELEPHONE").numberbox('setValue',telephone);
-    		$("#CLIENT_NAME").textbox('setValue',clientName);
+    		$("#CUSTOMER_TEL").numberbox('setValue',customerTel);
+    		$("#CUSTOMER_NAME").textbox('setValue',customerName);
 
 			$("#autoNumberTelephoneSaveBtn").attr("onclick","autoNumberTelephoneSaveEdit()");
 
@@ -445,12 +445,30 @@
 			});
         	
     	}
+    	
+    	//导出号码组的号码
+    	function autoNumberTelephoneExport() {
+    		
+    		$("#exportForm").form('submit',{
+    			url:'autoNumberTelephone/exportExcel',
+    			onSubmit:function(param) {
+    				param.numberId = currNumberId;
+    				param.customerTel = $('#customerTel').textbox('getValue'),
+    				param.customerName = $('#customerName').textbox('getValue')
+    			},
+    			success:function(data) {
+    				
+    			}
+    		});
+    		
+    		
+    	}
 			
     	function findDataForTelephone() {
     		$("#autoNumberTelephoneDg").datagrid('load',{
         		numberId:currNumberId,
-        		telephone:$('#telephone').textbox('getValue'),
-    			clientName:$('#clientName').textbox('getValue')
+        		customerTel:$('#customerTel').textbox('getValue'),
+    			customerName:$('#customerName').textbox('getValue')
         	});
     	}
 
@@ -460,7 +478,7 @@
 		}
 
 		function telephonerowformatter(value,data,index) {
-			return "<a href='#' onclick='javascript:autoNumberTelephoneEdit(\"" + data.TEL_ID + "\",\"" + data.TELEPHONE + "\",\"" + data.CLIENT_NAME + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>";
+			return "<a href='#' onclick='javascript:autoNumberTelephoneEdit(\"" + data.TEL_ID + "\",\"" + data.CUSTOMER_TEL + "\",\"" + data.CUSTOMER_NAME + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>";
 		}    
 
     </script>
@@ -500,11 +518,11 @@
 		<table id="autoNumberDg">
 			<thead>
 				<tr style="height:12px;">		
-					<th data-options="field:'NUMBER_NAME',width:300,align:'center'">号码组名称</th>
-					<th data-options="field:'CREATE_USERCODE_DESC',width:100,align:'center'">创建人</th>
-					<th data-options="field:'ORG_CODE_DESC',width:150,align:'center'">部门(组织)名字</th>
-					<th data-options="field:'CREATE_TIME',width:150,align:'center'">创建时间</th>
-					<th data-options="field:'id',width:100,align:'center',formatter:rowformatter">操作</th -->
+					<th data-options="field:'NUMBER_NAME',width:500,align:'center'">号码组名称</th>
+					<th data-options="field:'CREATE_USERCODE_DESC',width:200,align:'center'">创建人</th>
+					<th data-options="field:'ORG_CODE_DESC',width:300,align:'center'">部门(组织)名字</th>
+					<th data-options="field:'CREATE_TIME',width:200,align:'center'">创建时间</th>
+					<th data-options="field:'id',width:150,align:'center',formatter:rowformatter">操作</th -->
 				</tr>
 				
 			</thead>
@@ -517,15 +535,17 @@
 	<a href="#" id="easyui-add" onclick="autoNumberAdd()" class="easyui-linkbutton" iconCls='icon-add' plain="true">新增号码组</a>
 </div>
 
-<div id="autoNumberDlg" class="easyui-dialog" style="width:850px;height:450px;padding:5px;" modal="true" closed="true">
+<div id="autoNumberDlg" class="easyui-dialog" style="width:1000px;height:600px;padding:5px;" modal="true" closed="true">
 		<!-- 包含号码组表单 -->
 		<%@ include file="/autocall/number/_form.jsp" %>
 </div>
 
-<div id="autoNumberTelephoneDlg" class="easyui-dialog" style="width:500px;height:400px;padding:5px;" modal="true" closed="true">
+<div id="autoNumberTelephoneDlg" class="easyui-dialog" style="width:800px;height:500px;padding:5px;" modal="true" closed="true">
 		<!-- 包含号码组号码表单 -->
 		<%@ include file="/autocall/number/_telephoneform.jsp" %>
 </div>
+<form id="exportForm" action="#">
+</form>
 
 </body>
 </html>

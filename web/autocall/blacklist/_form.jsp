@@ -38,6 +38,9 @@
 				        </div>
 					</td>
 					<td>
+						下载模板：<a href="autoBlackList/template?type=txt">TXT</a>&nbsp;|&nbsp;<a href="autoBlackList/template?type=excel">EXCEL</a>
+					</td>
+					<td>
 						<div style="display:inline;padding-top:6px;" class="easyui-tooltip" title="
 								<table>
 									<tr><td>号码</td><td>客户姓名</td></tr> 
@@ -69,10 +72,10 @@
 			<div data-options="region:'north',split:true,border:true" style="height:45px;padding-top:5px;padding-left:5px;">
 				<table>
 					<tr style="vertical-align: top;">
-						<td>电话号码：<input id="telephone" type="text" class="easyui-textbox" style="width:150px;"/>
+						<td>电话号码：<input id="customerTel" type="text" class="easyui-textbox" style="width:150px;"/>
 						
 							<span style="padding-left:30px;">
-								客户姓名：<input id="clientName" type="text" class="easyui-textbox" style="width:150px;"/>
+								客户姓名：<input id="customerName" type="text" class="easyui-textbox" style="width:150px;"/>
 							</span>
 							<span style="padding-left:30px;">
 								<a href="javascript:findDataForTelephone()" style="width:100px;" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
@@ -89,9 +92,9 @@
 					<thead>
 						<tr style="height:12px;">
 							<th data-options="field:'ck',checkbox:true"></th>		
-							<th data-options="field:'TELEPHONE',width:200,align:'center'">电话号码</th>
-							<th data-options="field:'CLIENT_NAME',width:200,align:'center'">客户姓名</th>
-							<th data-options="field:'id',width:100,align:'center',formatter:telephonerowformatter">操作</th>
+							<th data-options="field:'CUSTOMER_TEL',width:300,align:'center'">电话号码</th>
+							<th data-options="field:'CUSTOMER_NAME',width:300,align:'center'">客户姓名</th>
+							<th data-options="field:'id',width:200,align:'center',formatter:telephonerowformatter">操作</th>
 						</tr>
 					</thead>
 				</table>	
@@ -104,5 +107,8 @@
 	<a href="#" id="easyui-add" onclick="autoBlackListTelephoneAdd()" class="easyui-linkbutton" iconCls='icon-add' plain="true">新增号码</a>
 	<span style="padding:10px;">
 		<a href="#" id="easyui-delete" onclick="autoBlackListTelephoneDel()" class="easyui-linkbutton" iconCls='icon-remove' plain="true">删除选中记录</a>
+	</span>
+	<span style="padding-left:630px;">
+		<a href="#" id="easyui-export" onclick="autoBlackListTelephoneExport()" class="easyui-linkbutton" iconCls='icon-redo' plain="true">导出号码</a>
 	</span>
 </div>

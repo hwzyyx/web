@@ -91,7 +91,7 @@
 							<th data-options="field:'TELEPHONE',width:120,align:'center'">电话号码</th>
 							<th data-options="field:'CLIENT_NAME',width:100,align:'center'">客户姓名</th>
 							
-							<th data-options="field:'OP_TIME',width:150,align:'center'">外呼时间</th>
+							<th data-options="field:'LOAD_TIME',width:150,align:'center'">外呼时间</th>
 							<th data-options="field:'STATE',width:100,align:'center',formatter:stateformatter">外呼结果</th>
 							<th data-options="field:'FAILURE',width:100,align:'center',formatter:failureformatter">失败原因</th>
 							<th data-options="field:'RETRIED',width:50,align:'center'">已重试</th>

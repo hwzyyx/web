@@ -368,8 +368,11 @@
 					<thead>
 						<tr style="height:12px;">
 							<th data-options="field:'ck',checkbox:true"></th>		
-							<th data-options="field:'TELEPHONE',width:120,align:'center'">电话号码</th>
-							<th data-options="field:'CLIENT_NAME',width:100,align:'center'">客户姓名</th>
+							<th data-options="field:'CUSTOMER_TEL',width:120,align:'center'">电话号码</th>
+							<th data-options="field:'CUSTOMER_NAME',width:120,align:'center'">客户姓名</th>
+							<th data-options="field:'CALLOUT_TEL',width:120,align:'center'">外呼号码</th>
+							<th data-options="field:'PROVINCE',width:120,align:'center'">省份</th>
+							<th data-options="field:'CITY',width:120,align:'center'">城市</th>
 							
 							<th data-options="field:'VIOLATION_CITY',width:100,align:'center'">违章城市</th>
 							<th data-options="field:'PUNISHMENT_UNIT',width:150,align:'center'">处罚单位</th>
