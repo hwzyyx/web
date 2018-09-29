@@ -175,7 +175,7 @@ public class VoiceController extends Controller implements IController {
 		//然后执行sox转换
 		String chmodCmd = "chmod 777 " + voicePathFullDir;
 		
-		String cmd = "/usr/local/bin/sox " + voicePathFullDir + " -r 8000 -c 1 " + voicePathSingleFullDir;
+		String cmd = ParamConfig.paramConfigMap.get("paramType_1_soxBinPath") + " " + voicePathFullDir + " -r 8000 -c 1 " + voicePathSingleFullDir;
 		System.out.println("执行的 CMD  命令为:" + cmd);
 		
 		try {
@@ -241,13 +241,13 @@ public class VoiceController extends Controller implements IController {
 		//获取上传文件的类型，系统暂时只支持 wav、mp3格式语音文件
 		mimeType = StringUtil.getExtensionName(uf.getFileName());
 		
-		//判断文件格式,系统仅支持 wav,mp3
-		if(BlankUtils.isBlank(mimeType) || !(mimeType.equalsIgnoreCase("wav") || mimeType.equalsIgnoreCase("mp3"))) {
+		//判断文件格式,系统仅支持 wav
+		if(BlankUtils.isBlank(mimeType) || !mimeType.equalsIgnoreCase("wav")) {
 			if(!BlankUtils.isBlank(uf.getFile()) && uf.getFile().exists()) {      //先删除语音文件再返回错误提示
 				uf.getFile().delete();
 			}
 			
-			return "新增语音文件失败,文件类型不正确,系统仅支持 wav、mp3格式语音文件!";
+			return "新增语音文件失败,文件类型不正确,系统仅支持 wav格式语音文件!";
 		}
 		
 		//重命名文件名
@@ -259,7 +259,7 @@ public class VoiceController extends Controller implements IController {
 		String chmodCmd = "chmod 777 " + uploadDir + renameFileName + "." + mimeType;
 		
 		String voxFile = voxVoiceDir + renameFileName + ".vox";
-		String cmd = "/usr/local/bin/sox " + uploadDir + renameFileName + "." + mimeType + " -r 8000 -c 1 " + voxFile;
+		String cmd = ParamConfig.paramConfigMap.get("paramType_1_soxBinPath") + " " + uploadDir + renameFileName + "." + mimeType + " -r 8000 -c 1 " + voxFile;
 		System.out.println("执行的 CMD  命令为:" + cmd);
 		
 		try {
@@ -507,7 +507,7 @@ public class VoiceController extends Controller implements IController {
 			//然后执行sox转换
 			String chmodCmd = "chmod 777 " + voicePathFullDir;
 			
-			String cmd = "/usr/local/bin/sox " + voicePathFullDir + " -r 8000 -c 1 " + voicePathSingleFullDir;
+			String cmd = ParamConfig.paramConfigMap.get("paramType_1_soxBinPath") + " " + voicePathFullDir + " -r 8000 -c 1 " + voicePathSingleFullDir;
 			
 			System.out.println("执行的 CMD  命令为:" + cmd);
 			
