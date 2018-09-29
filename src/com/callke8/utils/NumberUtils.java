@@ -1,5 +1,7 @@
 package com.callke8.utils;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -189,5 +191,32 @@ public class NumberUtils {
 
 	        return null;
 	    }
+	    
+	    /**
+		 * 计算百分比,保留两位小数, 如:50.30%
+		 * 
+		 * @param count
+		 * 			分子数量
+		 * @param totalCount
+		 * 			分母数量
+		 * @return
+		 */
+		public static String calculatePercent(int count,int totalCount) {
+			
+			if(totalCount <= 0 || count <= 0) {
+				return "0.00%";
+			}
+			
+			DecimalFormat df = new DecimalFormat("0.0000");
+			String rateStr = df.format((float)count/totalCount);
+			Double rateDouble = Double.valueOf(rateStr);
+			
+			//System.out.println(rateDouble);
+			NumberFormat nf = NumberFormat.getPercentInstance();
+			nf.setMinimumFractionDigits(2);
+			
+			return nf.format(rateDouble);
+			
+		}
 
 }
