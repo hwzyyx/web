@@ -4,7 +4,7 @@
 <html>
 <head>
 	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge" content="text/html;charset=UTF-8"/>
-	<title>博世家电外呼系统</title>
+	<title>呼叫中心系统</title>
 	<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
 	<link rel="stylesheet" type="text/css" href="themes/icon.css">
 	<link rel="stylesheet" type="text/css" href="demo.css">
@@ -57,6 +57,7 @@
 		var menuAccordionData = eval('${menuAccordionData}');
 		var loginInfo = '${loginInfo}';
 		var currAgentNumber = '${currAgentNumber}';
+		var webSiteName = '${webSiteName}';
 		
 		function addTab(title, url){
 			if ($('#layout_center_tabs').tabs('exists', title)){
@@ -104,6 +105,8 @@
 	$(function(){
 
 		//initSystemResourceChart();       //初始化系统资源
+		
+		$(document).attr("title",webSiteName);
 		
 		$("#loginInfoDiv").html(loginInfo);    //赋值登录信息
 		
@@ -1218,6 +1221,7 @@
 </script>
 </head>
 <body class="easyui-layout">
+	
 	<!-- 顶部 Bannel start -->
 	<div data-options="region:'north',border:false" style="overflow:hidden;height:50px;background:url('themes/icons/banner.png') repeat-x;">
 
