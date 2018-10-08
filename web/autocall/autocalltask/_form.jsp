@@ -169,7 +169,7 @@
 				<tr>
 					<td style="width:80px;text-align:center;">
 						<div style="padding-top:5px;">
-							失败重试
+							呼叫总数
 						</div>
 					</td>
 					<td>
@@ -283,7 +283,7 @@
 					  				车辆违章：
 					  			</td>
 					  			<td align="center">
-					  				<a href="autoCallTask/template?type=txt&identify=violation">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=violation">EXCEL</a>
+					  				<a href="autoCallTask/template?type=txt&identify=illegal">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=illegal">EXCEL</a>
 					  			</td>
 					  		</tr>
 					  		<tr>
@@ -335,16 +335,16 @@
 	
 		<div data-options="fit:true" class="easyui-layout">
 			<!-- 顶部查询区 -->
-			<div data-options="region:'north',split:true,border:true" style="height:45px;padding-top:5px;padding-left:5px;">
+			<div data-options="region:'north',split:true,border:true" style="height:70px;padding-top:5px;padding-left:5px;">
 				<table>
 					<tr style="vertical-align: top;">
-						<td>电话号码：<input id="telephone" type="text" class="easyui-textbox" style="width:150px;"/>
-						
+						<td>
+							客户姓名：<input id="customerName" type="text" class="easyui-textbox" style="width:150px;"/>
 							<span style="padding-left:30px;">
-								客户姓名：<input id="clientName" type="text" class="easyui-textbox" style="width:150px;"/>
+								电话号码：<input id="customerTel" type="text" class="easyui-textbox" style="width:150px;"/>
 							</span>
 							<span style="padding-left:30px;">
-								外呼状态：<select id="state" class="easyui-combobox" name="state" style="width:80px;">
+								外呼状态：<select id="state" class="easyui-combobox" name="state" style="width:150px;">
 												<option value="5">请选择</option>
 												<option value="0">未处理</option>
 												<option value="1">已载入</option>
@@ -353,9 +353,34 @@
 												<option value="4">已失败</option>
 										</select>
 							</span>
-							<span style="padding-left:30px;">
-								<a href="javascript:findDataForTelephone()" style="width:100px;" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
+							
+						</td>
+					</tr>
+					<tr style="vertial-align:top;">
+						<td>
+							时间类型：
+							<a href="#" id="dateTimeTypeBtn0" class="easyui-linkbutton" data-options="toggle:true,group:'g2',selected:true" style="width:85px;background-color: #00ff00;">创建时间</a>
+							<a href="#" id="dateTimeTypeBtn1" class="easyui-linkbutton" data-options="toggle:true,group:'g2'" style="width:85px;margin-right:68px;background-color: #00ff00;">外呼时间</a>
+							<input id="startTimeForTelephone" name="startTimeForTelephone" class="easyui-datetimebox" style="width:150px;"/><span style="padding-left:50px;padding-right:35px;">至</span> <input id="endTimeForTelephone" name="endTimeForTelephone" class="easyui-datetimebox" style="width:150px;"/>
+							<span style="padding-left:20px;">
+								时间间隔：
+								<select id="dateInterval" style="width:80px;">
+									<option value="1">1天</option>
+									<option value="2">2天</option>
+									<option value="3">3天</option>
+									<option value="4">4天</option>
+									<option value="5">5天</option>
+									<option value="6">6天</option>
+									<option value="7">7天</option>
+									<option value="8">8天</option>
+									<option value="9">9天</option>
+									<option value="10">10天</option>
+									<option value="30">一个月</option>
+									<option value="90">三个月</option>
+									<option value="180">半年月</option>
+								</select>
 							</span>
+							<span style="padding-left:50px;"><a href="javascript:findDataForTelephone()" class="easyui-linkbutton" style="width:100px;" data-options="iconCls:'icon-search'">查询</a></span>
 						</td>
 					</tr>
 				</table>
@@ -368,19 +393,25 @@
 					<thead>
 						<tr style="height:12px;">
 							<th data-options="field:'ck',checkbox:true"></th>		
-							<th data-options="field:'CUSTOMER_TEL',width:120,align:'center'">电话号码</th>
 							<th data-options="field:'CUSTOMER_NAME',width:120,align:'center'">客户姓名</th>
-							<th data-options="field:'CALLOUT_TEL',width:120,align:'center'">外呼号码</th>
+							<th data-options="field:'CUSTOMER_TEL',width:120,align:'center'">电话号码</th>
 							<th data-options="field:'PROVINCE',width:120,align:'center'">省份</th>
 							<th data-options="field:'CITY',width:120,align:'center'">城市</th>
-							
-							<th data-options="field:'VIOLATION_CITY',width:100,align:'center'">违章城市</th>
+							<th data-options="field:'CALLOUT_TEL',width:120,align:'center'">外呼号码</th>
+							<th data-options="field:'CREATE_TIME',width:200,align:'center'">创建时间</th>
+							<th data-options="field:'state_result',width:100,align:'center',formatter:telephonestateformatter">外呼结果</th>
+							<th data-options="field:'LAST_CALL_RESULT',width:200,align:'center'">失败原因</th>
+							<th data-options="field:'RETRIED_DESC',width:150,align:'center'">呼叫次数</th>
+							<th data-options="field:'LOAD_TIME',width:200,align:'center'">外呼时间</th>
+							<th data-options="field:'BILLSEC',width:150,align:'center'">通话时长</th>
+							<th data-options="field:'NEXT_CALLOUT_TIME',width:200,align:'center'">下次外呼时间</th>
+														
+							<th data-options="field:'ILLEGAL_CITY',width:100,align:'center'">违章城市</th>
 							<th data-options="field:'PUNISHMENT_UNIT',width:150,align:'center'">处罚单位</th>
-							<th data-options="field:'VIOLATION_REASON',width:150,align:'center'">违章事由</th>
+							<th data-options="field:'ILLEGAL_REASON',width:150,align:'center'">违章事由</th>
 							<th data-options="field:'PERIOD',width:120,align:'center'">日期</th>
 							<th data-options="field:'CHARGE',width:100,align:'center'">费用</th>
 							<th data-options="field:'COMPANY',width:150,align:'center'">代缴单位</th>
-							<th data-options="field:'state',width:100,align:'center',formatter:telephonestateformatter">状态</th>
 							<th data-options="field:'id',width:100,align:'center',formatter:telephonerowformatter">操作</th>
 						</tr>
 					</thead>
