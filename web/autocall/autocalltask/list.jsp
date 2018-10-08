@@ -3,8 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge"/>
-	<title>Client Side Pagination in DataGrid - jQuery EasyUI Demo</title>
+	<title>任务管理</title>
 	<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
 	<link rel="stylesheet" type="text/css" href="themes/color.css">
 	<link rel="stylesheet" type="text/css" href="themes/icon.css">
@@ -34,8 +33,21 @@
 
 		var callerIdComboboxDataFor0 = eval('${callerIdComboboxDataFor0}');
 		
+		//时间类型,0:创建时间;1:外呼时间, 默认为0。
+    	var dateTimeType = 0;       //主要用于查询数据时，时间区段代表是以创建时间为查询区段，还是以外呼时间为查询区段
+		
 		$(function(){
 
+			//初始化搜索日期（号码查询）
+    		//$('#startTimeForTelephone').datetimebox('setValue',getCurrDate() + ' 00:00:00');
+    		$('#endTimeForTelephone').datetimebox('setValue',getDateAfter(1) + ' 00:00:00');
+    		
+
+    		//$('#timeInterval000').combobox({
+    		//	onChange:function(newValue,oldValue) {
+    				
+    		//	}
+    		//}).combobox('setValue','5');
 
 			$('#ttsContent').keyup(function(){
 				//alert("输入了一次");
@@ -297,8 +309,12 @@
 				url:'autoCallTaskTelephone/datagrid',
 				queryParams:{
 					taskId:currTaskId,
-			    	telephone:$('#telephone').textbox('getValue'),
-	    			clientName:$('#clientName').textbox('getValue')
+			    	customerTel:$('#customerTel').textbox('getValue'),
+	    			customerName:$('#customerName').textbox('getValue'),
+	    			state:$("#state").combobox('getValue'),
+	    			startTimeForTelephone:$("#startTimeForTelephone").datebox('getValue'),
+					endTimeForTelephone:$("#endTimeForTelephone").datebox('getValue'),
+					dateTimeType:dateTimeType
 				}
 			});
 
@@ -350,6 +366,46 @@
 			
 			$("#telephoneFile").filebox({
 				buttonText:'选择文件'
+			});
+			
+			$("#dateYearCombobox").combobox({
+				onSelect:function(record){
+					var yearValue = $("#dateYearCombobox").combobox('getValue');
+					var monthValue = $("#dateMonthCombobox").combobox('getValue');
+					$("#PERIOD").textbox('setValue',yearValue + monthValue);
+				}
+			});
+			
+			$("#dateMonthCombobox").combobox({
+				onSelect:function(record){
+					var yearValue = $("#dateYearCombobox").combobox('getValue');
+					var monthValue = $("#dateMonthCombobox").combobox('getValue');
+					$("#PERIOD").textbox('setValue',yearValue + monthValue);
+				}
+			});
+			
+			$("#dateTimeTypeBtn0").bind("click",function(){  
+	        	dateTimeType = 0; 
+	        });
+    		
+    		$("#dateTimeTypeBtn1").bind("click",function(){  
+	        	dateTimeType = 1; 
+	        });
+    		
+    		$("#dateInterval").combobox({
+    			onChange:function(newValue,oldValue){
+    				$('#startTimeForTelephone').datetimebox('setValue',getDateBefore(newValue-1) + ' 00:00:00');
+    	    		$('#endTimeForTelephone').datetimebox('setValue',getDateAfter(1) + ' 00:00:00');
+    			}
+    		}).combobox('setValue','1');
+    		
+    		$('#autoCallTaskDlg').dialog({
+				onClose:function() {
+					$('#customerName').textbox('setValue','');
+					$('#customerTel').textbox('setValue','');
+					$('#state').combobox('setValue','5');
+					$('#startTimeForTelephone').datetimebox('setValue','');
+				}
 			});
 
 		});
@@ -512,7 +568,6 @@
 
 		//外呼任务编辑
 		function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,scheduleId,scheduleName,taskType,commonVoiceId,commonVoiceDesc,questionnaireId,questionnaireDesc,reminderType,startVoiceId,startVoiceDesc,endVoiceId,endVoiceDesc,blackListId,blackListName,retryTimes,retryInterval,priority) {
-
 			currTaskId = taskId;
 			
 			//设置任务类型
@@ -742,9 +797,12 @@
 		function findDataForTelephone() {
     		$("#autoCallTaskTelephoneDg").datagrid('load',{
         		taskId:currTaskId,
-        		telephone:$('#telephone').textbox('getValue'),
-    			clientName:$('#clientName').textbox('getValue'),
-    			state:$("#state").combobox('getValue')
+        		customerTel:$('#customerTel').textbox('getValue'),
+    			customerName:$('#customerName').textbox('getValue'),
+    			state:$("#state").combobox('getValue'),
+    			startTimeForTelephone:$("#startTimeForTelephone").datebox('getValue'),
+				endTimeForTelephone:$("#endTimeForTelephone").datebox('getValue'),
+				dateTimeType:dateTimeType
         	});
     	}
 
@@ -764,16 +822,16 @@
 					$("#selectAutoNumberDiv").css("display","none");
 		    		
 		    		if(currReminderType=='6') {           //车辆违章
-		    			$("#autoCallTaskTelephoneDg").datagrid('showColumn','VIOLATION_CITY');
+		    			$("#autoCallTaskTelephoneDg").datagrid('showColumn','ILLEGAL_CITY');
 		    		    $("#autoCallTaskTelephoneDg").datagrid('showColumn','PUNISHMENT_UNIT');
-		    		    $("#autoCallTaskTelephoneDg").datagrid('showColumn','VIOLATION_REASON');
+		    		    $("#autoCallTaskTelephoneDg").datagrid('showColumn','ILLEGAL_REASON');
 		    		    $("#autoCallTaskTelephoneDg").datagrid('showColumn','PERIOD');
 
 		    		    //显示添加号码表单输入项
 		    		    $("#periodDiv").css('display','');
-		    		    $("#violationCityDiv").css('display','');
+		    		    $("#illegalCityDiv").css('display','');
 		    		    $("#punishmentUnitDiv").css('display','');
-		    		    $("#violationReasonDiv").css('display','');
+		    		    $("#illegalReasonDiv").css('display','');
 		    		    
 		    		}else if(currReminderType=='7') {     //社保催缴
 		    		    $("#autoCallTaskTelephoneDg").datagrid('showColumn','PERIOD');
@@ -801,18 +859,18 @@
 	    }
 
 	    function hideAllExtraTh() {   //隐藏所有的号码列表的额外字段（主要是催缴类外呼任务）
-		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','VIOLATION_CITY');
+		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','ILLEGAL_CITY');
 		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','PUNISHMENT_UNIT');
-		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','VIOLATION_REASON');
+		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','ILLEGAL_REASON');
 		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','PERIOD');
 		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','CHARGE');
 		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','COMPANY');
 
 		    //同时，要将添加号码的表单额外输入项全部隐藏
 		    $("#periodDiv").css('display','none');
-		    $("#violationCityDiv").css('display','none');
+		    $("#illegalCityDiv").css('display','none');
 		    $("#punishmentUnitDiv").css('display','none');
-		    $("#violationReasonDiv").css('display','none');
+		    $("#illegalReasonDiv").css('display','none');
 		    $("#companyDiv").css('display','none');
 		    $("#chargeDiv").css('display','none');
 	    }
@@ -823,7 +881,7 @@
 		}
 
 		function telephonerowformatter(value,data,index) {
-			return "<a href='#' onclick='javascript:autoCallTaskTelephoneEdit(\"" + data.TEL_ID + "\",\"" + data.TELEPHONE + "\",\"" + data.CLIENT_NAME + "\",\"" + data.PERIOD + "\",\"" + data.VIOLATION_CITY + "\",\"" + data.PUNISHMENT_UNIT + "\",\"" + data.VIOLATION_REASON + "\",\"" + data.CHARGE + "\",\"" + data.COMPANY + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>";
+			return "<a href='#' onclick='javascript:autoCallTaskTelephoneEdit(\"" + data.TEL_ID + "\",\"" + data.CUSTOMER_TEL + "\",\"" + data.CUSTOMER_NAME + "\",\"" + data.PERIOD + "\",\"" + data.ILLEGAL_CITY + "\",\"" + data.PUNISHMENT_UNIT + "\",\"" + data.ILLEGAL_REASON + "\",\"" + data.CHARGE + "\",\"" + data.COMPANY + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>";
 		}
 
 		//格式化输出有效期
@@ -1174,16 +1232,16 @@
 		    
 	    }
 	    
-    	function autoCallTaskTelephoneEdit(telId,telephone,clientName,period,violationCity,punishmentUnit,violationReason,charge,company) {
+    	function autoCallTaskTelephoneEdit(telId,customerTel,customerName,period,illegalCity,punishmentUnit,illegalReason,charge,company) {
     		$("#TEL_ID").val(telId);
-    		$("#TELEPHONE").numberbox('setValue',telephone);
-    		$("#CLIENT_NAME").textbox('setValue',clientName);
+    		$("#CUSTOMER_TEL").numberbox('setValue',customerTel);
+    		$("#CUSTOMER_NAME").textbox('setValue',customerName);
 
     		$("#PERIOD").textbox('setValue',period);
-    		$("#VIOLATION_CITY").textbox('setValue',violationCity);
+    		$("#ILLEGAL_CITY").textbox('setValue',illegalCity);
     		$("#PUNISHMENT_UNIT").textbox('setValue',punishmentUnit);
-    		$("#VIOLATION_REASON").textbox('setValue',violationReason);
-    		$("#CHARGE").textbox('setValue',charge);
+    		$("#ILLEGAL_REASON").textbox('setValue',illegalReason);
+    		$("#CHARGE").numberbox('setValue',charge);
     		$("#COMPANY").textbox('setValue',company);
 
 			$("#autoCallTaskTelephoneSaveBtn").attr("onclick","autoCallTaskTelephoneSaveEdit()");
@@ -1313,8 +1371,10 @@
 		function autoCallTaskTelephoneExport() {
 
 			var state = $("#state").combobox('getValue');
-			var telephone = $("#telephone").numberbox('getValue');
-			var	clientName = $("#clientName").textbox('getValue');
+			var customerTel = $("#customerTel").numberbox('getValue');
+			var	customerName = $("#customerName").textbox('getValue');
+			var startTimeForTelephone = $("#startTimeForTelephone").datebox('getValue');
+			var endTimeForTelephone = $("#endTimeForTelephone").datebox('getValue');
 
 			$("#exportForm").form('submit',{
 
@@ -1322,8 +1382,11 @@
 				onSubmit:function(param) {
 					param.taskId = currTaskId;
 					param.state = state;
-					param.telephone = telephone;
-					param.clientName = clientName;
+					param.customerTel = customerTel;
+					param.customerName = customerName;
+					param.startTimeForTelephone = startTimeForTelephone;
+					param.endTimeForTelephone = endTimeForTelephone;
+					param.dateTimeType = dateTimeType;
 				},
 				success:function(data) {
 					
@@ -1564,7 +1627,7 @@
 					<th data-options="field:'taskStateField',width:120,align:'center',formatter:taskstaterowformatter">状态</th>
 					<th data-options="field:'validityDate',width:220,align:'center',formatter:validitydaterowformatter">有效期</th>
 					<th data-options="field:'scheduleDetail',width:50,align:'center',formatter:scheduledetailformatter">调度</th>
-					<th data-options="field:'RETRY_TIMES',width:80,align:'center'">呼叫次数</th>
+					<th data-options="field:'RETRY_TIMES',width:80,align:'center'">呼叫总次数</th>
 					<th data-options="field:'RETRY_INTERVAL',width:100,align:'center'">重试间隔(分钟)</th>
 					
 					<th data-options="field:'CREATE_USERCODE_DESC',width:150,align:'center'">创建人</th>
@@ -1593,7 +1656,7 @@
 	
 </div>
 
-<div id="autoCallTaskDlg" class="easyui-dialog" style="width:1200px;height:700px;padding:5px;" modal="true" closed="true">
+<div id="autoCallTaskDlg" style="width:1200px;height:700px;padding:5px;" modal="true" closed="true">
 	<!-- 包含外呼任务的表单 -->
 	<%@ include file="/autocall/autocalltask/_form.jsp" %>
 </div>
@@ -1623,7 +1686,7 @@
 	 <%@ include file="/autocall/number/selectlist.jsp"%>
 </div>
 
-<div id="autoCallTaskTelephoneDlg" class="easyui-dialog" style="width:500px;height:400px;padding:5px;" modal="true" closed="true">
+<div id="autoCallTaskTelephoneDlg" class="easyui-dialog" style="width:600px;height:400px;padding:5px;" modal="true" closed="true">
 		<!-- 包含外呼任务号码表单 -->
 		<%@ include file="/autocall/autocalltask/_telephoneform.jsp" %>
 </div>
