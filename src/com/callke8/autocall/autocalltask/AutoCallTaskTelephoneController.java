@@ -25,16 +25,32 @@ public class AutoCallTaskTelephoneController extends Controller implements
 	
 	@Override
 	public void datagrid() {
-		System.out.println("取AutoCallTaskTelephoneController datagrid的开始时间:" + DateFormatUtils.getTimeMillis());
+		//System.out.println("取AutoCallTaskTelephoneController datagrid的开始时间:" + DateFormatUtils.getTimeMillis());
 		String taskId = getPara("taskId");
-		String telephone = getPara("telephone");
-		String clientName = getPara("clientName");
+		String customerTel = getPara("customerTel");
+		String customerName = getPara("customerName");
 		String state = getPara("state");
+		String startTimeForTelephone = getPara("startTimeForTelephone");
+		String endTimeForTelephone = getPara("endTimeForTelephone");
+		String dateTimeType = getPara("dateTimeType");     //取得查询时间类型，0表示时间区段为以创建时间为查询区间，1表示以外呼时间为查询区间
+		
+		String createTimeStartTime = null;
+		String createTimeEndTime = null;
+		String loadTimeStartTime = null;
+		String loadTimeEndTime = null;
+		
+		if(dateTimeType.equalsIgnoreCase("1")) {           //表示是以外呼时间为查询区间
+			loadTimeStartTime = startTimeForTelephone;
+			loadTimeEndTime = endTimeForTelephone;
+		}else {                                            //表示是以创建时间为查询区间
+			createTimeStartTime = startTimeForTelephone;
+			createTimeEndTime = endTimeForTelephone;
+		}
 		
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneByPaginateToMap(pageNumber, pageSize, taskId, telephone, clientName,state);
+		Map map = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneByPaginateToMap(pageNumber, pageSize, taskId, customerTel, customerName,state,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
 		
 		System.out.println("取AutoCallTaskTelephoneController datagrid的结束时间:" + DateFormatUtils.getTimeMillis());
 		renderJson(map);
@@ -52,32 +68,32 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		Record autoCallTaskTelephone = new Record();
 		
 		//（1）在添加之前，先判断号码是否在黑名单之中
-		String telephone = actt.get("TELEPHONE");
+		String customerTel = actt.get("CUSTOMER_TEL");
 		
 		//根据taskId,先取出任务信息
 		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
-		boolean checkRs = checkBlackList(telephone,autoCallTask);   //黑名单检查
+		boolean checkRs = checkBlackList(customerTel,autoCallTask);   //黑名单检查
 		if(checkRs) {
-			render(RenderJson.error("新增号码失败,号码" + telephone + "在黑名单中!"));
+			render(RenderJson.error("新增号码失败,号码" + customerTel + "在黑名单中!"));
 			return;
 		}
 		
 		//（2）再判断任务的号码中是否存在相同的号码
-		boolean repetitionRs = AutoCallTaskTelephone.dao.checkTelephoneRepetition(telephone, taskId);
+		boolean repetitionRs = AutoCallTaskTelephone.dao.checkTelephoneRepetitionForAdd(customerTel, taskId);
 		if(repetitionRs) {
-			render(RenderJson.error("新增号码失败,号码" + telephone + "已重复!"));
+			render(RenderJson.error("新增号码失败,号码" + customerTel + "已重复!"));
 			return;
 		}
 		
 		autoCallTaskTelephone.set("TASK_ID", taskId);
-		autoCallTaskTelephone.set("TELEPHONE",actt.get("TELEPHONE"));
-		autoCallTaskTelephone.set("CLIENT_NAME",actt.get("CLIENT_NAME"));
+		autoCallTaskTelephone.set("CUSTOMER_TEL",actt.get("CUSTOMER_TEL"));
+		autoCallTaskTelephone.set("CUSTOMER_NAME",actt.get("CUSTOMER_NAME"));
 		autoCallTaskTelephone.set("COMPANY", actt.get("COMPANY"));
 		autoCallTaskTelephone.set("PERIOD", actt.get("PERIOD"));
 		autoCallTaskTelephone.set("CHARGE", actt.get("CHARGE"));
-		autoCallTaskTelephone.set("VIOLATION_CITY", actt.get("VIOLATION_CITY"));
+		autoCallTaskTelephone.set("ILLEGAL_CITY", actt.get("ILLEGAL_CITY"));
 		autoCallTaskTelephone.set("PUNISHMENT_UNIT",actt.get("PUNISHMENT_UNIT"));
-		autoCallTaskTelephone.set("VIOLATION_REASON", actt.get("VIOLATION_REASON"));
+		autoCallTaskTelephone.set("ILLEGAL_REASON", actt.get("ILLEGAL_REASON"));
 		autoCallTaskTelephone.set("RETRIED",0);
 		autoCallTaskTelephone.set("STATE",0);
 		autoCallTaskTelephone.set("RESPOND",null);
@@ -141,11 +157,11 @@ public class AutoCallTaskTelephoneController extends Controller implements
  			
  			Record r = list.get(i);
  			
- 			String telephone = r.get("TELEPHONE");
+ 			String customerTel = r.get("CUSTOMER_TEL");
  			
  			autoCallTaskTelephone.set("TASK_ID",taskId);
- 			autoCallTaskTelephone.set("TELEPHONE",telephone);
- 			autoCallTaskTelephone.set("CLIENT_NAME",r.get("CLIENT_NAME"));
+ 			autoCallTaskTelephone.set("CUSTOMER_TEL",customerTel);
+ 			autoCallTaskTelephone.set("CUSTOMER_NAME",r.get("CUSTOMER_NAME"));
  			autoCallTaskTelephone.set("CREATE_TIME",DateFormatUtils.getCurrentDate());
  			autoCallTaskTelephone.set("RESPOND",null);
  			autoCallTaskTelephone.set("STATE","0");
@@ -157,10 +173,10 @@ public class AutoCallTaskTelephoneController extends Controller implements
 			 * 2号码是否为黑名单数据
 			 */
 			//取出两列，然后判断第一列是否是号码,且号码的长度是否大于等于7位数，否则将不储存
-			if(!BlankUtils.isBlank(telephone) && StringUtil.isNumber(telephone) && telephone.length() >= 7) {
+			if(!BlankUtils.isBlank(customerTel) && StringUtil.isNumber(customerTel) && customerTel.length() >= 7) {
 				
 				//做黑名单过滤
-				if(blackListTelephones.contains(telephone)) {   //如果存在于黑名单
+				if(blackListTelephones.contains(customerTel)) {   //如果存在于黑名单
 					inBlackListCount++;
 					continue;
 				}
@@ -182,10 +198,10 @@ public class AutoCallTaskTelephoneController extends Controller implements
  		
  		for(Record act:afterBlackListResult) {
 			
-			String telephone = act.get("TELEPHONE");
+			String customerTel = act.get("CUSTOMER_TEL");
 			
 			//重复性检查
-			if(autoCallTaskTelephones.contains(telephone)) {
+			if(autoCallTaskTelephones.contains(customerTel)) {
 				repetitionCount++;
 				continue;
 			}
@@ -222,14 +238,14 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		
 		AutoCallTaskTelephone autoCallTaskTelephone = getModel(AutoCallTaskTelephone.class,"autoCallTaskTelephone");
 		
-		String telephone = autoCallTaskTelephone.get("TELEPHONE");       //号码
-		String clientName = autoCallTaskTelephone.get("CLIENT_NAME");    //客户姓名
+		String customerTel = autoCallTaskTelephone.get("CUSTOMER_TEL");       //号码
+		String customerName = autoCallTaskTelephone.get("CUSTOMER_NAME");    //客户姓名
 		Integer telId = Integer.valueOf(autoCallTaskTelephone.get("TEL_ID").toString());
 		
 		String period = autoCallTaskTelephone.get("PERIOD");
-		String violationCity = autoCallTaskTelephone.get("VIOLATION_CITY");
+		String illegalCity = autoCallTaskTelephone.get("ILLEGAL_CITY");
 		String punishmentUnit = autoCallTaskTelephone.get("PUNISHMENT_UNIT");
-		String violationReason = autoCallTaskTelephone.get("VIOLATION_REASON");
+		String illegalReason = autoCallTaskTelephone.get("ILLEGAL_REASON");
 		String charge = autoCallTaskTelephone.get("CHARGE");
 		String company = autoCallTaskTelephone.get("COMPANY");
  		
@@ -237,21 +253,21 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		String taskId = getPara("taskId");    //得到任务ID
 		//根据任务ID，取出任务信息
 		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);   
-		boolean checkRs = checkBlackList(telephone,autoCallTask);
+		boolean checkRs = checkBlackList(customerTel,autoCallTask);
 		if(checkRs) {
 			render(RenderJson.error("修改后的号码在黑名单中,修改失败!"));
 			return;
 		}
 		
 		//（2）再判断任务的号码中是否存在相同的号码
-		boolean repetitionRs = AutoCallTaskTelephone.dao.checkTelephoneRepetition(telephone, taskId);
+		boolean repetitionRs = AutoCallTaskTelephone.dao.checkTelephoneRepetitionForUpdate(customerTel, taskId,telId);
 		if(repetitionRs) {
-			render(RenderJson.error("修改号码失败,号码" + telephone + "已重复!"));
+			render(RenderJson.error("修改号码失败,号码" + customerTel + "已重复!"));
 			return;
 		}
 		
 		
-		boolean b = AutoCallTaskTelephone.dao.update(telephone,clientName,period,violationCity,punishmentUnit,violationReason,charge,company,telId);
+		boolean b = AutoCallTaskTelephone.dao.update(customerTel,customerName,period,illegalCity,punishmentUnit,illegalReason,charge,company,telId);
 		
 		if(b) {
 			render(RenderJson.success("修改成功!"));
@@ -264,13 +280,13 @@ public class AutoCallTaskTelephoneController extends Controller implements
 	/**
 	 * 根据任务ID,和电话号码，查看当前号码，是否黑名单
 	 * 
-	 * @param telephone
+	 * @param customerTel
 	 * @param autoCallTask
 	 * @return
 	 * 	true:表示在黑名单中
 	 *  false: 表示不在黑名单中
 	 */
-	public boolean checkBlackList(String telephone,AutoCallTask autoCallTask) {
+	public boolean checkBlackList(String customerTel,AutoCallTask autoCallTask) {
 		
 		boolean b = false;
 		
@@ -280,7 +296,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 			
 			if(!BlankUtils.isBlank(blackListId)) {                    //如果该任务选择了黑名单
 				
-				int count = AutoBlackListTelephone.dao.getAutoBlackListTelephoneCountByCondition(telephone, blackListId);
+				int count = AutoBlackListTelephone.dao.getAutoBlackListTelephoneCountByCondition(customerTel, blackListId);
 				
 				if(count>0) {
 					b = true;
@@ -389,9 +405,9 @@ public class AutoCallTaskTelephoneController extends Controller implements
 			
 			Record r = list.get(i);
 			
-			String telephone = r.get("0");         //所有的上传号码文件，第1列是号码
+			String customerTel = r.get("0");         //所有的上传号码文件，第1列是号码
 			autoCallTaskTelephone.set("TASK_ID",taskId);
-			autoCallTaskTelephone.set("TELEPHONE", telephone);
+			autoCallTaskTelephone.set("CUSTOMER_TEL", customerTel);
 			autoCallTaskTelephone.set("CREATE_TIME", DateFormatUtils.getCurrentDate());
 			autoCallTaskTelephone.set("RESPOND",null);
 			autoCallTaskTelephone.set("STATE","0");
@@ -405,7 +421,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 				if(reminderType.equalsIgnoreCase("1")||reminderType.equalsIgnoreCase("2")||reminderType.equalsIgnoreCase("3")||reminderType.equalsIgnoreCase("4")||reminderType.equalsIgnoreCase("5")) {
 					String period = r.get("1");   //日期
 					String charge = r.get("2");   //费用
-					autoCallTaskTelephone.set("CLIENT_NAME", telephone);
+					autoCallTaskTelephone.set("CUSTOMER_NAME", customerTel);
 					autoCallTaskTelephone.set("PERIOD", period);
 					autoCallTaskTelephone.set("CHARGE", charge);
 				}else if(reminderType.equalsIgnoreCase("6")) {   //交通违章催缴
@@ -413,30 +429,30 @@ public class AutoCallTaskTelephoneController extends Controller implements
 					//物业催缴模板：号码|日期|城市|处罚单位|违法事由
 					//             13811110000|20170101|广州市|广州市第一交警大队|违章停车
 					String period = r.get("1");    //日期
-					String violationCity = r.get("2");    //违法城市
+					String illegalCity = r.get("2");    //违法城市
 					String punishmentUnit = r.get("3");   //处罚单位
-					String violationReason = r.get("4");  //违章理由
+					String illegalReason = r.get("4");  //违章理由
 					
-					autoCallTaskTelephone.set("CLIENT_NAME", telephone);
+					autoCallTaskTelephone.set("CUSTOMER_NAME", customerTel);
 					autoCallTaskTelephone.set("PERIOD", period);
-					autoCallTaskTelephone.set("VIOLATION_CITY", violationCity);
+					autoCallTaskTelephone.set("ILLEGAL_CITY", illegalCity);
 					autoCallTaskTelephone.set("PUNISHMENT_UNIT", punishmentUnit);
-					autoCallTaskTelephone.set("VIOLATION_REASON", violationReason);
+					autoCallTaskTelephone.set("ILLEGAL_REASON", illegalReason);
 				}else if(reminderType.equalsIgnoreCase("7")) {    //社保催缴
 					//社保催缴模板:号码|姓名|日期|单位
 					//            13811110000|张三|201701|某公司
-					String clientName = r.get("1");     //姓名
+					String customerName = r.get("1");     //姓名
 					String period = r.get("2");         //日期
 					String company = r.get("3");        //代缴单位
 					
-					autoCallTaskTelephone.set("CLIENT_NAME",clientName);
+					autoCallTaskTelephone.set("CUSTOMER_NAME",customerName);
 					autoCallTaskTelephone.set("PERIOD", period);
 					autoCallTaskTelephone.set("COMPANY", company);
 				}
 				
 			}else {                                //非催缴类
-				String clientName = r.get("1");     //得到客户姓名
-				autoCallTaskTelephone.set("CLIENT_NAME",clientName);
+				String customerName = r.get("1");     //得到客户姓名
+				autoCallTaskTelephone.set("CUSTOMER_NAME",customerName);
 			}
 			
 			/**
@@ -445,10 +461,10 @@ public class AutoCallTaskTelephoneController extends Controller implements
 			 * 2号码是否为黑名单数据
 			 */
 			//取出两列，然后判断第一列是否是号码,且号码的长度是否大于等于7位数，否则将不储存
-			if(!BlankUtils.isBlank(telephone) && StringUtil.isNumber(telephone) && telephone.length() >= 7) {
+			if(!BlankUtils.isBlank(customerTel) && StringUtil.isNumber(customerTel) && customerTel.length() >= 7) {
 				
 				//做黑名单过滤
-				if(blackListTelephones.contains(telephone)) {   //如果存在于黑名单
+				if(blackListTelephones.contains(customerTel)) {   //如果存在于黑名单
 					inBlackListCount++;
 					continue;
 				}
@@ -468,10 +484,10 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		int repetitionCount = 0;
 		for(Record act:afterBlackListResult) {
 			
-			String telephone = act.get("TELEPHONE");
+			String customerTel = act.get("CUSTOMER_TEL");
 			
 			//重复性检查
-			if(autoCallTaskTelephones.contains(telephone)) {
+			if(autoCallTaskTelephones.contains(customerTel)) {
 				repetitionCount++;
 				continue;
 			}
@@ -493,44 +509,61 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		
 		String taskId = getPara("taskId");
 		String state = getPara("state");
-		String telephone = getPara("telephone");
-		String clientName = getPara("clientName");
+		String customerTel = getPara("customerTel");
+		String customerName = getPara("customerName");
+		String startTimeForTelephone = getPara("startTimeForTelephone");
+		String endTimeForTelephone = getPara("endTimeForTelephone");
+		String dateTimeType = getPara("dateTimeType");     //取得查询时间类型，0表示时间区段为以创建时间为查询区间，1表示以外呼时间为查询区间 
+		
+		String createTimeStartTime = null;
+		String createTimeEndTime = null;
+		String loadTimeStartTime = null;
+		String loadTimeEndTime = null;
+		
+		if(dateTimeType.equalsIgnoreCase("1")) {           //表示是以外呼时间为查询区间
+			loadTimeStartTime = startTimeForTelephone;
+			loadTimeEndTime = endTimeForTelephone;
+		}else {                                            //表示是以创建时间为查询区间
+			createTimeStartTime = startTimeForTelephone;
+			createTimeEndTime = endTimeForTelephone;
+		}
 		
 		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
 		String taskType = autoCallTask.get("TASK_TYPE");          //任务类型
 		String reminderType = autoCallTask.get("REMINDER_TYPE");  //催缴类型
+		int retryTimes = autoCallTask.getInt("RETRY_TIMES");
 		
 		//如果传入的状态为5或是为空时
 		if(BlankUtils.isBlank(state) || state.equalsIgnoreCase("5")) {
 			state = null;
 		}
 		
-		List<Record> list = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(taskId, state, telephone,clientName);
+		List<Record> list = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(taskId, state, customerTel,customerName,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime,retryTimes);
 		
 		String fileName = "export.xls";
 		String sheetName = "号码列表";
 		
 		ExcelExportUtil export = new ExcelExportUtil(list,getResponse());
 		if(taskType.equalsIgnoreCase("1") || taskType.equalsIgnoreCase("2")) {                //如果为普通外呼
-			String[] headers = {"电话号码","客户姓名"};            
-			String[] columns = {"TELEPHONE","CLIENT_NAME"};
+			String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间"};            
+			String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME"};
 			
 			export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
 		}else if(taskType.equalsIgnoreCase("3")) {          //如果为催缴外呼
 			
 			if(reminderType.equalsIgnoreCase("6")) {        //催缴类型为车辆违章
 				
-				String[] headers = {"电话号码","客户姓名","违章城市","处罚单位","违章事由","日期"};            
-				String[] columns = {"TELEPHONE","CLIENT_NAME","VIOLATION_CITY","PUNISHMENT_UNIT","VIOLATION_REASON","PERIOD"};
+				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","违章城市","处罚单位","违章事由","违章日期"};            
+				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","ILLEGAL_CITY","PUNISHMENT_UNIT","ILLEGAL_REASON","PERIOD"};
 				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
 			}else if(reminderType.equalsIgnoreCase("7")) {  //催缴类型为社保催缴
-				String[] headers = {"电话号码","客户姓名","日期","代缴单位"};            
-				String[] columns = {"TELEPHONE","CLIENT_NAME","PERIOD","COMPANY"};
+				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","日期","代缴单位"};            
+				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","PERIOD","COMPANY"};
 				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
 			}else{        //如果为电话、水、电、气及物业催缴
 				
-				String[] headers = {"电话号码","客户姓名","日期","费用"};            
-				String[] columns = {"TELEPHONE","CLIENT_NAME","PERIOD","CHARGE"};
+				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","日期","费用"};            
+				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","PERIOD","CHARGE"};
 				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
 				
 			}

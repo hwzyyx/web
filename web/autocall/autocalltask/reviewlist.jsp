@@ -138,8 +138,8 @@
 				url:'autoCallTaskTelephone/datagrid',
 				queryParams:{
 					taskId:currTaskId,
-			    	telephone:$('#telephone').textbox('getValue'),
-	    			clientName:$('#clientName').textbox('getValue')
+			    	customerTel:$('#customerTel').textbox('getValue'),
+	    			customerName:$('#customerName').textbox('getValue')
 				}
 			});
 
@@ -154,8 +154,8 @@
 					if(isShowMore==0) { showMore();}   //如果隐藏时,打开显示更多
 					
 					//清除号码列表的搜索框信息
-					$("#telephone").textbox('setValue','');
-					$("#clientName").textbox('setValue','');
+					$("#customerTel").textbox('setValue','');
+					$("#customerName").textbox('setValue','');
 
 					//同时，要将号码列表数据清空
 			    	$("#autoCallTaskTelephoneDg").datagrid('loadData',{total:0,rows:[]});    //号码列表清空
@@ -192,8 +192,8 @@
 		function findDataForTelephone() {
     		$("#autoCallTaskTelephoneDg").datagrid('load',{
         		taskId:currTaskId,
-        		telephone:$('#telephone').textbox('getValue'),
-    			clientName:$('#clientName').textbox('getValue')
+        		customerTel:$('#customerTel').textbox('getValue'),
+    			customerName:$('#customerName').textbox('getValue')
         	});
     	}
 
@@ -355,16 +355,16 @@
 
     		if(currTaskType=="3") {   //催缴类型
 	    		if(currReminderType=='6') {           //车辆违章
-	    			$("#autoCallTaskTelephoneDg").datagrid('showColumn','VIOLATION_CITY');
+	    			$("#autoCallTaskTelephoneDg").datagrid('showColumn','ILLEGAL_CITY');
 	    		    $("#autoCallTaskTelephoneDg").datagrid('showColumn','PUNISHMENT_UNIT');
-	    		    $("#autoCallTaskTelephoneDg").datagrid('showColumn','VIOLATION_REASON');
+	    		    $("#autoCallTaskTelephoneDg").datagrid('showColumn','ILLEGAL_REASON');
 	    		    $("#autoCallTaskTelephoneDg").datagrid('showColumn','PERIOD');
 
 	    		    //显示添加号码表单输入项
 	    		    $("#periodDiv").css('display','');
-	    		    $("#violationCityDiv").css('display','');
+	    		    $("#illegalCityDiv").css('display','');
 	    		    $("#punishmentUnitDiv").css('display','');
-	    		    $("#violationReasonDiv").css('display','');
+	    		    $("#illegalReasonDiv").css('display','');
 	    		    
 	    		}else if(currReminderType=='7') {     //社保催缴
 	    		    $("#autoCallTaskTelephoneDg").datagrid('showColumn','PERIOD');
@@ -386,18 +386,18 @@
 	    }
 
 	    function hideAllExtraTh() {   //隐藏所有的号码列表的额外字段（主要是催缴类外呼任务）
-		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','VIOLATION_CITY');
+		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','ILLEGAL_CITY');
 		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','PUNISHMENT_UNIT');
-		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','VIOLATION_REASON');
+		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','ILLEGAL_REASON');
 		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','PERIOD');
 		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','CHARGE');
 		    $("#autoCallTaskTelephoneDg").datagrid('hideColumn','COMPANY');
 
 		    //同时，要将添加号码的表单额外输入项全部隐藏
 		    $("#periodDiv").css('display','none');
-		    $("#violationCityDiv").css('display','none');
+		    $("#illegalCityDiv").css('display','none');
 		    $("#punishmentUnitDiv").css('display','none');
-		    $("#violationReasonDiv").css('display','none');
+		    $("#illegalReasonDiv").css('display','none');
 		    $("#companyDiv").css('display','none');
 		    $("#chargeDiv").css('display','none');
 	    }

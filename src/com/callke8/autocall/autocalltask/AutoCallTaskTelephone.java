@@ -29,15 +29,15 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param pageNumber
 	 * @param pageSize
 	 * @param taskId
-	 * @param telephone
-	 * @param clientName
+	 * @param customerTel
+	 * @param customerName
 	 * @param state
 	 * @return
 	 */
-	public Page<Record> getAutoCallTaskTelephoneByPaginate(int pageNumber,int pageSize,String taskId,String telephone,String clientName,String state) {
+	public Page<Record> getAutoCallTaskTelephoneByPaginate(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
 		
 		StringBuilder sb = new StringBuilder();
-		Object[] pars = new Object[6];
+		Object[] pars = new Object[10];
 		int index = 0;
 		
 		sb.append("from ac_call_task_telephone where 1=1");
@@ -49,21 +49,49 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			index++;
 		}
 		
-		if(!BlankUtils.isBlank(telephone)) {
-			sb.append(" and TELEPHONE like ?");
-			pars[index] = "%" + telephone + "%";
+		if(!BlankUtils.isBlank(customerTel)) {
+			sb.append(" and CUSTOMER_TEL like ?");
+			pars[index] = "%" + customerTel + "%";
 			index++;
 		}
 		
-		if(!BlankUtils.isBlank(clientName)) {
-			sb.append(" and CLIENT_NAME like ?");
-			pars[index] = "%" + clientName + "%";
+		if(!BlankUtils.isBlank(customerName)) {
+			sb.append(" and CUSTOMER_NAME like ?");
+			pars[index] = "%" + customerName + "%";
 			index++;
 		}
 		
 		if(!BlankUtils.isBlank(state) && !state.equals("5")) {
 			sb.append(" and STATE=?");
 			pars[index] = state;
+			index++;
+		}
+		
+		//创建的开始时间查询
+		if(!BlankUtils.isBlank(createTimeStartTime)) {
+			sb.append(" and CREATE_TIME>?");
+			pars[index] = createTimeStartTime;
+			index++;
+		}
+		
+		//创建的结束时间查询
+		if(!BlankUtils.isBlank(createTimeEndTime)) {
+			sb.append(" and CREATE_TIME<?");
+			pars[index] = createTimeEndTime;
+			index++;
+		}
+		
+		//外呼时间的开始时间查询
+		if(!BlankUtils.isBlank(loadTimeStartTime)) {
+			sb.append(" and LOAD_TIME>?");
+			pars[index] = loadTimeStartTime;
+			index++;
+		}
+		
+		//外呼时间的结束时间查询
+		if(!BlankUtils.isBlank(loadTimeEndTime)) {
+			sb.append(" and LOAD_TIME<?");
+			pars[index] = loadTimeEndTime;
 			index++;
 		}
 		
@@ -79,27 +107,40 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param pageNumber
 	 * @param pageSize
 	 * @param taskId
-	 * @param telephone
-	 * @param clientName
+	 * @param customerTel
+	 * @param customerName
 	 * @param state
 	 * @return
 	 */
-	public Map<String,Object> getAutoCallTaskTelephoneByPaginateToMap(int pageNumber,int pageSize,String taskId,String telephone,String clientName,String state) {
+	public Map<String,Object> getAutoCallTaskTelephoneByPaginateToMap(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
 		
 		Map<String,Object> m = new HashMap<String,Object>();
+		AutoCallTask autoCallTask = null;
+		int retryTimes = 0;
 		
 		if(BlankUtils.isBlank(taskId)) {
 			m.put("total", 0);
 			m.put("rows", new ArrayList<Record>());
 			
 			return m;
+		}else {
+			autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);    //取得任务的信息
+			retryTimes = autoCallTask.getInt("RETRY_TIMES");
 		}
 		
-		Page<Record> page = getAutoCallTaskTelephoneByPaginate(pageNumber, pageSize, taskId, telephone, clientName,state);
+		Page<Record> page = getAutoCallTaskTelephoneByPaginate(pageNumber, pageSize, taskId, customerTel, customerName,state,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
+		
+		List<Record> newList = new ArrayList<Record>();
+		
+		for(Record r:page.getList()) {
+			int retried = r.getInt("RETRIED");
+			r.set("RETRIED_DESC",retried + "/" + retryTimes);
+			newList.add(r);
+		}
 		
 		int total = page.getTotalRow();
 		m.put("total", total);
-		m.put("rows", page.getList());
+		m.put("rows",newList);
 		return m;
 	}
 	
@@ -197,20 +238,20 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			return 0;
 		}
 		
-		String sql = "insert into ac_call_task_telephone(TASK_ID,TELEPHONE,CLIENT_NAME,COMPANY,PERIOD,CHARGE,VIOLATION_CITY,PUNISHMENT_UNIT,VIOLATION_REASON,CREATE_TIME,RETRIED,STATE)value(?,?,?,?,?,?,?,?,?,?,?,?)";
+		String sql = "insert into ac_call_task_telephone(TASK_ID,CUSTOMER_TEL,CUSTOMER_NAME,COMPANY,PERIOD,CHARGE,ILLEGAL_CITY,PUNISHMENT_UNIT,ILLEGAL_REASON,CREATE_TIME,RETRIED,STATE)value(?,?,?,?,?,?,?,?,?,?,?,?)";
 		
-		int[] insertData = Db.batch(sql, "TASK_ID,TELEPHONE,CLIENT_NAME,COMPANY,PERIOD,CHARGE,VIOLATION_CITY,PUNISHMENT_UNIT,VIOLATION_REASON,CREATE_TIME,RETRIED,STATE",telephones,5000);
+		int[] insertData = Db.batch(sql, "TASK_ID,CUSTOMER_TEL,CUSTOMER_NAME,COMPANY,PERIOD,CHARGE,ILLEGAL_CITY,PUNISHMENT_UNIT,ILLEGAL_REASON,CREATE_TIME,RETRIED,STATE",telephones,5000);
 		
 		return insertData.length;
 	}
 	
-	public boolean update(String telephone,String clientName,String period,String violationCity,String punishmentUnit,String violationReason,String charge,String company,int telId) {
+	public boolean update(String customerTel,String customerName,String period,String illegalCity,String punishmentUnit,String illegalReason,String charge,String company,int telId) {
 		
 		boolean b = false;
 		
-		String sql = "update ac_call_task_telephone set TELEPHONE=?,CLIENT_NAME=?,PERIOD=?,VIOLATION_CITY=?,PUNISHMENT_UNIT=?,VIOLATION_REASON=?,CHARGE=?,COMPANY=? where TEL_ID=?";
+		String sql = "update ac_call_task_telephone set CUSTOMER_TEL=?,CUSTOMER_NAME=?,PERIOD=?,ILLEGAL_CITY=?,PUNISHMENT_UNIT=?,ILLEGAL_REASON=?,CHARGE=?,COMPANY=? where TEL_ID=?";
 		
-		int count = Db.update(sql,telephone,clientName,period,violationCity,punishmentUnit,violationReason,charge,company,telId);
+		int count = Db.update(sql,customerTel,customerName,period,illegalCity,punishmentUnit,illegalReason,charge,company,telId);
 		
 		if(count > 0) {
 			b = true;
@@ -344,9 +385,17 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 
 	 * @param taskId
 	 * @param state
+	 * @param customerTel
+	 * @param customerName
+	 * @param createTimeStartTime
+	 * @param createTimeEndTime
+	 * @param loadTimeStartTime
+	 * @param loadTimeEndTime
+	 * @param retryTimes
+	 * 				外呼任务设定的重试次数
 	 * @return
 	 */
-	public List<Record> getAutoCallTaskTelephonesByTaskIdAndState(String taskId,String state,String telephone,String clientName) {
+	public List<Record> getAutoCallTaskTelephonesByTaskIdAndState(String taskId,String state,String customerTel,String customerName,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime,int retryTimes) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
@@ -366,15 +415,43 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			index++;
 		}
 		
-		if(!BlankUtils.isBlank(telephone)) {
-			sb.append(" and TELEPHONE like ?");
-			pars[index] = "%" + telephone + "%";
+		if(!BlankUtils.isBlank(customerTel)) {
+			sb.append(" and CUSTOMER_TEL like ?");
+			pars[index] = "%" + customerTel + "%";
 			index++;
 		}
 		
-		if(!BlankUtils.isBlank(clientName)) {
-			sb.append(" and CLIENT_NAME like ?");
-			pars[index] = "%" + clientName + "%";
+		if(!BlankUtils.isBlank(customerName)) {
+			sb.append(" and CUSTOMER_NAME like ?");
+			pars[index] = "%" + customerName + "%";
+			index++;
+		}
+		
+		//创建的开始时间查询
+		if(!BlankUtils.isBlank(createTimeStartTime)) {
+			sb.append(" and CREATE_TIME>?");
+			pars[index] = createTimeStartTime;
+			index++;
+		}
+		
+		//创建的结束时间查询
+		if(!BlankUtils.isBlank(createTimeEndTime)) {
+			sb.append(" and CREATE_TIME<?");
+			pars[index] = createTimeEndTime;
+			index++;
+		}
+		
+		//外呼时间的开始时间查询
+		if(!BlankUtils.isBlank(loadTimeStartTime)) {
+			sb.append(" and LOAD_TIME>?");
+			pars[index] = loadTimeStartTime;
+			index++;
+		}
+		
+		//外呼时间的结束时间查询
+		if(!BlankUtils.isBlank(loadTimeEndTime)) {
+			sb.append(" and LOAD_TIME<?");
+			pars[index] = loadTimeEndTime;
 			index++;
 		}
 		
@@ -386,7 +463,10 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		//遍历数据，并将相关的信息
 		for(Record r:list) {
 			
-			String callState = r.get("STATE");   //取出状态
+			//呼叫总数
+			String callState = String.valueOf(r.getInt("STATE"));   //取出状态
+			int retried = r.getInt("RETRIED");
+			r.set("RETRIED_DESC",retried + "/" + retryTimes);
 			
 			if(!BlankUtils.isBlank(callState)) {
 				
@@ -751,20 +831,20 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
-	 * 检查号码的重复性
+	 * 检查号码的重复性--对于增加号码时检查
 	 * 添加号码时作检查,主要是为了防止上传了重复的号码
 	 * 
 	 * @param telephone
 	 * @param taskId
 	 * @return
 	 */
-	public boolean checkTelephoneRepetition(String telephone,String taskId) {
+	public boolean checkTelephoneRepetitionForAdd(String customerTel,String taskId) {
 		
 		boolean b = false;
 		
-		String sql = "select count(TEL_ID) as count from ac_call_task_telephone where TELEPHONE=? and TASK_ID=?";
+		String sql = "select count(TEL_ID) as count from ac_call_task_telephone where CUSTOMER_TEL=? and TASK_ID=?";
 		
-		Record r = Db.findFirst(sql,telephone,taskId);
+		Record r = Db.findFirst(sql,customerTel,taskId);
 		
 		if(!BlankUtils.isBlank(r)) {
 			int count = Integer.valueOf(r.get("count").toString());
@@ -774,6 +854,34 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		}
 		
 		return b;
+	}
+	
+	/**
+	 * 检查号码的重复性--对于修改号码时检查
+	 * 修改号码时作检查,主要是为了防止修改成别的已经存在的号码
+	 * 
+	 * @param customerTel
+	 * @param taskId
+	 * @param telId
+	 * @return
+	 */
+	public boolean checkTelephoneRepetitionForUpdate(String customerTel,String taskId,int telId) {
+		
+		boolean b = false;
+		
+		String sql = "select count(TEL_ID) as count from ac_call_task_telephone where CUSTOMER_TEL=? and TASK_ID=? and TEL_ID!=?";
+		
+		Record r = Db.findFirst(sql,customerTel,taskId,telId);
+		
+		if(!BlankUtils.isBlank(r)) {
+			int count = Integer.valueOf(r.get("count").toString());
+			if(count > 0) {
+				b = true;
+			}
+		}
+		
+		return b;
+		
 	}
 	
 	/**
@@ -813,13 +921,13 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			return list;
 		}
 		
-		String sql = "select TELEPHONE from ac_call_task_telephone where TASK_ID=?";
+		String sql = "select CUSTOMER_TEL from ac_call_task_telephone where TASK_ID=?";
 		
 		List<Record> autoCallTaskTelephones = Db.find(sql, taskId);
 		
 		for(Record r:autoCallTaskTelephones) {
-			String telephone = r.get("TELEPHONE");
-			list.add(telephone);
+			String customerTel = r.get("CUSTOMER_TEL");
+			list.add(customerTel);
 		}
 		
 		return list;

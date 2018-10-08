@@ -304,8 +304,8 @@ public class AutoCallTaskController extends Controller implements IController {
 				fileName = "telephone_bill" + "." + mimeType;
 			}else if(identify.equalsIgnoreCase("social")) {
 				fileName = "social_security" + "." + mimeType;
-			}else if(identify.equalsIgnoreCase("violation")) {
-				fileName = "vehicle_violation" + "." + mimeType;
+			}else if(identify.equalsIgnoreCase("illegal")) {
+				fileName = "vehicle_illegal" + "." + mimeType;
 			}else if(identify.equalsIgnoreCase("property")) {
 				fileName = "property_bill" + "." + mimeType;
 			}
