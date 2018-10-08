@@ -88,8 +88,8 @@
 						<tr style="height:12px;">
 							<th data-options="field:'ck',checkbox:true"></th>		
 							<th data-options="field:'CALLERID_DESC',width:120,align:'center',formatter:calleridformatter">主叫号码</th>
-							<th data-options="field:'TELEPHONE',width:120,align:'center'">电话号码</th>
-							<th data-options="field:'CLIENT_NAME',width:100,align:'center'">客户姓名</th>
+							<th data-options="field:'CUSTOMER_TEL',width:120,align:'center'">电话号码</th>
+							<th data-options="field:'CUSTOMER_NAME',width:100,align:'center'">客户姓名</th>
 							
 							<th data-options="field:'LOAD_TIME',width:150,align:'center'">外呼时间</th>
 							<th data-options="field:'STATE',width:100,align:'center',formatter:stateformatter">外呼结果</th>
