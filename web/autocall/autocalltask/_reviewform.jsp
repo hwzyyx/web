@@ -268,10 +268,10 @@
 						<div data-options="region:'north',split:true,border:true" style="height:45px;padding-top:5px;padding-left:5px;">
 							<table>
 								<tr style="vertical-align: top;">
-									<td>电话号码：<input id="telephone" type="text" class="easyui-textbox" style="width:120px;"/>
+									<td>电话号码：<input id="customerTel" type="text" class="easyui-textbox" style="width:120px;"/>
 									
 										<span style="padding-left:30px;">
-											客户姓名：<input id="clientName" type="text" class="easyui-textbox" style="width:120px;"/>
+											客户姓名：<input id="customerName" type="text" class="easyui-textbox" style="width:120px;"/>
 										</span>
 										<span style="padding-left:30px;">
 											<a href="javascript:findDataForTelephone()" style="width:80px;" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
@@ -288,12 +288,12 @@
 								<thead>
 									<tr style="height:12px;">
 										<th data-options="field:'ck',checkbox:true"></th>		
-										<th data-options="field:'TELEPHONE',width:120,align:'center'">电话号码</th>
-										<th data-options="field:'CLIENT_NAME',width:100,align:'center'">客户姓名</th>
+										<th data-options="field:'CUSTOMER_TEL',width:120,align:'center'">电话号码</th>
+										<th data-options="field:'CUSTOMER_NAME',width:100,align:'center'">客户姓名</th>
 										
-										<th data-options="field:'VIOLATION_CITY',width:100,align:'center'">违章城市</th>
+										<th data-options="field:'ILLEGAL_CITY',width:100,align:'center'">违章城市</th>
 										<th data-options="field:'PUNISHMENT_UNIT',width:150,align:'center'">处罚单位</th>
-										<th data-options="field:'VIOLATION_REASON',width:150,align:'center'">违章事由</th>
+										<th data-options="field:'ILLEGAL_REASON',width:150,align:'center'">违章事由</th>
 										<th data-options="field:'PERIOD',width:120,align:'center'">日期</th>
 										<th data-options="field:'CHARGE',width:100,align:'center'">费用</th>
 										<th data-options="field:'COMPANY',width:150,align:'center'">代缴单位</th>
