@@ -34,6 +34,10 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		String endTimeForTelephone = getPara("endTimeForTelephone");
 		String dateTimeType = getPara("dateTimeType");     //取得查询时间类型，0表示时间区段为以创建时间为查询区间，1表示以外呼时间为查询区间
 		
+		if(BlankUtils.isBlank(dateTimeType)) {
+			dateTimeType = "0";
+		}
+		
 		String createTimeStartTime = null;
 		String createTimeEndTime = null;
 		String loadTimeStartTime = null;
@@ -519,6 +523,10 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		String createTimeEndTime = null;
 		String loadTimeStartTime = null;
 		String loadTimeEndTime = null;
+		
+		if(BlankUtils.isBlank(dateTimeType)) {
+			dateTimeType = "0";
+		}
 		
 		if(dateTimeType.equalsIgnoreCase("1")) {           //表示是以外呼时间为查询区间
 			loadTimeStartTime = startTimeForTelephone;

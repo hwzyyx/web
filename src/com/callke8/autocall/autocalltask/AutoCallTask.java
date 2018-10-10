@@ -689,5 +689,28 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		
 	}
 	
+	/**
+	 * 根据传入的任务，取得其统计数据：
+	 * 
+	 * 主要返回: 已载入、已成功、待重呼、已失败  四种状态的数量
+	 * 
+	 * @return
+	 */
+	public Record getStatisticsData(String taskId) {
+		
+		Record data = new Record();
+		data.set("state0Data",0);
+		data.set("state1Data",0);
+		data.set("state2Data",0);
+		data.set("state3Data",0);
+		data.set("state4Data",0);
+		
+		AutoCallTaskTelephone.dao.getStatisticsDataForState(data,taskId);
+		
+		return data;
+	}
+	
+	
+	
 
 }

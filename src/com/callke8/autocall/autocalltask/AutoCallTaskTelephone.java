@@ -953,5 +953,46 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		this.next = next;
 	}
 	
+	/**
+	 * 取得统计数据（呼叫状态）
+	 * 
+	 * 主要返回: 已载入、已成功、待重呼、已失败、未处理  五种状态的数量
+	 * 
+	 * @param data
+	 * @param startTime
+	 * @param endTime
+	 * @param channelSource
+	 */
+	public void getStatisticsDataForState(Record data,String taskId) {
+		
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("select STATE,COUNT(*) as count from ac_call_task_telephone where TASK_ID=?");
+		
+		sb.append(" GROUP BY STATE");
+		
+		List<Record> stateList = Db.find(sb.toString(),taskId);
+		
+		if(!BlankUtils.isBlank(stateList) && stateList.size() > 0) {
+			for(Record stateR:stateList) {
+				int stateValue = stateR.getInt("STATE");
+				int stateCount = Integer.valueOf(stateR.get("count").toString());
+				if(stateValue == 0) {
+					data.set("state0Data", stateCount);
+				}else if(stateValue == 1) {
+					data.set("state1Data", stateCount);
+				}else if(stateValue == 2) {
+					data.set("state2Data", stateCount);
+				}else if(stateValue == 3) {
+					data.set("state3Data", stateCount);
+				}else if(stateValue == 4) {
+					data.set("state4Data", stateCount);
+				}
+			}
+			
+		}
+		
+	}
+	
 
 }

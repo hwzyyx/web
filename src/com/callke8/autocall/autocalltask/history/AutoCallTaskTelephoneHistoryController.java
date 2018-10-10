@@ -1,5 +1,6 @@
 package com.callke8.autocall.autocalltask.history;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
@@ -19,7 +20,8 @@ public class AutoCallTaskTelephoneHistoryController extends Controller  {
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneByPaginateToMap(pageNumber, pageSize, taskId, telephone, clientName,state);
+		//Map map = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneByPaginateToMap(pageNumber, pageSize, taskId, telephone, clientName,state);
+		Map map = new HashMap();
 		
 		System.out.println("取AutoCallTaskTelephoneController datagrid的结束时间:" + DateFormatUtils.getTimeMillis());
 		renderJson(map);

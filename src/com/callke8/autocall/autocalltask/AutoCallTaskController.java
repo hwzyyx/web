@@ -1,17 +1,22 @@
 package com.callke8.autocall.autocalltask;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
+import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.common.CommonController;
 import com.callke8.common.IController;
 import com.callke8.system.operator.Operator;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
+import com.callke8.utils.ExcelExportUtil;
 import com.callke8.utils.RenderJson;
 import com.jfinal.core.Controller;
 import com.jfinal.kit.PathKit;
+import com.jfinal.plugin.activerecord.Record;
 
 /**
  * 自动外呼任务 
@@ -369,6 +374,94 @@ public class AutoCallTaskController extends Controller implements IController {
 		
 		
 		return archiveCallTask;
+	}
+	
+	
+	/**
+	 * 重新加载统计数据
+	 */
+	public void reloadStatistics() {
+		
+		String taskId = getPara("taskId");
+		
+		Record data = AutoCallTask.dao.getStatisticsData(taskId);
+		
+		List<Record> list = new ArrayList<Record>();
+		
+		//已载入
+		Record state1Data = new Record();
+		state1Data.set("name", "已载入");
+		state1Data.set("value", data.get("state1Data"));
+		list.add(state1Data);
+		
+		//已成功
+		Record state2Data = new Record();
+		state2Data.set("name", "已成功");
+		state2Data.set("value", data.get("state2Data"));
+		list.add(state2Data);
+		
+		//待重呼
+		Record state3Data = new Record();
+		state3Data.set("name", "待重呼");
+		state3Data.set("value", data.get("state3Data"));
+		list.add(state3Data);
+		
+		//已失败
+		Record state4Data = new Record();
+		state4Data.set("name", "已失败");
+		state4Data.set("value", data.get("state4Data"));
+		list.add(state4Data);
+		
+		//未处理
+		Record state0Data = new Record();
+		state0Data.set("name","未处理");
+		state0Data.set("value",data.get("state0Data"));
+		list.add(state0Data);
+		
+		renderJson(list);
+		
+	}
+	
+	/**
+	 * 导出汇总数据
+	 */
+	public void exportExcelForSummaryData() {
+		
+		List<Record> list = new ArrayList<Record>();
+		Record rc = new Record();
+		rc.set("category","数量");
+		Record rr = new Record();
+		rr.set("category", "占比");
+		
+		String totalCount = getPara("totalCount");      rc.set("totalData", totalCount);
+		String state1Count = getPara("state1Count");    rc.set("state1Data", state1Count);
+		String state2Count = getPara("state2Count");	rc.set("state2Data", state2Count);
+		String state3Count = getPara("state3Count");    rc.set("state3Data", state3Count);
+		String state4Count = getPara("state4Count");	rc.set("state4Data", state4Count);	
+		list.add(rc);
+		
+		String totalRate = getPara("totalRate");		rr.set("totalData", totalRate + "%");
+		String state1Rate = getPara("state1Rate");		rr.set("state1Data", state1Rate + "%");
+		String state2Rate = getPara("state2Rate");		rr.set("state2Data", state2Rate + "%");
+		String state3Rate = getPara("state3Rate");		rr.set("state3Data", state3Rate + "%");
+		String state4Rate = getPara("state4Rate");		rr.set("state4Data", state4Rate + "%");
+		
+		list.add(rr);
+		
+		String taskName = getPara("taskName");
+
+		//得到数据列表，准备以 Excel 方式导出
+		String[] headers = {"","已呼数量","已载入","已成功","待重呼","已失败",};
+		String[] columns = {"category","totalData","state1Data","state2Data","state3Data","state4Data"};
+		String fileName = "任务：" + taskName + "的统计汇总情况.xls";
+		String sheetName = "数据汇总信息";
+		
+		int cellWidth = 80;
+		
+		ExcelExportUtil export = new ExcelExportUtil(list,getResponse());
+		export.headers(headers).columns(columns).sheetName(sheetName).cellWidth(cellWidth);
+		
+		export.fileName(fileName).execExport();
 	}
 
 }

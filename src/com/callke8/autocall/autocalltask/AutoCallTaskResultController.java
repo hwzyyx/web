@@ -185,7 +185,8 @@ public class AutoCallTaskResultController extends Controller implements IControl
 			state = null;
 		}
 		
-		List<Record> list = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(taskId, state, telephone,clientName);
+		//List<Record> list = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(taskId, state, telephone,clientName);
+		List<Record> list = new ArrayList<Record>();
 		
 		String[] headers = {"电话号码","客户姓名","外呼时间","外呼结果","失败原因","已重试","再次外呼时间"};
 		String[] columns = {"TELEPHONE","CLIENT_NAME","OP_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED","NEXT_CALLOUT_TIME"};
@@ -220,7 +221,8 @@ public class AutoCallTaskResultController extends Controller implements IControl
 		
 		//接下来，就需要从任务号码中取出号码
 		//第一步，根据任务ID及状态，取出所有的号码
-		List<Record> telephoneList = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(taskId, "2", null, null);     //客户有回复时,必须是已经呼通的号码，状态为2
+		//List<Record> telephoneList = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(taskId, "2", null, null);     //客户有回复时,必须是已经呼通的号码，状态为2
+		List<Record> telephoneList = new ArrayList<Record>();
 		
 		//第二步, 取两组列表的交集，即是两者 TEL_ID 相同的记录，才是真正有效的记录
 		//(1) 为了效率考虑,先定义三个变量：    List<String> 用于储存已经呼通的号码ID;   Map<String,String> 用于存放 号码ID对应的号码 及对应的客户姓名

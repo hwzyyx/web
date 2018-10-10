@@ -14,10 +14,13 @@
 	<script type="text/javascript" src="js.date.utils.js"></script>
     <script type="text/javascript" src="jplayer/dist/jplayer/jquery.jplayer.hwzcustom.js"></script>
     <script type="text/javascript" src="locale/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
 	<script type="text/javascript">
 
 		var currTaskId = null;
+		var currTaskName = null;
 		var isShowMore = 0;
+		var conditionState = null;
 
 		var currCreateType = 'voiceFile';
 
@@ -317,6 +320,25 @@
 					dateTimeType:dateTimeType
 				}
 			});
+			
+			//外呼任务号码列表
+			$("#autoCallTaskTelephoneDg2").datagrid({
+				pageSize:30,
+				pagination:true,      
+				fit:true,
+				rowrap:true,
+				striped: true,
+				rownumbers: true,
+				pageList:[10,30,50],
+				checkbox:true,
+				toolbar:'#telephoneopertool2',
+				url:'autoCallTaskTelephone/datagrid',
+				queryParams:{
+					taskId:currTaskId,
+	    			state:conditionState,
+	    			dateTimeType:dateTimeType
+				}
+			});
 
 			//双击黑名单，将黑名单信息赋值
 			$("#autoBlackListDg").datagrid({
@@ -407,6 +429,8 @@
 					$('#startTimeForTelephone').datetimebox('setValue','');
 				}
 			});
+    		
+    		$('#summaryDg').datagrid('loadData','');
 
 		});
 
@@ -805,6 +829,13 @@
 				dateTimeType:dateTimeType
         	});
     	}
+		
+		function findDataForTelephoneFor2() {
+    		$("#autoCallTaskTelephoneDg2").datagrid('load',{
+        		taskId:currTaskId,
+    			state:conditionState
+        	});
+    	}
 
 		function showExtraTabs(flag) {   //是否显示额外Tab,主要是导入号码和号码列表
 	    	if(flag==1) {    //flag=1 时，显示
@@ -1111,7 +1142,18 @@
 		         +'</div>'
 	       +'</div>';
    			return htmlstr;
-
+		}
+		
+		function callresultformatter(value,data,index) {
+						
+			return "<a href='#' onclick='javascript:showCallResult(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\")'>呼叫结果</a>";
+		}
+		
+		function showCallResult(taskId,taskName) {
+			currTaskName = taskName;
+			currTaskId = taskId;
+			$("#callResultDlg").dialog('setTitle',"外呼任务:" + taskName + "--外呼结果").dialog('open');
+			reloadStatistics();
 		}
 
 		function telephonestateformatter(value,data,index) {
@@ -1395,6 +1437,26 @@
 			});
 			
 		}
+    	
+		//导出 excel
+		function autoCallTaskTelephoneExport2() {
+
+			var state = conditionState;
+
+			$("#exportForm").form('submit',{
+
+				url:"autoCallTaskTelephone/exportExcel",
+				onSubmit:function(param) {
+					param.taskId = currTaskId;
+					param.state = state;
+				},
+				success:function(data) {
+					
+				}	
+				
+			});
+			
+		}
 
     	//通过号码组方式上传号码
 		function uploadPhoneByNumber() {
@@ -1621,7 +1683,8 @@
 				<tr style="height:12px;">
 					<th data-options="field:'ck',checkbox:true"></th>		
 					<th data-options="field:'TASK_NAME',width:250,align:'center'">任务名称</th>
-					<th data-options="field:'FINISH_RATE',width:100,align:'center',formatter:finishrateformatter">呼叫情况</th>
+					<th data-options="field:'FINISH_RATE',width:100,align:'center',formatter:finishrateformatter">任务完成情况</th>
+					<th data-options="field:'CALL_RESULT',width:80,align:'center',formatter:callresultformatter">呼叫结果</th>
 					<th data-options="field:'taskTypeField',width:150,align:'center',formatter:tasktyperowformatter">任务类型</th>
 					<th data-options="field:'CALLERID_DESC',width:150,align:'center'">主叫号码</th>
 					<th data-options="field:'taskStateField',width:120,align:'center',formatter:taskstaterowformatter">状态</th>
@@ -1702,6 +1765,47 @@
 <div id="voiceFormDlg" class="easyui-dialog" style="width:750px;height:400px;padding:5px;" modal="true" closed="true">
 	 <%@ include file="/autocall/voice/_form.jsp" %>
 </div>
+
+<!-- 外呼结果弹窗 -->
+<div id="callResultDlg" class="easyui-dialog" style="width:1050px;height:700px;padding:5px;" modal="true" closed="true">
+	<%@ include file="/autocall/autocalltask/_callresult.jsp" %>
+</div>
+
+<!-- 任务号码列表 -->
+<div id="autoCallTelephoneDlg" class="easyui-dialog" style="width:1200px;height:800px;padding:10px 20px;" modal="true" closed="true">
+	<div data-options="fit:true" class="easyui-layout">
+		<div data-options="region:'center',split:true,border:false">
+			<table id="autoCallTaskTelephoneDg2" class="easyui-datagrid">
+				<thead>
+					<tr style="height:12px;">
+						<th data-options="field:'ck',checkbox:true"></th>		
+						<th data-options="field:'CUSTOMER_NAME',width:120,align:'center'">客户姓名</th>
+						<th data-options="field:'CUSTOMER_TEL',width:120,align:'center'">电话号码</th>
+						<th data-options="field:'PROVINCE',width:120,align:'center'">省份</th>
+						<th data-options="field:'CITY',width:120,align:'center'">城市</th>
+						<th data-options="field:'CALLOUT_TEL',width:120,align:'center'">外呼号码</th>
+						<th data-options="field:'CREATE_TIME',width:200,align:'center'">创建时间</th>
+						<th data-options="field:'state_result',width:100,align:'center',formatter:telephonestateformatter">外呼结果</th>
+						<th data-options="field:'LAST_CALL_RESULT',width:200,align:'center'">失败原因</th>
+						<th data-options="field:'RETRIED_DESC',width:150,align:'center'">呼叫次数</th>
+						<th data-options="field:'LOAD_TIME',width:200,align:'center'">外呼时间</th>
+						<th data-options="field:'BILLSEC',width:150,align:'center'">通话时长</th>
+						<th data-options="field:'NEXT_CALLOUT_TIME',width:200,align:'center'">下次外呼时间</th>
+													
+						<th data-options="field:'ILLEGAL_CITY',width:100,align:'center'">违章城市</th>
+						<th data-options="field:'PUNISHMENT_UNIT',width:150,align:'center'">处罚单位</th>
+						<th data-options="field:'ILLEGAL_REASON',width:150,align:'center'">违章事由</th>
+						<th data-options="field:'PERIOD',width:120,align:'center'">日期</th>
+						<th data-options="field:'CHARGE',width:100,align:'center'">费用</th>
+						<th data-options="field:'COMPANY',width:150,align:'center'">代缴单位</th>
+						<th data-options="field:'id',width:100,align:'center',formatter:telephonerowformatter">操作</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>
+
 
 </body>
 </html>
