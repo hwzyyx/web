@@ -9,6 +9,8 @@ import com.callke8.bsh.bshvoice.BSHVoice;
 import com.callke8.bsh.bshvoice.BSHVoiceConfig;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.DateFormatUtils;
+import com.callke8.utils.TelephoneLocationUtils;
+import com.callke8.utils.TelephoneNumberLocationUtil;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.druid.DruidPlugin;
@@ -18,7 +20,7 @@ public class StringTest {
 	public static void main(String[] args) {
 		
 		
-		DruidPlugin dp = new DruidPlugin("jdbc:mysql://localhost/freeiris2?characterEncoding=utf-8", "root", "123456");
+		/*DruidPlugin dp = new DruidPlugin("jdbc:mysql://localhost/freeiris2?characterEncoding=utf-8", "root", "123456");
 		ActiveRecordPlugin arp = new ActiveRecordPlugin(dp);
 		
 		arp.addMapping("bsh_orderList", BSHOrderList.class);
@@ -71,7 +73,10 @@ public class StringTest {
 		List<Record> listError = getRespondErrorPlayList(bol);
 		for(Record r:listError) {
 			System.out.println(r);
-		}
+		}*/
+		
+		Record r = TelephoneNumberLocationUtil.getLocation("13512771995");
+		System.out.println(r);
 
 		
 	}
