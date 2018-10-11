@@ -13,6 +13,7 @@ import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.pridialqueueforbshbyquartz.BSHQueueMachineManager;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
+import com.callke8.utils.NumberUtils;
 import com.callke8.utils.StringUtil;
 
 public class AutoCallLoadTaskJob implements Job {
@@ -61,8 +62,10 @@ public class AutoCallLoadTaskJob implements Job {
 			if(queueCount < queueMaxCount) {      //如果排队机中的数量已经大于或是等于允许的最大值，暂不加载数据到排队机
 				
 				int freeCount = queueMaxCount - queueCount;       //查看排队机中数量与允许最大量的差距，即是最大允许此次扫描多的数据量到排队机
-				//计算为个任务要载入的量
-				int perTaskLoadCount = (int)Math.floor(freeCount/validCallTaskCount); 
+				
+				//计算为个任务要载入的量,由于排队机只是一个排队机制，所以即使排队机中只有一个空位，若有多个激活的任务时，也可以每个任务取一条，即是用除法向上取整
+				//即使多扫描一些数据到排队机也不会影响实际的可用通道 的量
+				int perTaskLoadCount = NumberUtils.ceil(freeCount, validCallTaskCount);    //每个任务扫描的号码数量
 				int taskNumber = 1;
 				
 				//遍历外呼任务

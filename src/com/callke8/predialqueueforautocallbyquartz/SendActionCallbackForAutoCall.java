@@ -4,6 +4,7 @@ import org.asteriskjava.manager.SendActionCallback;
 import org.asteriskjava.manager.response.ManagerResponse;
 
 import com.callke8.astutils.AsteriskUtils;
+import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.StringUtil;
@@ -11,14 +12,14 @@ import com.callke8.utils.StringUtil;
 public class SendActionCallbackForAutoCall implements SendActionCallback {
 	
 	private String channel;
-	private int retried;
-	private AutoCallTaskTelephone autoCallTaskTelephone;
+	private AutoCallTaskTelephone actt;
+	private AutoCallTask autoCallTask;
 	private AsteriskUtils au;
 
-	public SendActionCallbackForAutoCall(String channel,int retried,AutoCallTaskTelephone autoCallTaskTelephone,AsteriskUtils au) {
+	public SendActionCallbackForAutoCall(String channel,AutoCallTaskTelephone actt,AsteriskUtils au) {
 		this.channel = channel;
-		this.retried = retried;
-		this.autoCallTaskTelephone = autoCallTaskTelephone;
+		this.actt = actt;
+		this.autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(actt.getStr("TASK_ID"));
 		this.au = au;
 	}
 	
@@ -35,8 +36,11 @@ public class SendActionCallbackForAutoCall implements SendActionCallback {
 		if(responseResult.equalsIgnoreCase("Error")) {       
 			//如果执行的结果为 error，则可以提前将结果更改，尽快的释放外呼资源,这样子,外呼失败的记录，
 			//在 BSHHandleCallOutRecordResultJob中的操作并不一定会去更改状态了
-			AutoCallPredial.updateTelehponeStateForFailure("NOANSWER_RES_ERROR", retried, autoCallTaskTelephone);
-			StringUtil.log(this, "执行外呼 Response结果为:" + responseResult + ",外呼信息:" + autoCallTaskTelephone + " 外呼失败!");
+			AutoCallPredial.updateTelehponeStateForFailure("未接或请求通道失败", actt, autoCallTask);
+			StringUtil.log(this, "执行外呼 Response结果为:" + responseResult + ",外呼信息:" + actt + " 外呼失败!");
+			
+			//如果外呼失败，则应该马上释放外呼资源
+			AutoCallPredial.activeChannelCount--;
 		}
 		
 	}

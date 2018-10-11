@@ -75,52 +75,20 @@ public class AutoCallPredial {
 	 * 			最后一次外呼的结果：NOANSWER(未接);FAILURE(失败);BUSY(线忙);SUCCESS(成功)
 	 * 
 	 */
-	public static void updateTelehponeStateForFailure(String lastCallResult,int retried,AutoCallTaskTelephone autoCallTaskTelephone) {
+	public static void updateTelehponeStateForFailure(String lastCallResult,AutoCallTaskTelephone actt,AutoCallTask autoCallTask) {
 		
-		String taskId = autoCallTaskTelephone.getStr("TASK_ID");    //取出任务的ID
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);    //取得任务的信息
+		int retried  = actt.getInt("RETRIED");                       //已外呼次数
+		int retryTimes = autoCallTask.getInt("RETRY_TIMES");		 //任务设置的最大外呼次数
+		int retryInterval = autoCallTask.getInt("RETRY_INTERVAL");   //重试间隔，单位分钟
+		int telId = actt.getInt("TEL_ID");                           //记录的号码ID
 		
-		int retryTimes = autoCallTask.getInt("RETRY_TIMES");        //任务设置的重呼次数
-		int retryInterval = autoCallTask.getInt("RETRY_INTERVAL");  //重呼的时间间隔（单位为：分钟）
-		
-		if(retried < retryTimes) {   //如果已重试次数小于限定的重试次数时
-			//设置当前号码的状态为重试状态
-			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(Integer.valueOf(autoCallTaskTelephone.get("TEL_ID").toString()),"3", retryInterval,lastCallResult);
-		}else {
-			//设置当前号码的状态为失败
-			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(Integer.valueOf(autoCallTaskTelephone.get("TEL_ID").toString()),null, "4",lastCallResult);	
-		}
-		
-		if(activeChannelCount>0) {   //返回之前,活动的通道数量减1
-			activeChannelCount--;
+		if(retried < retryTimes) {      //如果已经外呼次数小于允许的最大外呼次数，则将记录状态修改为待重呼
+			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", retryInterval, lastCallResult);
+		}else {                         //否则,修改为已失败
+			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(telId, null, "4", lastCallResult);
 		}
 		
 	}
-	
-	
-	/**
-	 * 如果外呼任务处于非激活状态,外呼数据将放弃外呼并将回滚数据
-	 * 
-	 * //查看已经重试次数,如果已重试次数大于0,表示外呼任务需要回滚到重试
-		//                如果已重试次数小于等于0,表示外呼任务需要回滚到新建状态
-	 * 
-	 */
-	public static void updateTelephoneStateForTaskNotInActive(int retried,AutoCallTaskTelephone autoCallTaskTelephone) {
-		
-		//查看已经重试次数,如果已重试次数大于0,表示外呼任务需要回滚到重试
-		//                如果已重试次数小于等于0,表示外呼任务需要回滚到新建状态
-		if(retried > 0) {
-			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(Integer.valueOf(autoCallTaskTelephone.getStr("TEL_ID")), null, "4", null);
-		}else {
-			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(Integer.valueOf(autoCallTaskTelephone.getStr("TEL_ID")), null, "0", null);
-		}
-		
-		if(activeChannelCount>0) {   //返回之前,活动的通道数量减1
-			activeChannelCount--;
-		}
-		
-	}
-	
 	
 	/**
 	 * 通话成功时保存
@@ -129,9 +97,9 @@ public class AutoCallPredial {
 	 * 
 	 * @param lastCallResult
 	 */
-	public static void updateTelehponeStateForSuccess(String lastCallResult, AutoCallTaskTelephone autoCallTaskTelephone) {
+	public static void updateTelehponeStateForSuccess(String lastCallResult, AutoCallTaskTelephone actt) {
 		
-		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(Integer.valueOf(autoCallTaskTelephone.get("TEL_ID").toString()),null,"2",lastCallResult);
+		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(actt.getInt("TEL_ID"),null,"2",lastCallResult);
 		
 	}
 
