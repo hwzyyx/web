@@ -218,5 +218,27 @@ public class NumberUtils {
 			return nf.format(rateDouble);
 			
 		}
+		
+		/**
+		 * 取得两个整数整除后向上取整
+		 * 
+		 * @param i
+		 * @param j
+		 * @return
+		 */
+		public static int ceil(int i,int j) {
+			
+			if(i == 0 || j ==0) {
+				return 0;
+			}
+			
+			DecimalFormat df = new DecimalFormat("0.00000000");
+			String rateStr = df.format((float)i/j);
+			Double rateDouble = Double.valueOf(rateStr);
+			
+			int rs = (int)Math.ceil(rateDouble);
+			
+			return rs;
+		}
 
 }
