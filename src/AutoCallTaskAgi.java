@@ -14,6 +14,7 @@ import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.autocall.questionnaire.Question;
 import com.callke8.autocall.questionnaire.QuestionnaireRespond;
 import com.callke8.autocall.voice.Voice;
+import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.predialqueueforautocallbyquartz.AutoCallPredial;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
@@ -38,37 +39,33 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			throws AgiException {
 		//从通道变量中，获得 telId
 		String telId =  channel.getVariable("autoCallTaskTelephoneId");
-		//根据 telId，从数据库中取得 autoCallTaskTelephone 数据
-		AutoCallTaskTelephone autoCallTaskTelephone = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneById(telId);
+		AutoCallTaskTelephone actt = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneById(telId);     //取出号码信息
 		
-		String taskId = autoCallTaskTelephone.get("TASK_ID");    //再根据该对象，获得任务的 ID
+		String taskId = actt.get("TASK_ID");    //获得任务的 ID
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);                  //取得任务信息
+		
 		List<Record> playList = new ArrayList<Record>();    //定义一个List,用于存储播放列表
 		
-		exec("Noop","任务ID:" + taskId);
-		exec("Noop","号码ID:" + telId);
-		StringUtil.log(this, "[====GASYAGI===]系统执行到了自动外呼的 FASTAGI 流程，任务ID:" + taskId + "; 号码ID:" + telId + "；客户号码为:" + autoCallTaskTelephone.getStr("TELEPHONE"));
+		exec("Noop","自动外呼流程AGI流程,任务名称:" + autoCallTask.getStr("TASK_NAME") + ",客户号码：" + actt.getStr("CUSTOMER_TEL") + " 开始执行 AGI 流程!");
+		StringUtil.log(this, "自动外呼流程AGI流程,任务名称:" + autoCallTask.getStr("TASK_NAME") + ",客户号码：" + actt.getStr("CUSTOMER_TEL") + " 开始执行 AGI 流程!");
 		
 		//执行到这里，表示呼叫已经成功，需要修改状态为2，即是成功
-		AutoCallPredial.updateTelehponeStateForSuccess("SUCCESS", autoCallTaskTelephone);
+		AutoCallPredial.updateTelehponeStateForSuccess("SUCCESS", actt);
 		
-		//根据通道变量（任务ID）取出任务信息
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
-		
-		//取出任务类型
-		String taskType = autoCallTask.get("TASK_TYPE");
+		String taskType = autoCallTask.get("TASK_TYPE");            //取出任务类型
 	
-		playList = getPlayList(autoCallTask,autoCallTaskTelephone);    //取出插入列表
+		playList = getPlayList(autoCallTask,actt);    				//取出播放列表
 		
 		//如果播放列表不为空
 		if(!BlankUtils.isBlank(playList) && playList.size() > 0) {
 			exec("Noop","播放列表中语音文件的数量为:" + playList.size());
 			StringUtil.log(this, "[====GASYAGI===]播放列表中语音文件的数量为:" + playList.size());
 			//第一次必定先播放一次
-			execPlay(playList, taskId, Integer.valueOf(telId), autoCallTaskTelephone.get("TELEPHONE").toString(), channel);
+			execPlay(playList, taskId, Integer.valueOf(telId), actt.get("CUSTOMER_TEL").toString(), channel);
 			
-			if(!taskType.equals("2")) {    //非问卷调查任务时,需要提示重复播放
+			if(!taskType.equals("2")) {    	  //非问卷调查任务时,需要提示重复播放
 				while(repeat(channel)) {      //如果客户需要重复时,重复播放
-					execPlay(playList, taskId, Integer.valueOf(telId), autoCallTaskTelephone.get("TELEPHONE").toString(), channel);
+					execPlay(playList, taskId, Integer.valueOf(telId), actt.get("CUSTOMER_TEL").toString(), channel);
 				}
 			}
 			
@@ -76,6 +73,9 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			exec("Noop","播放列表为空");
 			exec("PlayBack",voicePathSingle + "/emptyPlayList");
 		}
+		
+		//更新通话时长
+		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneBillsec(Integer.valueOf(telId), Integer.valueOf(channel.getVariable("CDR(billsec)")));
 		
 		//退出之后，需要清理一下，当前的活跃通道，释放资源
 		AutoCallPredial.activeChannelCount--;
@@ -89,7 +89,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 	 * 
 	 * @param playList
 	 */
-	public void execPlay(List<Record> playList,String taskId,int telId,String telephone,AgiChannel channel) {
+	public void execPlay(List<Record> playList,String taskId,int telId,String customerTel,AgiChannel channel) {
 		
 		//如果插入列表不为空时
 		if(!BlankUtils.isBlank(playList) && playList.size()>0) {
@@ -191,11 +191,11 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 	 * @param autoCallTaskTelephone
 	 * @return
 	 */
-	public List<Record> getPlayList(AutoCallTask autoCallTask,AutoCallTaskTelephone autoCallTaskTelephone) {
+	public List<Record> getPlayList(AutoCallTask autoCallTask,AutoCallTaskTelephone actt) {
 		
 		List<Record> list = new ArrayList<Record>();                    //新建一个List,用于储存播放语音
 		
-		String taskType = autoCallTask.get("TASK_TYPE");   				//任务类型
+		String taskType = autoCallTask.get("TASK_TYPE");   					//任务类型
 		String reminderType = autoCallTask.get("REMINDER_TYPE");        	//催缴类型
 		
 		String startVoiceId = autoCallTask.get("START_VOICE_ID");       //开始语音ID
@@ -262,8 +262,8 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			
 		}else if(taskType.equals("3")) {    //如果是催缴类任务
 			
-			String period = autoCallTaskTelephone.get("PERIOD");    //日期
-			String charge = autoCallTaskTelephone.get("CHARGE");    //费用
+			String period = actt.get("PERIOD");    //日期
+			String charge = actt.get("CHARGE");    //费用
 			String year = null;
 			String month = null;
 			String day = null;
