@@ -591,7 +591,8 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 			号码ID
 	 * @param newState
 	 * 			新的状态（重试状态为3）
-	 * @param retryInterval
+	 * @param retryInterval   
+	 * 			重试间隔，单位分钟
 	 * @param lastCallResult
 	 * 			最后一次外呼的结果：NOANSWER(未接);FAILURE(失败);BUSY(线忙);SUCCESS(成功)
 	 * @return
@@ -609,7 +610,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		
 		String nextCallOutTime = DateFormatUtils.formatDateTime(new Date(retryTimeMillis),"yyyy-MM-dd HH:mm:ss");
 		
-		String sql = "update ac_call_task_telephone set STATE=?,NEXT_CALLOUT_TIME=?,RETRIED=RETRIED+1,LAST_CALL_RESULT=? where TEL_ID=?";
+		String sql = "update ac_call_task_telephone set STATE=?,NEXT_CALLOUT_TIME=?,LAST_CALL_RESULT=? where TEL_ID=?";
 		
 		int count = Db.update(sql,newState,nextCallOutTime,lastCallResult,telId);
 		
@@ -620,6 +621,66 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		return b;
 		
 	}
+	
+	/**
+	 * 更改客户号码的归属地和外呼号码
+	 * 
+	 * @param telId
+	 * @param province
+	 * @param city
+	 * @param callOutTel
+	 * @return
+	 */
+	public int updateAutoCallTaskTelephoneLocationAndCallOutTel(int telId,String province,String city,String callOutTel) {
+		
+		int count = 0;
+		
+		String sql = "update ac_call_task_telephone set PROVINCE=?,CITY=?,CALLOUT_TEL=? where TEL_ID=?";
+		
+		count = Db.update(sql,province,city,callOutTel,telId);     
+		
+		return count;
+	}
+	
+	/**
+	 * 更新通话时长
+	 * 
+	 * @param telId
+	 * @param billsec
+	 * @return
+	 */
+	public boolean updateAutoCallTaskTelephoneBillsec(int telId,int billsec) {
+		
+		boolean  b = false;
+		
+		String sql = "update ac_call_task_telephone set BILLSEC=? where TEL_ID=?";
+		
+		int count = Db.update(sql,billsec,telId);
+		
+		if(count > 0) {
+			b = true;
+		}
+		
+		return b;
+	}
+	
+	/**
+	 * 当任务处理非激活状态时,系统将回滚该记录，将外呼次数减1，且状态修改为0
+	 * 
+	 * @param telId
+	 * @return
+	 */
+	public int rollBackAutoCallTaskTelephoneWhenTaskNoActive(int telId) {
+		
+		int count = 0;
+		
+		String sql = "update ac_call_task_telephone set RETRIED=RETRIED-1,STATE=0 where TEL_ID=?";
+		
+		count = Db.update(sql,telId);
+		
+		return count;
+	}
+	
 	
 	/**
 	 * 根据号码状态及外呼任务ID为空时,取出数量
@@ -783,7 +844,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		
 		
 		//修改数据
-		String sql3 = "update ac_call_task_telephone set STATE=1,LOAD_TIME=? where TEL_ID in(" + ids + ")";
+		String sql3 = "update ac_call_task_telephone set STATE=1,LOAD_TIME=?,RETRIED=RETRIED+1,LAST_CALL_RESULT='' where TEL_ID in(" + ids + ")";
 		
 		int count = Db.update(sql3,DateFormatUtils.getCurrentDate());
 		
@@ -794,11 +855,13 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 得到重试的数据
 	 * 
 	 * @param loadCount
+	 * @param taskIds
+	 * 			已激活的任务的 ID字符，格式：   id1,id2,id3
 	 * @return
 	 */
-	public List<AutoCallTaskTelephone> loadRetryData(int loadCount) {
+	public List<AutoCallTaskTelephone> loadRetryData(int loadCount,String taskIds) {
 		
-		String sql = "select TEL_ID from ac_call_task_telephone where STATE='3' and NEXT_CALLOUT_TIME<? limit ?";
+		String sql = "select TEL_ID from ac_call_task_telephone where STATE='3' and NEXT_CALLOUT_TIME<? and TASK_ID in(" + taskIds + ") limit ?";
 		
 		List<Record> list = Db.find(sql,DateFormatUtils.getCurrentDate(),loadCount);
 		
@@ -822,7 +885,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		List<AutoCallTaskTelephone> autoCallTaskTelephones = find(sql2);
 		
 		//修改数据
-		String sql3 = "update ac_call_task_telephone set STATE=1,LOAD_TIME=? where TEL_ID in(" + ids + ")";
+		String sql3 = "update ac_call_task_telephone set STATE=1,LOAD_TIME=?,RETRIED=RETRIED+1,LAST_CALL_RESULT='' where TEL_ID in(" + ids + ")";
 		
 		int count = Db.update(sql3,DateFormatUtils.getCurrentDate());
 		
