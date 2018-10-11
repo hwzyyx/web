@@ -50,7 +50,7 @@ public class LoadRetryThread extends Thread {
 			//只要已载入的量小于最大的载入量,每次取10个重试的数量
 			if(QueueMachineManager.queueCount < maxLoadCount) {
 				
-				List<AutoCallTaskTelephone> retryList = AutoCallTaskTelephone.dao.loadRetryData(10);
+				List<AutoCallTaskTelephone> retryList = AutoCallTaskTelephone.dao.loadRetryData(10,null);
 				
 				
 				if(!BlankUtils.isBlank(retryList) && retryList.size()>0) {
