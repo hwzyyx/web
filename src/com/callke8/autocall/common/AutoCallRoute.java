@@ -3,6 +3,7 @@ package com.callke8.autocall.common;
 import com.callke8.autocall.autoblacklist.AutoBlackListController;
 import com.callke8.autocall.autoblacklist.AutoBlackListTelephoneController;
 import com.callke8.autocall.autocalltask.AutoCallTaskController;
+import com.callke8.autocall.autocalltask.AutoCallTaskRealTimeDataController;
 import com.callke8.autocall.autocalltask.AutoCallTaskResultController;
 import com.callke8.autocall.autocalltask.AutoCallTaskReviewController;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephoneController;
@@ -25,6 +26,7 @@ public class AutoCallRoute extends Routes {
 		add("/schedule",ScheduleController.class,"/autocall/schedule");
 		add("/autoCallTask",AutoCallTaskController.class,"/autocall/autocalltask");
 		add("/autoCallTaskResult",AutoCallTaskResultController.class,"/autocall/autocalltask");
+		add("/autoCallTaskRealTimeData",AutoCallTaskRealTimeDataController.class,"/autocall/autocalltaskrealtimedata");
 		add("/autoCallTaskHistory",AutoCallTaskHistoryController.class,"/autocall/autocalltaskhistory");
 		add("/autoCallTaskTelephone",AutoCallTaskTelephoneController.class,"/autocall/autocalltask");
 		add("/autoCallTaskTelephoneHistory",AutoCallTaskTelephoneHistoryController.class,"/autocall/autocalltaskhistory");

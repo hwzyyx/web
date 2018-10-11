@@ -227,8 +227,8 @@ public class CommonConfig extends JFinalConfig {
 		agentStateMonitor.start();*/
 		
 		//四、用于启动自动外呼任务扫描,并执行自动外呼操作
-		//AutoCallPredial autoCallPredial = new AutoCallPredial();
-		//try {  autoCallPredial.exec();   } catch (SchedulerException e) { e.printStackTrace();}
+		AutoCallPredial autoCallPredial = new AutoCallPredial();
+		try {  autoCallPredial.exec();   } catch (SchedulerException e) { e.printStackTrace();}
 		
 		/*Predial predial = new Predial();
 		predial.execDial();*/
