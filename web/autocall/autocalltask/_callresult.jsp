@@ -166,10 +166,10 @@ function state4DataFormatter(value,data,index){ return "<span style='color:#ff00
 </div>
 
 <!-- 简单汇总 -->
-<div class="easyui-panel" title="" style="width:150px;height:100px;font-size:22px;font-weight:bolder;" data-options="style:{position:'absolute',left:437,top:230}">
+<div class="easyui-panel" title="" style="width:160px;height:100px;font-size:22px;font-weight:bolder;" data-options="style:{position:'absolute',left:432,top:230}">
 	<span style="padding-left:10px;">已呼数量：<span id="totalCountSpan"></span></span><br/>
 	<span style="padding-left:10px;">成功数量：<span id="state2CountSpan"></span></span><br/>
-	<span style="padding-left:10px;color:#00ff00;font-size: 16px;">成&nbsp;功&nbsp;率：<span id="state2RateSpan">%</span>
+	<span style="padding-left:10px;color:#00ff00;font-size: 16px;font-weight:bolder;">成功率：<span id="state2RateSpan">%</span>
 </div>
 
 <<script type="text/javascript">
