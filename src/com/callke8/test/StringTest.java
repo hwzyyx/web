@@ -2,18 +2,22 @@ package com.callke8.test;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.bsh.bshvoice.BSHVoice;
 import com.callke8.bsh.bshvoice.BSHVoiceConfig;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.DateFormatUtils;
+import com.callke8.utils.HttpClientUtil;
 import com.callke8.utils.TelephoneLocationUtils;
 import com.callke8.utils.TelephoneNumberLocationUtil;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.druid.DruidPlugin;
+import com.sun.xml.internal.txw2.output.XmlSerializer;
 
 public class StringTest {
 	
@@ -75,9 +79,23 @@ public class StringTest {
 			System.out.println(r);
 		}*/
 		
-		Record r = TelephoneNumberLocationUtil.getLocation("13512771995");
-		System.out.println(r);
-
+		//测试发送信息
+		/*Map<String,String> params = new HashMap<String,String>();
+		
+		params.put("action","send");                    //发送任务命令	设置为固定的:send
+		params.put("account","922010");						//发送用户帐号	用户帐号，由系统管理员
+		params.put("password","yuanxintong@yzx22");						//发送帐号密码	用户账号对应的密码
+		params.put("mobile","13512771995");						//全部被叫号码	发信发送的目的号码.多个号码之间用半角逗号隔开 
+		//params.put("mobile","18951082343");						//全部被叫号码	发信发送的目的号码.多个号码之间用半角逗号隔开 
+		params.put("content","黄文周在广州测试下发短信。！");						//发送内容	短信的内容，内容需要UTF-8编码
+		params.put("extno","10690103");							//接入号	接入号，即 10690XXXXXX类似的号码
+		
+		String res = HttpClientUtil.doPost("http://218.205.44.234:7862/sms", params,"UTF-8");
+		
+		
+		System.out.println(res);*/
+		
+		
 		
 	}
 	

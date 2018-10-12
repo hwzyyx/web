@@ -1,6 +1,7 @@
 package com.callke8.predialqueueforautocallbyquartz;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,8 +11,10 @@ import org.asteriskjava.manager.TimeoutException;
 import org.asteriskjava.manager.action.OriginateAction;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
 import com.callke8.astutils.AsteriskUtils;
@@ -20,6 +23,8 @@ import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.MemoryVariableUtil;
+import com.callke8.utils.NumberUtils;
+import com.callke8.utils.QuartzUtils;
 import com.callke8.utils.StringUtil;
 import com.callke8.utils.TelephoneLocationUtils;
 import com.callke8.utils.TelephoneNumberLocationUtil;
@@ -52,7 +57,35 @@ public class AutoCallDoCallOutJob implements Job {
 			return;
 		}
 		
-		// 第二步：检查Asterisk 的连接状态
+		// 第二步，判断上是否需要下发短信
+		int sendMessage = autoCallTask.getInt("SEND_MESSAGE");          //该任务是否配置需要下发短信：0表示 不下发短信；1表示要下发短信
+		if(sendMessage == 1) {       //表示可能要下发短信
+			int messageState = actt.getInt("MESSAGE_STATE");         //当前记录的下发短信状态结果：    0表示 暂未下发（新建号码时）；1表示发送成功；2表示发送失败；3表示放弃发送(如非手机号码)
+			if(messageState == 0 || messageState == 2) {    //只有当短信状态为 0 或 2 时，才执行下发短信
+				//然后再判断客户号码是否为手机号码，只有是手机号码时，才执行短信下发
+				String customerTel = actt.getStr("CUSTOMER_TEL");
+				boolean isCellPhone = NumberUtils.isCellPhone(customerTel);    //是否为手机号码
+				if(isCellPhone) {      
+					
+					//执行下发短信操作
+					//调用下发短信的 Job 
+					try {
+						Scheduler schedulerForSendMessage = QuartzUtils.createScheduler("AutoCallSendMessageJob" + System.currentTimeMillis(),1);
+						JobDetail jobDetail = QuartzUtils.createJobDetail(AutoCallSendMessageJob.class);
+						jobDetail.getJobDataMap().put("autoCallTaskTelephoneId", String.valueOf(actt.getInt("TEL_ID")));    								 //将ID以参数传入到quartz的执行区
+						schedulerForSendMessage.scheduleJob(jobDetail, QuartzUtils.createSimpleTrigger(new Date((System.currentTimeMillis() + 1000)), 0, 1));    //一秒后，执行一次
+						schedulerForSendMessage.start();
+					} catch (SchedulerException e) {
+						e.printStackTrace();
+					}   
+					
+				}else {                //若不是手机号码，则直接将该记录的短信状态，设置为放弃下发短信
+					AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneMessageState(3,"101", actt.getInt("TEL_ID"));
+				}
+			}
+		}
+		
+		// 第三步：检查Asterisk 的连接状态
 		//判断 Asterisk 的连接状态
 		AsteriskUtils au = new AsteriskUtils();      //创建一个 连接工具
 		boolean connState = au.isAstConnSuccess();    //连接是否成功

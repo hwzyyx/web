@@ -18,7 +18,7 @@ public class TelephoneNumberLocationUtil {
 	/**
 	 * 获取客户号码 的归属地
 	 * 
-	 * 返回的 Record 主要是包括了四个信息：
+	 * 返回的 Record 主要是包括了五个信息：
 	 * province:省份
 	 * city:城市
 	 * callOutTel:呼出号码，如果是本地号码，这个外呼号码就是传号码的本身，如果是外地号码，那么呼出号码，就需要在前面加一个0
@@ -163,7 +163,7 @@ public class TelephoneNumberLocationUtil {
 		}else {       //如果非0，又非1开头，表示很有可能是直接给的本地号码，就要看长度，如果长度为7或8位，表示本地号码
 			
 			if(customerTelLen == 8 || customerTelLen == 7) {       //表示这个是本地号码，这时，加上系统设置的本地号码区号，调用 API 进行查询
-				
+				System.out.println("localCityAreaCode 本地区号－－－－－＝＝＝＝＝＝＝＝＝:" + localCityAreaCode);
 				Map<String,String> locationMap = TelephoneLocationUtils.getTelephoneLocation(localCityAreaCode + tel,ParamConfig.paramConfigMap.get("paramType_1_juHeUrl"),ParamConfig.paramConfigMap.get("paramType_1_juHeAppKey"));
 				if(!BlankUtils.isBlank(locationMap)) {
 					String province = locationMap.get("province");

@@ -227,11 +227,9 @@ public class CommonConfig extends JFinalConfig {
 		agentStateMonitor.start();*/
 		
 		//四、用于启动自动外呼任务扫描,并执行自动外呼操作
+		
 		AutoCallPredial autoCallPredial = new AutoCallPredial();
 		try {  autoCallPredial.exec();   } catch (SchedulerException e) { e.printStackTrace();}
-		
-		/*Predial predial = new Predial();
-		predial.execDial();*/
 		
 		//五、启动博世电器的自动外呼扫描，并执行自动外呼操作
 		/*System.out.println("启动博世电器守护程序前，先加载博世电器的语音数据到内存!");

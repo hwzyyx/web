@@ -43,7 +43,7 @@ public class Param extends Model<Param> {
 		
 		sb.append(" from sys_param where 1=1");
 		
-		if(paramType>=1 && paramType<=4) {
+		if(paramType>=1) {
 			sb.append(" and PARAM_TYPE=?");
 			pars[index] = paramType;
 			index++;

@@ -689,6 +689,34 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
+	 * 更改号码记录的短信状态和状态码
+	 * 
+	 * @param messageState
+	 * 			0:暂未下发；1：下发成功；2：下发失败；3：放弃下发
+	 * @param messageFailureCode
+	 * 			0：提交成功
+	 * 			6：错误的消息
+	 * 			10：错误的原发号码，接入码错误
+	 * 			12：错误的目的号码
+	 * 			15：余额不足
+	 * 			16：该时间段内禁止下发
+	 * 			17：签名无效
+	 * 			101:非手机号码
+	 * @param telId
+	 * @return
+	 */
+	public int updateAutoCallTaskTelephoneMessageState(int messageState,String messageFailureCode,int telId) {
+		
+		int count = 0;
+		
+		String sql = "update ac_call_task_telephone set MESSAGE_STATE=?,MESSAGE_FAILURE_CODE=? where TEL_ID=?";
+		
+		count = Db.update(sql, messageState,messageFailureCode,telId);
+		
+		return count;
+	}
+	
+	/**
 	 * 当任务处理非激活状态时,系统将回滚该记录，将外呼次数减1，且状态修改为0
 	 * 
 	 * @param telId

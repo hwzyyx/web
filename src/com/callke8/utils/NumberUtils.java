@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 public class NumberUtils {
 	
 	    //用于匹配手机号码
-	    private final static String REGEX_MOBILEPHONE = "^0?1[3458]\\d{9}$";
+	    private final static String REGEX_MOBILEPHONE = "^0?1[34578]\\d{9}$";
 
 	    //用于匹配固定电话号码
 	    private final static String REGEX_FIXEDPHONE = "^(010|02\\d|0[3-9]\\d{2})?\\d{6,8}$";
