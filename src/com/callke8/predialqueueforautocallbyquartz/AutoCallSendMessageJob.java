@@ -57,22 +57,71 @@ public class AutoCallSendMessageJob implements Job {
 		}
 		
 		//(3)组织短信内容
+		StringBuilder sb = new StringBuilder();
 		if(taskType.equalsIgnoreCase("1")) {         //如果外呼任务的类型为通知类外呼，那么只需要将任务配置的短信内容直接下发即可
-			Record record = SendMessageUtils.sendMessage(messageContent, customerTel);
-			if(!BlankUtils.isBlank(record)) {        //有返回
-				String status = record.get("returnstatus");
-				String message = record.get("message");
+			sb.append(messageContent);
+		}else if(taskType.equalsIgnoreCase("3")) {   //如果外呼任务的类型为催缴类外呼，需要再判断催缴类型
+			//催缴类型时，我们要下发的短信内容大概如下格式：
+			//尊敬的尾号为1995的客户, 您好! 您2018年7月发生(电话费/电费/水费/燃气费/物业费) XX元!    再加上任务配置的短信内容。
+			
+			//催缴类型：
+			//1  电话费、 2 电费、3 水费、4 燃气费、5 物业费、6 车辆违章、 7社保催缴
+			String reminderType = autoCallTask.get("REMINDER_TYPE");    
+			
+			//取出手机号码的后四位数
+			String last4Number = customerTel.substring(customerTel.length()-4, customerTel.length());
+			
+			sb.append("尊敬的尾号为" + last4Number + "的客户,您好!");
+			
+			String period = actt.get("PERIOD");    //日期
+			String charge = actt.get("CHARGE");	   //费用
+			if(!BlankUtils.isBlank(period) && period.length()>0) {
+				String year = period.substring(0,4);
+				String month = period.substring(4,6);
 				
-				if(BlankUtils.isBlank(status) || !status.equalsIgnoreCase("Success")) {
-					AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneMessageState(2,message,Integer.valueOf(telId));
-				}else {                           //发送成功
-					AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneMessageState(1,"0",Integer.valueOf(telId));
+				sb.append("您");
+				sb.append(year + "年");
+				sb.append(month + "月");
+				
+				if(reminderType.equals("6")) {
+					sb.append("违反了相关的交通法规。");
+				}else {
+					sb.append("发生的");
+					if(reminderType.equals("1")) {
+						sb.append("电话费");
+					}else if(reminderType.equals("2")) {
+						sb.append("电费");
+					}else if(reminderType.equals("3")) {
+						sb.append("水费");
+					}else if(reminderType.equals("4")) {
+						sb.append("燃气费");
+					}else if(reminderType.equals("5")) {
+						sb.append("物业费");
+					}else if(reminderType.equals("7")) {
+						sb.append("社保费");
+					}
+					sb.append(charge + "元。");
 				}
 				
-			}else {									 //无返回
-				AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneMessageState(2, "102", Integer.valueOf(telId));      //请求错误
+				messageContent = sb.toString() + messageContent;
+				
 			}
 			
+		}
+		
+		Record record = SendMessageUtils.sendMessage(messageContent, customerTel);
+		if(!BlankUtils.isBlank(record)) {        //有返回
+			String status = record.get("returnstatus");
+			String message = record.get("message");
+			
+			if(BlankUtils.isBlank(status) || !status.equalsIgnoreCase("Success")) {
+				AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneMessageState(2,message,Integer.valueOf(telId));
+			}else {                           //发送成功
+				AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneMessageState(1,"0",Integer.valueOf(telId));
+			}
+			
+		}else {									 //无返回
+			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneMessageState(2, "102", Integer.valueOf(telId));      //请求错误
 		}
 			
 		

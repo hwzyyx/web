@@ -83,7 +83,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		
 		AutoCallTask autoCallTask = getModel(AutoCallTask.class,"autoCallTask");
 		String messageContentRs = autoCallTask.get("MESSAGE_CONTENT");    //短信内容
-		if(BlankUtils.isBlank(messageContentRs)) {     //如果短信内容不为空，那么表示需要下发短信
+		if(!BlankUtils.isBlank(messageContentRs)) {     //如果短信内容不为空，那么表示需要下发短信
 			autoCallTask.set("SEND_MESSAGE",1);
 		}else {
 			autoCallTask.set("SEND_MESSAGE",0);
