@@ -50,7 +50,7 @@ public class CommonController extends Controller {
 			//render("login.jsp");
 			setAttr("webSiteName",ParamConfig.paramConfigMap.get("paramType_1_webSiteName"));
 			setAttr("copyrightInfo",ParamConfig.paramConfigMap.get("paramType_1_copyrightInfo"));
-			System.out.println("网站名称:" + ParamConfig.paramConfigMap.get("paramType_1_webSiteName") + "=====版本信息:" + ParamConfig.paramConfigMap.get("paramType_1_copyrightInfo") );
+			//System.out.println("网站名称:" + ParamConfig.paramConfigMap.get("paramType_1_webSiteName") + "=====版本信息:" + ParamConfig.paramConfigMap.get("paramType_1_copyrightInfo") );
 			//redirect("/login");
 			render("login.jsp");
 		}else {
