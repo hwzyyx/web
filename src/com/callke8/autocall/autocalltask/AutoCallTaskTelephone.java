@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.callke8.common.CommonController;
 import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
+import com.callke8.utils.MemoryVariableUtil;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Page;
@@ -34,10 +36,10 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param state
 	 * @return
 	 */
-	public Page<Record> getAutoCallTaskTelephoneByPaginate(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
+	public Page<Record> getAutoCallTaskTelephoneByPaginate(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
 		
 		StringBuilder sb = new StringBuilder();
-		Object[] pars = new Object[10];
+		Object[] pars = new Object[12];
 		int index = 0;
 		
 		sb.append("from ac_call_task_telephone where 1=1");
@@ -64,6 +66,12 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		if(!BlankUtils.isBlank(state) && !state.equals("5")) {
 			sb.append(" and STATE=?");
 			pars[index] = state;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(messageState) && !messageState.equalsIgnoreCase("empty")) {
+			sb.append(" and MESSAGE_STATE=?");
+			pars[index] = messageState;
 			index++;
 		}
 		
@@ -112,7 +120,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param state
 	 * @return
 	 */
-	public Map<String,Object> getAutoCallTaskTelephoneByPaginateToMap(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
+	public Map<String,Object> getAutoCallTaskTelephoneByPaginateToMap(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
 		
 		Map<String,Object> m = new HashMap<String,Object>();
 		AutoCallTask autoCallTask = null;
@@ -128,13 +136,18 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			retryTimes = autoCallTask.getInt("RETRY_TIMES");
 		}
 		
-		Page<Record> page = getAutoCallTaskTelephoneByPaginate(pageNumber, pageSize, taskId, customerTel, customerName,state,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
+		Page<Record> page = getAutoCallTaskTelephoneByPaginate(pageNumber, pageSize, taskId, customerTel, customerName,state,messageState,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
 		
 		List<Record> newList = new ArrayList<Record>();
 		
 		for(Record r:page.getList()) {
 			int retried = r.getInt("RETRIED");
 			r.set("RETRIED_DESC",retried + "/" + retryTimes);
+			
+			String messageStateRs = String.valueOf(r.getInt("MESSAGE_STATE"));
+			String messageStateDesc = MemoryVariableUtil.getDictName("COMMON_MESSAGE_STATE", messageStateRs);
+			r.set("MESSAGE_STATE_DESC", messageStateDesc);
+			
 			newList.add(r);
 		}
 		
@@ -395,7 +408,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 				外呼任务设定的重试次数
 	 * @return
 	 */
-	public List<Record> getAutoCallTaskTelephonesByTaskIdAndState(String taskId,String state,String customerTel,String customerName,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime,int retryTimes) {
+	public List<Record> getAutoCallTaskTelephonesByTaskIdAndState(String taskId,String state,String messageState,String customerTel,String customerName,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime,int retryTimes) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
@@ -412,6 +425,12 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		if(!BlankUtils.isBlank(state)) {
 			sb.append(" and STATE=?");
 			pars[index] = state;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(messageState) && !messageState.equalsIgnoreCase("empty")) {
+			sb.append(" and MESSAGE_STATE=?");
+			pars[index] = messageState;
 			index++;
 		}
 		
@@ -490,6 +509,11 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 					r.set("STATE_DESC","已失败");
 					r.set("NEXT_CALLOUT_TIME","");
 				}
+				
+				String messageStateRs = String.valueOf(r.getInt("MESSAGE_STATE"));
+				String messageStateDesc = MemoryVariableUtil.getDictName("COMMON_MESSAGE_STATE", messageStateRs);
+				r.set("MESSAGE_STATE_DESC", messageStateDesc);
+				
 				newList.add(r);
 			}
 			

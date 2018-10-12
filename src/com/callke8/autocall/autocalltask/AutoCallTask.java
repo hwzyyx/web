@@ -38,10 +38,10 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * @param endTime
 	 * @return
 	 */
-	public Page<Record> getAutoCallTaskByPaginate(int pageNumber,int pageSize,String taskName,String taskType,String taskState,String orgCode,String startTime,String endTime) {
+	public Page<Record> getAutoCallTaskByPaginate(int pageNumber,int pageSize,String taskName,String taskType,String taskState,String orgCode,String sendMessage,String startTime,String endTime) {
 		
 		StringBuilder sb = new StringBuilder();
-		Object[] pars = new Object[6];
+		Object[] pars = new Object[8];
 		int index = 0;
 		
 		sb.append("from ac_call_task where 1=1");
@@ -78,6 +78,12 @@ public class AutoCallTask extends Model<AutoCallTask> {
 			sb.append(" and ORG_CODE in(" + ocs + ")");
 		}
 		
+		if(!BlankUtils.isBlank(sendMessage) && !sendMessage.equalsIgnoreCase("empty")) {
+			sb.append(" and SEND_MESSAGE=?");
+			pars[index] = sendMessage;
+			index++;
+		}
+		
 		if(!BlankUtils.isBlank(startTime)) {
 			sb.append(" and CREATE_TIME>?");
 			pars[index] = startTime + " 00:00:00";
@@ -96,9 +102,9 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		return p;
 	}
 	
-	public Map getAutoCallTaskByPaginateToMap(int pageNumber,int pageSize,String taskName,String taskType,String taskState,String orgCode,String startTime,String endTime) {
+	public Map getAutoCallTaskByPaginateToMap(int pageNumber,int pageSize,String taskName,String taskType,String taskState,String orgCode,String sendMessage,String startTime,String endTime) {
 		
-		Page<Record> p = getAutoCallTaskByPaginate(pageNumber, pageSize, taskName,taskType,taskState,orgCode, startTime, endTime);
+		Page<Record> p = getAutoCallTaskByPaginate(pageNumber, pageSize, taskName,taskType,taskState,orgCode,sendMessage,startTime, endTime);
 		
 		int total = p.getTotalRow();   //取出总数据量
 		
@@ -213,6 +219,14 @@ public class AutoCallTask extends Model<AutoCallTask> {
 			int finishCount = AutoCallTaskTelephone.dao.getTelephoneCountByNotInState(taskId, "0,1,3");	//取得不为: 0(新建)、1(已载入),3(待重呼)的数量,即表示已经完成的数量
 			r.set("FINISH_RATE", NumberUtils.calculatePercent(finishCount, totalCount));                //设置呼叫完成情况
 			
+			//是否下发短信
+			int sendMessageRs = r.getInt("SEND_MESSAGE");
+			if(sendMessageRs==1) {
+				r.set("IS_SEND_MESSAGE","是");
+			}else {
+				r.set("IS_SEND_MESSAGE","否");
+			}
+			
 			newList.add(r);
 			
 		}
@@ -261,14 +275,16 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * @param endVoiceId
 	 * @param blackListId
 	 * @param callerId
+	 * @param sendMessage
+	 * @param messageContent
 	 * @return
 	 */
-	public boolean update(String taskId,String taskName,String scheduleId,String planStartTime,String planEndTime,String taskType,Integer retryTimes,Integer retryInterval,String commonVoiceId,String questionnaireId,String reminderType,String startVoiceId,String endVoiceId,String blackListId,String callerId,Integer priority) {
+	public boolean update(String taskId,String taskName,String scheduleId,String planStartTime,String planEndTime,String taskType,Integer retryTimes,Integer retryInterval,String commonVoiceId,String questionnaireId,String reminderType,String startVoiceId,String endVoiceId,String blackListId,String callerId,Integer priority,Integer sendMessage,String messageContent) {
 	
 		boolean b = false;
 		
 		StringBuilder sb = new StringBuilder();
-		Object[] pars = new Object[20];
+		Object[] pars = new Object[25];
 		int index = 0;
 		
 		sb.append("update ac_call_task set ");
@@ -360,11 +376,24 @@ public class AutoCallTask extends Model<AutoCallTask> {
 			index++;
 		}
 		
+		if(!BlankUtils.isBlank(sendMessage)) {
+			sb.append(",SEND_MESSAGE=?");
+			pars[index] = sendMessage;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(messageContent)) {
+			sb.append(",MESSAGE_CONTENT=?");
+			pars[index] = messageContent;
+			index++;
+		}
+		
 		if(!BlankUtils.isBlank(taskId)) {
 			sb.append(" where TASK_ID=?");
 			pars[index] = taskId;
 			index++;
 		}
+		
 		
 		int count = Db.update(sb.toString(), ArrayUtils.copyArray(index, pars));
 		

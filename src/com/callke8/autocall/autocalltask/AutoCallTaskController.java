@@ -46,6 +46,9 @@ public class AutoCallTaskController extends Controller implements IController {
 		setAttr("taskStateComboboxDataFor0", CommonController.getComboboxToString("AC_TASK_STATE","0"));
 		setAttr("taskStateComboboxDataFor1", CommonController.getComboboxToString("AC_TASK_STATE","1"));
 		
+		//短信状态 combobox , 用于客户号码的页面搜索用
+		setAttr("messageStateComboboxDataFor1", CommonController.getComboboxToString("COMMON_MESSAGE_STATE","1"));
+		
 		//主叫号码
 		setAttr("callerIdComboboxDataFor0", CommonController.getComboboxToString("CALLERID","0"));
 		
@@ -60,6 +63,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		String taskType = getPara("taskType");
 		String taskState = getPara("taskState");
 		String orgCode = getPara("orgCode");
+		String sendMessage = getPara("sendMessage");
 		
 		String startTime = getPara("startTime");
 		String endTime = getPara("endTime");
@@ -67,7 +71,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoCallTask.dao.getAutoCallTaskByPaginateToMap(pageNumber, pageSize, taskName,taskType,taskState,orgCode, startTime, endTime);
+		Map map = AutoCallTask.dao.getAutoCallTaskByPaginateToMap(pageNumber, pageSize, taskName,taskType,taskState,orgCode,sendMessage, startTime, endTime);
 		
 		System.out.println("取AutoCallTaskController datagrid的开始时间:" + DateFormatUtils.getTimeMillis());
 		renderJson(map);
@@ -78,6 +82,12 @@ public class AutoCallTaskController extends Controller implements IController {
 	public void add() {
 		
 		AutoCallTask autoCallTask = getModel(AutoCallTask.class,"autoCallTask");
+		String messageContentRs = autoCallTask.get("MESSAGE_CONTENT");    //短信内容
+		if(BlankUtils.isBlank(messageContentRs)) {     //如果短信内容不为空，那么表示需要下发短信
+			autoCallTask.set("SEND_MESSAGE",1);
+		}else {
+			autoCallTask.set("SEND_MESSAGE",0);
+		}
 		
 		//设置任务ID
 		//自动生成ID，主要是以时间：年月日 + 随机四位数
@@ -112,6 +122,11 @@ public class AutoCallTaskController extends Controller implements IController {
 		}else if(taskType==2) {   //调查问卷任务时，将普通语音文件置空
 			autoCallTask.set("COMMON_VOICE_ID", null);
 			autoCallTask.set("REMINDER_TYPE",null);
+			
+			//如果是调查问卷时，即使上传的任务信息有需要下发短信的内容，也要强制不下发内容
+			autoCallTask.set("SEND_MESSAGE", 0);
+			autoCallTask.set("MESSAGE_CONTENT",null);
+			
 		}else if(taskType==3) {   //如果为催缴任务时，都置空
 			autoCallTask.set("QUESTIONNAIRE_ID", null);
 			autoCallTask.set("COMMON_VOICE_ID", null);
@@ -232,6 +247,13 @@ public class AutoCallTaskController extends Controller implements IController {
 		
 		AutoCallTask autoCallTask = getModel(AutoCallTask.class,"autoCallTask");
 		
+		String messageContentRs = autoCallTask.get("MESSAGE_CONTENT");    //短信内容
+		if(!BlankUtils.isBlank(messageContentRs)) {     //如果短信内容不为空，那么表示需要下发短信
+			autoCallTask.set("SEND_MESSAGE",1);
+		}else {
+			autoCallTask.set("SEND_MESSAGE",0);
+		}
+		
 		String taskId = autoCallTask.get("TASK_ID");
 		String taskName = autoCallTask.get("TASK_NAME");
 		
@@ -252,6 +274,11 @@ public class AutoCallTaskController extends Controller implements IController {
 		}else if(taskType.equalsIgnoreCase("2")) {  //调查问卷任务时，将普通外呼文件置空
 			autoCallTask.set("COMMON_VOICE_ID", null);
 			autoCallTask.set("REMINDER_TYPE",null);
+			
+			//如果是调查问卷时，即使上传的任务信息有需要下发短信的内容，也要强制不下发内容
+			autoCallTask.set("SEND_MESSAGE", 0);
+			autoCallTask.set("MESSAGE_CONTENT",null);
+			
 		}else if(taskType.equalsIgnoreCase("3")) {  //催缴费任务时
 			autoCallTask.set("COMMON_VOICE_ID", null);
 			autoCallTask.set("QUESTIONNAIRE_ID",null);
@@ -270,8 +297,10 @@ public class AutoCallTaskController extends Controller implements IController {
 		String blackListId = autoCallTask.get("BLACKLIST_ID");
 		String callerId = autoCallTask.get("CALLERID");
 		Integer priority = Integer.valueOf(autoCallTask.get("PRIORITY").toString());
+		int sendMessage = autoCallTask.getInt("SEND_MESSAGE");
+		String messageContent = autoCallTask.getStr("MESSAGE_CONTENT");
 		
-		boolean b = AutoCallTask.dao.update(taskId,taskName,scheduleId,planStartTime,planEndTime,taskType,retryTimes,retryInterval,commonVoiceId,questionniareId,reminderType,startVoiceId,endVoiceId,blackListId,callerId,priority);
+		boolean b = AutoCallTask.dao.update(taskId,taskName,scheduleId,planStartTime,planEndTime,taskType,retryTimes,retryInterval,commonVoiceId,questionniareId,reminderType,startVoiceId,endVoiceId,blackListId,callerId,priority,sendMessage,messageContent);
 		
 		if(b) {
 			render(RenderJson.success("修改外呼任务成功!"));

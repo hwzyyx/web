@@ -17,7 +17,8 @@
 			
 			<div id="periodDiv" style="padding-left:10px;padding-top:5px;">
 				日&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;期：
-				<input style="width:200px;" value="20180101" readonly="true" id="PERIOD" name="autoCallTaskTelephone.PERIOD" class="easyui-textbox" type="text"></input>
+				<input style="width:200px;" data-options="prompt:'201801'"; id="PERIOD" name="autoCallTaskTelephone.PERIOD" class="easyui-textbox" type="text"></input>
+				<!-- 
 				<select class="easyui-combobox" id="dateYearCombobox">
 					<option value="2018">2018年</option>
 					<option value="2019">2019年</option>
@@ -81,7 +82,7 @@
 						<option value="30">30日</option>
 						<option value="31">31日</option>
 					</select>
-				</div>
+				 -->
 			</div>
 			
 			<div id="illegalCityDiv" style="padding-left:10px;padding-top:5px;">

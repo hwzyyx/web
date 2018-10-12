@@ -117,7 +117,7 @@
 				
 			</table>
 	
-			<table id="more" width="680" style="display:none;border-collapse: collapse;">
+			<table id="more" width="1000" style="display:none;border-collapse: collapse;">
 	
 				<tr id="start_voice_tr">
 					<td style="text-align:center;vertical-align: top;">
@@ -168,12 +168,42 @@
 				
 				<tr>
 					<td style="width:80px;text-align:center;">
+						<div style="padding-top:10px;">
+							下发短信
+						</div>
+					</td>
+					<td>
+						<div style="padding-top:10px;">
+							<a href="#" id="notSendMessageButton" onclick="isSendMessager(0)" class="easyui-linkbutton" data-options="iconCls:'icon-no',toggle:true,group:'g2',selected:true" style="width:120px;">不下发短信</a>
+							<a href="#" id="sendMessageButton" onclick="isSendMessager(1)" class="easyui-linkbutton" data-options="iconCls:'icon-ok',toggle:true,group:'g2'" style="width:120px;">下发短信</a>
+							<span style="color:red;margin-left: 20px;">*注：在执行外呼时，同时下发短信</span>
+						</div>
+					</td>
+				</tr>
+				<tr id="messageContentTr" style="display:none;">
+					<td style="width:80px;text-align:center;">
 						<div style="padding-top:5px;">
+							短信内容
+						</div>
+					</td>
+					<td>
+						<div id="MESSAGE_CONTENT_PREFIXNOTE_DIV" style="display:none;">
+							<input class="easyui-textbox" id="MESSAGE_CONTENT_PREFIXNOTE" readonly="true" style="width:550px;" value="尊敬的尾号为1995的客户, 您好! 您2018年7月发生(电话费/电费/水费/燃气费/物业费) XX元!"> <span style="color:red;margin-left: 20px;">*注：这部分内容由系统自动增加，创建任务时无需填写!</span>
+						</div>
+						<div style="padding-top:5px;">
+							<input class="easyui-textbox" name="autoCallTask.MESSAGE_CONTENT" id="MESSAGE_CONTENT" data-options="multiline:true"  style="width:300px;height:100px">
+		                </div>
+					</td>
+				</tr>
+				
+				<tr>
+					<td style="width:80px;text-align:center;">
+						<div style="padding-top:25px;">
 							呼叫总数
 						</div>
 					</td>
 					<td>
-						<div style="padding-top:5px;">
+						<div style="padding-top:25px;">
 							<select class="easyui-combobox" style="width:50px;" name="autoCallTask.RETRY_TIMES" id="RETRY_TIMES" data-options="editable:false,panelHeight:'auto'">
 					              <option value="1">1</option>
 					              <option value="2">2</option>
@@ -353,7 +383,9 @@
 												<option value="4">已失败</option>
 										</select>
 							</span>
-							
+							<span style="padding-left:20px;">
+								短信状态：<select class="easyui-combobox" id="messageState" name="messageState" style="width:200px;" data-options="panelHeight:'auto'"></select>
+							</span>
 						</td>
 					</tr>
 					<tr style="vertial-align:top;">
@@ -405,6 +437,8 @@
 							<th data-options="field:'LOAD_TIME',width:200,align:'center'">外呼时间</th>
 							<th data-options="field:'BILLSEC',width:150,align:'center'">通话时长</th>
 							<th data-options="field:'NEXT_CALLOUT_TIME',width:200,align:'center'">下次外呼时间</th>
+							<th data-options="field:'MESSAGE_STATE_DESC',width:100,align:'center'">短信状态</th>
+							<th data-options="field:'MESSAGE_FAILURE_CODE',width:100,align:'center'">短信失败代码</th>
 														
 							<th data-options="field:'ILLEGAL_CITY',width:100,align:'center'">违章城市</th>
 							<th data-options="field:'PUNISHMENT_UNIT',width:150,align:'center'">处罚单位</th>

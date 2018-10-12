@@ -30,6 +30,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		String customerTel = getPara("customerTel");
 		String customerName = getPara("customerName");
 		String state = getPara("state");
+		String messageState = getPara("messageState");
 		String startTimeForTelephone = getPara("startTimeForTelephone");
 		String endTimeForTelephone = getPara("endTimeForTelephone");
 		String dateTimeType = getPara("dateTimeType");     //取得查询时间类型，0表示时间区段为以创建时间为查询区间，1表示以外呼时间为查询区间
@@ -54,7 +55,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneByPaginateToMap(pageNumber, pageSize, taskId, customerTel, customerName,state,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
+		Map map = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneByPaginateToMap(pageNumber, pageSize, taskId, customerTel, customerName,state,messageState,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
 		
 		System.out.println("取AutoCallTaskTelephoneController datagrid的结束时间:" + DateFormatUtils.getTimeMillis());
 		renderJson(map);
@@ -513,6 +514,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		
 		String taskId = getPara("taskId");
 		String state = getPara("state");
+		String messageState = getPara("messageState");
 		String customerTel = getPara("customerTel");
 		String customerName = getPara("customerName");
 		String startTimeForTelephone = getPara("startTimeForTelephone");
@@ -546,32 +548,32 @@ public class AutoCallTaskTelephoneController extends Controller implements
 			state = null;
 		}
 		
-		List<Record> list = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(taskId, state, customerTel,customerName,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime,retryTimes);
+		List<Record> list = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(taskId, state,messageState,customerTel,customerName,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime,retryTimes);
 		
 		String fileName = "export.xls";
 		String sheetName = "号码列表";
 		
 		ExcelExportUtil export = new ExcelExportUtil(list,getResponse());
 		if(taskType.equalsIgnoreCase("1") || taskType.equalsIgnoreCase("2")) {                //如果为普通外呼
-			String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间"};            
-			String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME"};
+			String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码"};            
+			String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE"};
 			
 			export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
 		}else if(taskType.equalsIgnoreCase("3")) {          //如果为催缴外呼
 			
 			if(reminderType.equalsIgnoreCase("6")) {        //催缴类型为车辆违章
 				
-				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","违章城市","处罚单位","违章事由","违章日期"};            
-				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","ILLEGAL_CITY","PUNISHMENT_UNIT","ILLEGAL_REASON","PERIOD"};
+				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码","违章城市","处罚单位","违章事由","违章日期"};            
+				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE","ILLEGAL_CITY","PUNISHMENT_UNIT","ILLEGAL_REASON","PERIOD"};
 				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
 			}else if(reminderType.equalsIgnoreCase("7")) {  //催缴类型为社保催缴
-				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","日期","代缴单位"};            
-				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","PERIOD","COMPANY"};
+				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码","日期","代缴单位"};            
+				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE","PERIOD","COMPANY"};
 				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
 			}else{        //如果为电话、水、电、气及物业催缴
 				
-				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","日期","费用"};            
-				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","PERIOD","CHARGE"};
+				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码","日期","费用"};            
+				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE","PERIOD","CHARGE"};
 				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
 				
 			}
