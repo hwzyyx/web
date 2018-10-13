@@ -316,7 +316,7 @@
 					<th data-options="field:'RETRY_INTERVAL',width:100,align:'center'">重试间隔(分钟)</th>
 					
 					<th data-options="field:'CREATE_USERCODE_DESC',width:150,align:'center'">创建人</th>
-					<th data-options="field:'ORG_CODE_DESC',width:150,align:'center'">部门(组织)名字</th>
+					<!-- th data-options="field:'ORG_CODE_DESC',width:150,align:'center'">部门(组织)名字</th -->
 					<th data-options="field:'CREATE_TIME',width:180,align:'center'">创建时间</th>
 					<th data-options="field:'id',width:100,align:'center',formatter:rowformatter">操作</th>
 				</tr>

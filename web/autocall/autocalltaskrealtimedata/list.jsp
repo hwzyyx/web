@@ -52,7 +52,7 @@
 	option = null;
 	option = {
 		title: {
-			text: 'BSH呼叫系统外呼情况实时数据监控',
+			text: '音信通实时数据监控',
 			subtext: '排队机、活跃通道实时数据',
 			show: 'true',
 			align:'center',
