@@ -84,6 +84,7 @@ function autoCallTaskAdd() {
 	$("#autoCallTaskSaveBtn").attr("onclick","autoCallTaskSaveAdd()");
 	
 	$("#autoCallTaskDlg").dialog('setTitle','添加外呼任务').dialog("open");
+	$("#MESSAGE_CONTENT_PREFIXNOTE").textbox('setValue','尊敬的尾号为1995的客户, 您好! 您2018年7月发生(电话费/电费/水费/燃气费/物业费) XX元!');
 }
 
 function autoCallTaskSaveAdd() {
@@ -218,6 +219,8 @@ function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,sch
 	$("#autoCallTaskSaveBtn").attr("onclick","autoCallTaskSaveEdit()");
 	
 	$("#autoCallTaskDlg").dialog('setTitle','修改外呼任务').dialog("open");
+	
+	$("#MESSAGE_CONTENT_PREFIXNOTE").textbox('setValue','尊敬的尾号为1995的客户, 您好! 您2018年7月发生(电话费/电费/水费/燃气费/物业费) XX元!');
 	
 }
 
