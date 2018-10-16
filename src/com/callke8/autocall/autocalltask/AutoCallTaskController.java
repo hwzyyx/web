@@ -39,9 +39,12 @@ public class AutoCallTaskController extends Controller implements IController {
 		setAttr("dateTypeComboboxDataFor0", CommonController.getComboboxToString("DATETYPE","0"));
 		setAttr("dateTypeComboboxDataFor1", CommonController.getComboboxToString("DATETYPE","1"));
 		
-		//任务类型和任务状态
+		//任务类型、催缴类型任务状态
 		setAttr("taskTypeComboboxDataFor0", CommonController.getComboboxToString("TASK_TYPE","0"));
 		setAttr("taskTypeComboboxDataFor1", CommonController.getComboboxToString("TASK_TYPE","1"));
+		
+		setAttr("reminderTypeComboboxDataFor0", CommonController.getComboboxToString("REMINDER_TYPE","0"));
+		setAttr("reminderTypeComboboxDataFor1", CommonController.getComboboxToString("REMINDER_TYPE","1"));
 		
 		setAttr("taskStateComboboxDataFor0", CommonController.getComboboxToString("AC_TASK_STATE","0"));
 		setAttr("taskStateComboboxDataFor1", CommonController.getComboboxToString("AC_TASK_STATE","1"));
@@ -61,6 +64,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		System.out.println("取AutoCallTaskController datagrid的开始时间:" + DateFormatUtils.getTimeMillis());
 		String taskName = getPara("taskName");
 		String taskType = getPara("taskType");
+		String reminderType = getPara("reminderType");
 		String taskState = getPara("taskState");
 		String orgCode = getPara("orgCode");
 		String sendMessage = getPara("sendMessage");
@@ -71,7 +75,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoCallTask.dao.getAutoCallTaskByPaginateToMap(pageNumber, pageSize, taskName,taskType,taskState,orgCode,sendMessage, startTime, endTime);
+		Map map = AutoCallTask.dao.getAutoCallTaskByPaginateToMap(pageNumber, pageSize, taskName,taskType,reminderType,taskState,orgCode,sendMessage, startTime, endTime);
 		
 		System.out.println("取AutoCallTaskController datagrid的开始时间:" + DateFormatUtils.getTimeMillis());
 		renderJson(map);

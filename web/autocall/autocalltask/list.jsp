@@ -33,7 +33,10 @@
 		
 		var taskTypeComboboxDataFor0 = eval('${taskTypeComboboxDataFor0}');
 		var taskTypeComboboxDataFor1 = eval('${taskTypeComboboxDataFor1}');
-	
+		
+		var reminderTypeComboboxDataFor0 = eval('${reminderTypeComboboxDataFor0}');
+		var reminderTypeComboboxDataFor1 = eval('${reminderTypeComboboxDataFor1}');
+		
 		var taskStateComboboxDataFor0 = eval('${taskStateComboboxDataFor0}');
 		var taskStateComboboxDataFor1 = eval('${taskStateComboboxDataFor1}');
 		
@@ -164,6 +167,7 @@
 			var startTime = $("#startTime").datebox('getValue');
 			var endTime = $("#endTime").datebox('getValue');
 			var taskType = $("#taskType").combobox('getValue');
+			var reminderType = $("#reminderType").combobox('getValue');
 			var taskState = $("#taskState").combobox('getValue');
 			var sendMessage = $("#sendMessage").combobox('getValue');
 
@@ -173,6 +177,7 @@
 				startTime:startTime,
 				endTime:endTime,
 				taskType:taskType,
+				reminderType:reminderType,
 				taskState:taskState,
 				sendMessage:sendMessage
 			});
@@ -271,7 +276,7 @@
 						任务类型：<select class="easyui-combobox" id="taskType" name="taskType" style="width:200px;" data-options="panelHeight:'auto'"></select>
 					</span>
 					<span style="padding-left:20px;">
-						任务状态：<select class="easyui-combobox" id="taskState" name="taskState" style="width:200px;" data-options="panelHeight:'auto'"></select>
+						催缴类型：<select class="easyui-combobox" id="reminderType" name="reminderType" style="width:200px;" data-options="panelHeight:'auto'"></select>
 					</span>
 					<span style="padding-left:20px;">
 						选择组织：<select class="easyui-combotree" id="orgCode" name="orgCode" style="width:200px;" data-options="panelHeight:'auto'"></select>
@@ -282,6 +287,9 @@
 			<tr style="vertial-align:top;">
 				<td>
 					创建时间：<input id="startTime" name="startTime" class="easyui-datebox" style="width:200px;"/><span style="padding-left:38px;padding-right:36px;">至</span> <input id="endTime" name="endTime" class="easyui-datebox" style="width:200px;" />
+					<span style="padding-left:20px;">
+						任务状态：<select class="easyui-combobox" id="taskState" name="taskState" style="width:200px;" data-options="panelHeight:'auto'"></select>
+					</span>
 					<span style="padding-left:20px;">
 						下发短信：<select class="easyui-combobox" id="sendMessage" name="sendMessage" style="width:200px;" data-options="panelHeight:'auto'">
 									<option value="empty">请选择</option>
@@ -306,7 +314,7 @@
 					<th data-options="field:'TASK_NAME',width:250,align:'center'">任务名称</th>
 					<th data-options="field:'FINISH_RATE',width:100,align:'center',formatter:finishrateformatter">任务完成情况</th>
 					<th data-options="field:'CALL_RESULT',width:80,align:'center',formatter:callresultformatter">呼叫结果</th>
-					<th data-options="field:'taskTypeField',width:150,align:'center',formatter:tasktyperowformatter">任务类型</th>
+					<th data-options="field:'TASK_TYPE_DESC',width:150,align:'center'">任务类型</th>
 					<th data-options="field:'SEND_MESSAGE',width:80,align:'center',formatter:sendmessageformatter">下发短信</th>
 					<th data-options="field:'CALLERID_DESC',width:150,align:'center'">主叫号码</th>
 					<th data-options="field:'taskStateField',width:120,align:'center',formatter:taskstaterowformatter">状态</th>

@@ -38,7 +38,7 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * @param endTime
 	 * @return
 	 */
-	public Page<Record> getAutoCallTaskByPaginate(int pageNumber,int pageSize,String taskName,String taskType,String taskState,String orgCode,String sendMessage,String startTime,String endTime) {
+	public Page<Record> getAutoCallTaskByPaginate(int pageNumber,int pageSize,String taskName,String taskType,String reminderType,String taskState,String orgCode,String sendMessage,String startTime,String endTime) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[8];
@@ -55,6 +55,12 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		if(!BlankUtils.isBlank(taskType) && !taskType.equalsIgnoreCase("empty")) {
 			sb.append(" and TASK_TYPE=?");
 			pars[index] = taskType;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(reminderType) && !reminderType.equalsIgnoreCase("empty")) {
+			sb.append(" and REMINDER_TYPE=?");
+			pars[index] = reminderType;
 			index++;
 		}
 		
@@ -102,9 +108,9 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		return p;
 	}
 	
-	public Map getAutoCallTaskByPaginateToMap(int pageNumber,int pageSize,String taskName,String taskType,String taskState,String orgCode,String sendMessage,String startTime,String endTime) {
+	public Map getAutoCallTaskByPaginateToMap(int pageNumber,int pageSize,String taskName,String taskType,String reminderType,String taskState,String orgCode,String sendMessage,String startTime,String endTime) {
 		
-		Page<Record> p = getAutoCallTaskByPaginate(pageNumber, pageSize, taskName,taskType,taskState,orgCode,sendMessage,startTime, endTime);
+		Page<Record> p = getAutoCallTaskByPaginate(pageNumber, pageSize, taskName,taskType,reminderType,taskState,orgCode,sendMessage,startTime, endTime);
 		
 		int total = p.getTotalRow();   //取出总数据量
 		
@@ -212,6 +218,15 @@ public class AutoCallTask extends Model<AutoCallTask> {
 					r.set("BLACKLIST_NAME",autoBlackList.get("BLACKLIST_NAME"));
 				}
 			}
+			
+			String taskTypeRs = r.get("TASK_TYPE");             //任务类型
+			String reminderTypeRs = r.get("REMINDER_TYPE");     //催缴类型
+			if(taskTypeRs.equalsIgnoreCase("3")) {              //如果是催缴型任务
+				r.set("TASK_TYPE_DESC", MemoryVariableUtil.getDictName("TASK_TYPE",taskTypeRs) + "(" + MemoryVariableUtil.getDictName("REMINDER_TYPE", reminderTypeRs) + ")");
+			}else {
+				r.set("TASK_TYPE_DESC", MemoryVariableUtil.getDictName("TASK_TYPE",taskTypeRs));
+			}
+			
 			
 			//设置呼叫完成率（已呼数量/全部数量）,其中的已呼数量：是指状态为 不为 0(新建)、1(已载入),3(待重呼)
 			String taskId = r.get("TASK_ID");

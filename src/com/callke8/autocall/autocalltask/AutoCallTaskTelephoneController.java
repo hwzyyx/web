@@ -93,12 +93,21 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		autoCallTaskTelephone.set("TASK_ID", taskId);
 		autoCallTaskTelephone.set("CUSTOMER_TEL",actt.get("CUSTOMER_TEL"));
 		autoCallTaskTelephone.set("CUSTOMER_NAME",actt.get("CUSTOMER_NAME"));
-		autoCallTaskTelephone.set("COMPANY", actt.get("COMPANY"));
-		autoCallTaskTelephone.set("PERIOD", actt.get("PERIOD"));
-		autoCallTaskTelephone.set("CHARGE", actt.get("CHARGE"));
-		autoCallTaskTelephone.set("ILLEGAL_CITY", actt.get("ILLEGAL_CITY"));
-		autoCallTaskTelephone.set("PUNISHMENT_UNIT",actt.get("PUNISHMENT_UNIT"));
-		autoCallTaskTelephone.set("ILLEGAL_REASON", actt.get("ILLEGAL_REASON"));
+		
+		autoCallTaskTelephone.set("PERIOD", actt.get("PERIOD"));                        //日期
+		autoCallTaskTelephone.set("DISPLAY_NUMBER", actt.get("DISPLAY_NUMBER"));        //表显数量
+		autoCallTaskTelephone.set("DOSAGE", actt.get("DOSAGE"));						//使用量
+		autoCallTaskTelephone.set("CHARGE", actt.get("CHARGE"));						//费用
+		autoCallTaskTelephone.set("ACCOUNT_NUMBER", actt.get("ACCOUNT_NUMBER"));		//户号
+		autoCallTaskTelephone.set("ADDRESS", actt.get("ADDRESS"));                      //地址
+		autoCallTaskTelephone.set("CALL_POLICE_TEL", actt.get("CALL_POLICE_TEL"));      //报警人电话号码
+		autoCallTaskTelephone.set("VEHICLE_TYPE", actt.get("VEHICLE_TYPE"));            //车辆类型
+		autoCallTaskTelephone.set("PLATE_NUMBER", actt.get("PLATE_NUMBER"));			//车牌号
+		autoCallTaskTelephone.set("ILLEGAL_CITY", actt.get("ILLEGAL_CITY"));			//违法城市
+		autoCallTaskTelephone.set("PUNISHMENT_UNIT",actt.get("PUNISHMENT_UNIT"));		//处罚单位
+		autoCallTaskTelephone.set("ILLEGAL_REASON", actt.get("ILLEGAL_REASON"));		//违法理由
+		autoCallTaskTelephone.set("COMPANY", actt.get("COMPANY"));						//公司
+		
 		autoCallTaskTelephone.set("RETRIED",0);
 		autoCallTaskTelephone.set("STATE",0);
 		autoCallTaskTelephone.set("RESPOND",null);
@@ -248,10 +257,17 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		Integer telId = Integer.valueOf(autoCallTaskTelephone.get("TEL_ID").toString());
 		
 		String period = autoCallTaskTelephone.get("PERIOD");
+		String displayNumber = autoCallTaskTelephone.get("DISPLAY_NUMBER");
+		String dosage = autoCallTaskTelephone.get("DOSAGE");
+		String charge = autoCallTaskTelephone.get("CHARGE");
+		String accountNumber = autoCallTaskTelephone.get("ACCOUNT_NUMBER");
+		String address = autoCallTaskTelephone.get("ADDRESS");
+		String callPoliceTel = autoCallTaskTelephone.get("CALL_POLICE_TEL");
+		String vehicleType = autoCallTaskTelephone.get("VEHICLE_TYPE");
+		String plateNumber = autoCallTaskTelephone.get("PLATE_NUMBER");
 		String illegalCity = autoCallTaskTelephone.get("ILLEGAL_CITY");
 		String punishmentUnit = autoCallTaskTelephone.get("PUNISHMENT_UNIT");
 		String illegalReason = autoCallTaskTelephone.get("ILLEGAL_REASON");
-		String charge = autoCallTaskTelephone.get("CHARGE");
 		String company = autoCallTaskTelephone.get("COMPANY");
  		
 		//(1)在修改之前,该号码是否在黑名单中
@@ -272,7 +288,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		}
 		
 		
-		boolean b = AutoCallTaskTelephone.dao.update(customerTel,customerName,period,illegalCity,punishmentUnit,illegalReason,charge,company,telId);
+		boolean b = AutoCallTaskTelephone.dao.update(customerTel,customerName,period,displayNumber,dosage,charge,accountNumber,address,callPoliceTel,vehicleType,plateNumber,illegalCity,punishmentUnit,illegalReason,company,telId);
 		
 		if(b) {
 			render(RenderJson.success("修改成功!"));

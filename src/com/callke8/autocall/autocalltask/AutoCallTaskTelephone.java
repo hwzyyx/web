@@ -258,13 +258,13 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		return insertData.length;
 	}
 	
-	public boolean update(String customerTel,String customerName,String period,String illegalCity,String punishmentUnit,String illegalReason,String charge,String company,int telId) {
+	public boolean update(String customerTel,String customerName,String period,String displayNumber,String dosage,String charge,String accountNumber,String address,String callPoliceTel,String vehicleType,String plateNumber,String illegalCity,String punishmentUnit,String illegalReason,String company,int telId) {
 		
 		boolean b = false;
 		
-		String sql = "update ac_call_task_telephone set CUSTOMER_TEL=?,CUSTOMER_NAME=?,PERIOD=?,ILLEGAL_CITY=?,PUNISHMENT_UNIT=?,ILLEGAL_REASON=?,CHARGE=?,COMPANY=? where TEL_ID=?";
+		String sql = "update ac_call_task_telephone set CUSTOMER_TEL=?,CUSTOMER_NAME=?,PERIOD=?,DISPLAY_NUMBER=?,DOSAGE=?,CHARGE=?,ACCOUNT_NUMBER=?,ADDRESS=?,CALL_POLICE_TEL=?,VEHICLE_TYPE=?,PLATE_NUMBER=?,ILLEGAL_CITY=?,PUNISHMENT_UNIT=?,ILLEGAL_REASON=?,COMPANY=? where TEL_ID=?";
 		
-		int count = Db.update(sql,customerTel,customerName,period,illegalCity,punishmentUnit,illegalReason,charge,company,telId);
+		int count = Db.update(sql,customerTel,customerName,period,displayNumber,dosage,charge,accountNumber,address,callPoliceTel,vehicleType,plateNumber,illegalCity,punishmentUnit,illegalReason,company,telId);
 		
 		if(count > 0) {
 			b = true;

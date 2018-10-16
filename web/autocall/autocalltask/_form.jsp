@@ -94,14 +94,8 @@
 					</td>
 					<td>
 						<div style="padding-top:5px;">
-							<select class="easyui-combobox" style="width:150px;" name="autoCallTask.REMINDER_TYPE" id="REMINDER_TYPE" data-options="editable:false,panelHeight:'auto'">
-					              <option value="1">电话费</option>
-					              <option value="2">电费</option>
-					              <option value="3">水费</option>
-					              <option value="4">燃气费</option>
-					              <option value="5">物业费</option>
-					              <option value="6">车辆违章</option>
-					              <option value="7">社保催缴</option>
+						
+							<select class="easyui-combobox" style="width: 150px;" name="autoCallTask.REMINDER_TYPE" id="REMINDER_TYPE" data-options="editable:false,panelHeight:'auto'">
 					        </select>
 		                </div>
 					</td>
@@ -254,7 +248,7 @@
 		
 		<form id="uploadTelephoneForm" method="post" enctype="multipart/form-data">
 			
-			<table id="formTable" border="0" cellspacing="0" cellpadding="0" bordercolor="#c4e1ff"
+			<table id="formTable" border="1" cellspacing="0" cellpadding="0" bordercolor="#c4e1ff"
 					  style="border-collapse: collapse;" width="100%">
 				<tr>
 					<td style="text-align:right;width:100px;" valign="middle">
@@ -440,11 +434,18 @@
 							<th data-options="field:'MESSAGE_STATE_DESC',width:100,align:'center'">短信状态</th>
 							<th data-options="field:'MESSAGE_FAILURE_CODE',width:100,align:'center'">短信失败代码</th>
 														
+							<th data-options="field:'PERIOD',width:120,align:'center'">日期</th>
+							<th data-options="field:'DISPLAY_NUMBER',width:100,align:'center'">表显数量</th>
+							<th data-options="field:'DOSAGE',width:100,align:'center'">使用量</th>							
+							<th data-options="field:'CHARGE',width:100,align:'center'">费用</th>
+							<th data-options="field:'ACCOUNT_NUMBER',width:120,align:'center'">户号</th>
+							<th data-options="field:'ADDRESS',width:120,align:'center'">地址</th>
+							<th data-options="field:'CALL_POLICE_TEL',width:100,align:'center'">报警人电话</th>
+							<th data-options="field:'VEHICLE_TYPE',width:120,align:'center'">车辆类型</th>
+							<th data-options="field:'PLATE_NUMBER',width:120,align:'center'">车牌号码</th>
 							<th data-options="field:'ILLEGAL_CITY',width:100,align:'center'">违章城市</th>
 							<th data-options="field:'PUNISHMENT_UNIT',width:150,align:'center'">处罚单位</th>
 							<th data-options="field:'ILLEGAL_REASON',width:150,align:'center'">违章事由</th>
-							<th data-options="field:'PERIOD',width:120,align:'center'">日期</th>
-							<th data-options="field:'CHARGE',width:100,align:'center'">费用</th>
 							<th data-options="field:'COMPANY',width:150,align:'center'">代缴单位</th>
 							<th data-options="field:'id',width:100,align:'center',formatter:telephonerowformatter">操作</th>
 						</tr>
