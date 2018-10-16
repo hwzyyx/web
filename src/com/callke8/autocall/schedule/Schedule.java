@@ -252,6 +252,10 @@ public class Schedule extends Model<Schedule> {
 		//（1）第一步判断当前日期的星期数是否存在于设置的星期数中
 		//取出星期的日期分布,格式：1,2,3,6,7
 		String dateTypeDetail = schedule.get("DATETYPE_DETAIL");
+		int dateType = schedule.getInt("DATETYPE");       //日期类型：1表示 每天； 2表示按星期几的方式
+		if(dateType==1) {                 //如果日期类型为每天时，则 dateTypeDetail 强制设置为 1,2,3,4,5,6,7
+			dateTypeDetail = "1,2,3,4,5,6,7";
+		}
 		
 		//得到当天是星期几
 		int dayOfWeek = DateFormatUtils.getDayOfWeek(DateFormatUtils.getFormatDate());
