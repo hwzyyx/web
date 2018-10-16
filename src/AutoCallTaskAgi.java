@@ -163,6 +163,9 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		boolean b = false;
 		
 		try {
+			
+			exec("wait","1");     //休息一秒
+			
 			exec("Read","isRepeat," + voicePathSingle + "/repeat,1,s,,10");
 			
 			String isRepeat = channel.getVariable("isRepeat");
