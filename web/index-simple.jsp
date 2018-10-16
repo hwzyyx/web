@@ -3,7 +3,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge" content="text/html;charset=UTF-8"/>
 	<title>呼叫中心系统</title>
 	<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
 	<link rel="stylesheet" type="text/css" href="themes/icon.css">
