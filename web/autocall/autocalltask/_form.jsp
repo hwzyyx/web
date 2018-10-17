@@ -248,15 +248,16 @@
 		
 		<form id="uploadTelephoneForm" method="post" enctype="multipart/form-data">
 			
-			<table id="formTable" border="1" cellspacing="0" cellpadding="0" bordercolor="#c4e1ff"
+			<table id="formTable" border="0" cellspacing="0" cellpadding="0" bordercolor="#c4e1ff"
 					  style="border-collapse: collapse;" width="100%">
 				<tr>
-					<td style="text-align:right;width:100px;" valign="middle">
+					<td style="text-align:right;width:100px;" valign="top">
 						<div style="padding-top:10px;"><span style="font-weight: bold;">号码文件：</span></div>
 					</td>
-					<td style="width:400px;height:50px;" valign="middle">
+					<td style="width:400px;height:50px;" valign="top">
 						<div style="padding-top:10px;">
 							 <input class="easyui-filebox" id="telephoneFile" name="telephoneFile" data-options="prompt:'选择号码文件进行上传'" style="width:380px;" required="true" missingMessage="号码文件不能为空!">
+							 <a href="#" onclick="uploadPhoneFile()" class="easyui-linkbutton" iconCls="icon-ok" style="width:100px;;">上传号码</a>
 				        </div>
 					</td>
 					<td rowspan="2" style="width:300px;" align="right">
@@ -288,62 +289,84 @@
 					  		</tr>
 					  		<tr>
 					  			<td align="right">
-					  				电话费、水电气费：
+					  				电费
 					  			</td>
 					  			<td align="center">
-					  				<a href="autoCallTask/template?type=txt&identify=telephone">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=telephone">EXCEL</a>
+					  				<a href="autoCallTask/template?type=txt&identify=reminderType1">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=reminderType1">EXCEL</a>
 					  			</td>
 					  		</tr>
 					  		<tr>
 					  			<td align="right">
-					  				物业费：
+					  				水费
 					  			</td>
 					  			<td align="center">
-					  				<a href="autoCallTask/template?type=txt&identify=property">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=property">EXCEL</a>
+					  				<a href="autoCallTask/template?type=txt&identify=reminderType2">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=reminderType2">EXCEL</a>
 					  			</td>
 					  		</tr>
 					  		<tr>
 					  			<td align="right">
-					  				车辆违章：
+					  				电话费
 					  			</td>
 					  			<td align="center">
-					  				<a href="autoCallTask/template?type=txt&identify=illegal">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=illegal">EXCEL</a>
+					  				<a href="autoCallTask/template?type=txt&identify=reminderType3">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=reminderType3">EXCEL</a>
 					  			</td>
 					  		</tr>
 					  		<tr>
 					  			<td align="right">
-					  				社保催缴：
+					  				燃气费
 					  			</td>
 					  			<td align="center">
-					  				<a href="autoCallTask/template?type=txt&identify=social">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=social">EXCEL</a>
+					  				<a href="autoCallTask/template?type=txt&identify=reminderType4">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=reminderType4">EXCEL</a>
 					  			</td>
 					  		</tr>
-					  		
+					  		<tr>
+					  			<td align="right">
+					  				物业费
+					  			</td>
+					  			<td align="center">
+					  				<a href="autoCallTask/template?type=txt&identify=reminderType5">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=reminderType5">EXCEL</a>
+					  			</td>
+					  		</tr>
+					  		<tr>
+					  			<td align="right">
+					  				车辆违章
+					  			</td>
+					  			<td align="center">
+					  				<a href="autoCallTask/template?type=txt&identify=reminderType6">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=reminderType6">EXCEL</a>
+					  			</td>
+					  		</tr>
+					  		<tr>
+					  			<td align="right">
+					  				交警移车
+					  			</td>
+					  			<td align="center">
+					  				<a href="autoCallTask/template?type=txt&identify=reminderType7">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=reminderType7">EXCEL</a>
+					  			</td>
+					  		</tr>
+					  		<tr>
+					  			<td align="right">
+					  				社保催缴
+					  			</td>
+					  			<td align="center">
+					  				<a href="autoCallTask/template?type=txt&identify=reminderType8">TXT</a>&nbsp;|&nbsp;<a href="autoCallTask/template?type=excel&identify=reminderType8">EXCEL</a>
+					  			</td>
+					  		</tr>
 					  	</table>
 					</td>
 				</tr>
-				<tr>
-					<td colspan="3" style="padding-left:120px;" valign="top">
-						<a href="#" onclick="uploadPhoneFile()" class="easyui-linkbutton" iconCls="icon-ok" style="width:200px;;margin-top:10px;">上传号码</a>
-					</td>
-				</tr>
-				
+
 				<tr>
 					<td colspan="3" valign="top">
-						<div style="padding-left:60px;display:none;" id="selectAutoNumberDiv">
-							<div style="padding-bottom:10px;">
-								<span style="font-weight:bold;padding-left:60px;">或通过选择号码组的方式上传号码</span>
-							</div>
-							<div>
-								号&nbsp;码&nbsp;组：
+						<div style="display:none;" id="selectAutoNumberDiv">
+							<div style="margin-left:70px;margin-top:30px;">
+								<span style="font-weight: bold;">号&nbsp;码&nbsp;&nbsp;组：</span>
 								<input type="hidden" name="NUMBER_ID" id="NUMBER_ID"/>
 								<input style="width:200px;" name="NUMBER_NAME" id="NUMBER_NAME" class="easyui-textbox" type="text" disabled="true" required="true"></input>
 								<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:100px" onClick="selectAutoNumber()">选&nbsp;&nbsp;择</a>
 								<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove'" style="width:70px" onClick="clearAutoNumber()">清&nbsp;&nbsp;除</a>
 								
-							</div>
-							<div style="padding-left:60px;padding-top:10px;">
-								<a href="#" onclick="uploadPhoneByNumber()" class="easyui-linkbutton" iconCls="icon-ok" style="width:200px;;margin-top:10px;">上传号码</a>
+								<a href="#" onclick="uploadPhoneByNumber()" class="easyui-linkbutton" iconCls="icon-ok" style="width:100px;">上传号码</a> &nbsp;&nbsp;<span style="color:red;">*仅普通外呼和调查问卷外呼可选</span>
+								
 							</div>
 						</div>
 					</td>

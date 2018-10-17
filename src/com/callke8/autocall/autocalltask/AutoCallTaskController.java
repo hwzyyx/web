@@ -145,6 +145,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		}
 		
 	}
+	
 
 	@Override
 	public void delete() {
@@ -319,7 +320,9 @@ public class AutoCallTaskController extends Controller implements IController {
 	public void template() {
 		
 		String type = getPara("type");                 //得到文件的类型
-		String identify = getPara("identify");         //得到标识
+		//得到标识, standard：标准模板（普通外呼、调查外呼）,reminderTypeN(N:1,2,3,4,5,6,7,8);
+		//催缴类型的催缴: 1:电费模板   2：水费模板  3：电话费模板 4：燃气费模板  5：物业费模板  6：车辆违章  7：交警移车  8：社保催缴
+		String identify = getPara("identify"); 
 		
 		if(!BlankUtils.isBlank(type) && !BlankUtils.isBlank(identify)) {   //只有两样都不为空时，才返回模板文件
 			
@@ -337,16 +340,12 @@ public class AutoCallTaskController extends Controller implements IController {
 			}
 			
 			if(identify.equalsIgnoreCase("standard")) {   //标准号码模板， 号码|姓名
-				fileName = "standard_telephone_template" + "." + mimeType;
-			}else if(identify.equalsIgnoreCase("telephone")) {
-				fileName = "telephone_bill" + "." + mimeType;
-			}else if(identify.equalsIgnoreCase("social")) {
-				fileName = "social_security" + "." + mimeType;
-			}else if(identify.equalsIgnoreCase("illegal")) {
-				fileName = "vehicle_illegal" + "." + mimeType;
-			}else if(identify.equalsIgnoreCase("property")) {
-				fileName = "property_bill" + "." + mimeType;
+				fileName = "standard_template" + "." + mimeType;
+			}else if(identify.contains("reminderType")) {
+				fileName = identify + "_template" + "." + mimeType;
 			}
+			
+			System.out.println("文件名:" + fileName);
 			
 			File file = new File(path_tmp + fileName);
 			
@@ -495,6 +494,10 @@ public class AutoCallTaskController extends Controller implements IController {
 		export.headers(headers).columns(columns).sheetName(sheetName).cellWidth(cellWidth);
 		
 		export.fileName(fileName).execExport();
+	}
+	
+	public void createSelfTask() {
+		
 	}
 
 }

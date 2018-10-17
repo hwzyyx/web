@@ -2,6 +2,7 @@ package com.callke8.autocall.autocalltask;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -436,39 +437,120 @@ public class AutoCallTaskTelephoneController extends Controller implements
 			
 			if(taskType.equalsIgnoreCase("3")) {   //如果是催缴类时
 				
-				//如果催缴类型为1/2/3/4/5,即是电话费、电费、水费、燃气费和物业费时；
-				//模板是：电话号码|日期|费用
-				//       13811110000|201605|25.6
-				if(reminderType.equalsIgnoreCase("1")||reminderType.equalsIgnoreCase("2")||reminderType.equalsIgnoreCase("3")||reminderType.equalsIgnoreCase("4")||reminderType.equalsIgnoreCase("5")) {
-					String period = r.get("1");   //日期
-					String charge = r.get("2");   //费用
+				//催缴类型编号： 1电费   2水费  3电话费  4燃气费 5物业费 6车辆违章  7交警移车  8社保催缴
+				if(reminderType.equalsIgnoreCase("1")) {              //电费催缴
+				    //用户号码|户号|地址|电费
+				    //18951082343|1009988777|南京市玄武区XXX号XXX小区|220.14
+				   	String accountNumber = r.get("1");      //户号
+				   	String address = r.get("2");            //地址
+				   	String charge = r.get("3");             //费用
+				   	
+				   	String period = DateFormatUtils.formatDateTime(new Date(), "yyyyMM");    //以当前的年月为日期
+				   	
+				   	autoCallTaskTelephone.set("CUSTOMER_NAME", customerTel);
+				   	autoCallTaskTelephone.set("PERIOD", period);
+				   	autoCallTaskTelephone.set("ACCOUNT_NUMBER", accountNumber);
+				   	autoCallTaskTelephone.set("ADDRESS",address);
+				   	autoCallTaskTelephone.set("CHARGE",charge);
+					
+				}else if(reminderType.equalsIgnoreCase("2")) {		  //水费催缴
+					//用户|地址|本月抄见数|本月用量|本期金额|户号
+					//18951082343|南京市玄武区XXX号XXX小区|5523|321|222.19|1001692206
+					String address = r.get("1");                //地址
+					String displayNumber = r.get("2");			//表显数量
+					String dosage = r.get("3");                 //使用量
+					String charge = r.get("4");                 //费用
+					String accountNumber = r.get("5");          //户号
+					String period = DateFormatUtils.formatDateTime(new Date(), "yyyyMM");    //以当前的年月为日期
+					
+					autoCallTaskTelephone.set("CUSTOMER_NAME", customerTel);
+					autoCallTaskTelephone.set("ADDRESS",address);
+					autoCallTaskTelephone.set("DISPLAY_NUMBER", displayNumber);
+					autoCallTaskTelephone.set("DOSAGE",dosage);
+					autoCallTaskTelephone.set("CHARGE",charge);
+					autoCallTaskTelephone.set("ACCOUNT_NUMBER",accountNumber);
+					autoCallTaskTelephone.set("PERIOD",period);
+					
+				}else if(reminderType.equalsIgnoreCase("3")) {		  //电话费催缴
+					//用户号码|户号|地址|电话费
+					//18951082343|100138341|南京市玄武区XXX号XXX小区|220.14
+					String accountNumber = r.get("1");            //户号
+					String address = r.get("2");                  //地址
+					String charge = r.get("3");                   //费用
+					
+					String period = DateFormatUtils.formatDateTime(new Date(), "yyyyMM");    //以当前的年月为日期
+					
+					autoCallTaskTelephone.set("CUSTOMER_NAME", customerTel);
+					autoCallTaskTelephone.set("ACCOUNT_NUMBER", accountNumber);
+					autoCallTaskTelephone.set("ADDRESS", address);
+					autoCallTaskTelephone.set("CHARGE", charge);
+					autoCallTaskTelephone.set("PERIOD", period);
+					
+				}else if(reminderType.equalsIgnoreCase("4")) {		  //燃气费催缴
+					//用户号码|户号|地址|燃气费
+					//18951082343|100138341|南京市玄武区XXX号XXX小区|220.14
+					String accountNumber = r.get("1");            //户号
+					String address = r.get("2");                  //地址
+					String charge = r.get("3");                   //费用
+					
+					String period = DateFormatUtils.formatDateTime(new Date(), "yyyyMM");    //以当前的年月为日期
+					
+					autoCallTaskTelephone.set("CUSTOMER_NAME", customerTel);
+					autoCallTaskTelephone.set("ACCOUNT_NUMBER", accountNumber);
+					autoCallTaskTelephone.set("ADDRESS", address);
+					autoCallTaskTelephone.set("CHARGE", charge);
+					autoCallTaskTelephone.set("PERIOD", period);
+					
+				}else if(reminderType.equalsIgnoreCase("5")) {		  //物业费催缴
+					//用户号码|地址|物业费
+					//18951082343|南京市玄武区XXX号XXX小区|220.14
+					String address = r.get("1");                  //地址
+					String charge = r.get("2");                   //费用
+					
+					String period = DateFormatUtils.formatDateTime(new Date(), "yyyyMM");    //以当前的年月为日期
+					
+					autoCallTaskTelephone.set("CUSTOMER_NAME", customerTel);
+					autoCallTaskTelephone.set("ADDRESS", address);
+					autoCallTaskTelephone.set("CHARGE", charge);
+					autoCallTaskTelephone.set("PERIOD", period);
+				}else if(reminderType.equalsIgnoreCase("6")) {		  //车辆违章
+					//用户号码|车牌|违章日期|违章城市|违章事由|处罚单位
+					//18951082343|苏DR1179|20181001|南京市|高速连续变道|南京市交警大队
+					String plateNumber = r.get("1");                //车牌号
+					String period = r.get("2");                     //违章日期
+					String illegalCity = r.get("3");                //违章城市
+					String illegalReason = r.get("4");              //违章事由
+					String punishmentUnit = r.get("5");             //处罚单位
+					
+					autoCallTaskTelephone.set("CUSTOMER_NAME", customerTel);
+					autoCallTaskTelephone.set("PLATE_NUMBER",plateNumber);
+					autoCallTaskTelephone.set("PERIOD", period);
+					autoCallTaskTelephone.set("ILLEGAL_CITY", illegalCity);
+					autoCallTaskTelephone.set("ILLEGAL_REASON",illegalReason);
+					autoCallTaskTelephone.set("PUNISHMENT_UNIT", punishmentUnit);
+					
+				}else if(reminderType.equalsIgnoreCase("7")) {		  //交警移车
+					//用户号码|报警人电话|车辆类型|车牌号码
+					//18951082343|13512771995|小型车辆|苏DA1179
+					String callPoliceTel = r.get("1");                //报警人电话
+					String vehicleType = r.get("2");                  //车辆类型
+					String plateNumber = r.get("3");                  //车牌号码
+					
+					autoCallTaskTelephone.set("CUSTOMER_NAME", customerTel);
+					autoCallTaskTelephone.set("CALL_POLICE_TEL",callPoliceTel);
+					autoCallTaskTelephone.set("VEHICLE_TYPE", vehicleType);
+					autoCallTaskTelephone.set("PLATE_NUMBER", plateNumber);
+					
+				}else if(reminderType.equalsIgnoreCase("8")) {		  //社保催缴
+					//用户号码|社保费
+					//18951082343|880.20
+					String charge = r.get("1");                       //社保费
+					
+					String period = DateFormatUtils.formatDateTime(new Date(), "yyyyMM");    //以当前的年月为日期
+					
 					autoCallTaskTelephone.set("CUSTOMER_NAME", customerTel);
 					autoCallTaskTelephone.set("PERIOD", period);
 					autoCallTaskTelephone.set("CHARGE", charge);
-				}else if(reminderType.equalsIgnoreCase("6")) {   //交通违章催缴
-					
-					//物业催缴模板：号码|日期|城市|处罚单位|违法事由
-					//             13811110000|20170101|广州市|广州市第一交警大队|违章停车
-					String period = r.get("1");    //日期
-					String illegalCity = r.get("2");    //违法城市
-					String punishmentUnit = r.get("3");   //处罚单位
-					String illegalReason = r.get("4");  //违章理由
-					
-					autoCallTaskTelephone.set("CUSTOMER_NAME", customerTel);
-					autoCallTaskTelephone.set("PERIOD", period);
-					autoCallTaskTelephone.set("ILLEGAL_CITY", illegalCity);
-					autoCallTaskTelephone.set("PUNISHMENT_UNIT", punishmentUnit);
-					autoCallTaskTelephone.set("ILLEGAL_REASON", illegalReason);
-				}else if(reminderType.equalsIgnoreCase("7")) {    //社保催缴
-					//社保催缴模板:号码|姓名|日期|单位
-					//            13811110000|张三|201701|某公司
-					String customerName = r.get("1");     //姓名
-					String period = r.get("2");         //日期
-					String company = r.get("3");        //代缴单位
-					
-					autoCallTaskTelephone.set("CUSTOMER_NAME",customerName);
-					autoCallTaskTelephone.set("PERIOD", period);
-					autoCallTaskTelephone.set("COMPANY", company);
 				}
 				
 			}else {                                //非催缴类

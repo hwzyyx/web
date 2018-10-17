@@ -47,8 +47,10 @@ public class TxtUtils {
 		
 		try {
 			
+			String charset = getCharset(file);
+			
 			//指定读取文件的编码格式，要和写入的格式一致，以免出现中文乱码
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),charset));
 			
 			String str = null;
 			
@@ -80,6 +82,47 @@ public class TxtUtils {
 		}
 		
 		return list;
+	}
+	
+	/**
+	 * 本得文件的格式
+	 * 
+	 * @param file
+	 * @return
+	 */
+	public static String getCharset(File file) {
+		
+		String charset = "GBK";    //默认编码格式
+		
+		FileInputStream fis = null;
+		
+		try {
+			fis = new FileInputStream(file);
+			
+			byte[] b = new byte[3];
+			
+			fis.read(b);
+			
+			if(b[0] == -17 && b[1] == -69 && b[2] == -65) {
+				charset = "UTF-8";
+			}
+			
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if(BlankUtils.isBlank(fis)) {
+				try {
+					fis.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return charset;
 	}
 	
 	

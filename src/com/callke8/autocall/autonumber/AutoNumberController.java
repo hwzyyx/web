@@ -125,7 +125,7 @@ public class AutoNumberController extends Controller implements IController {
 	public void template() {
 		
 		String type = getPara("type");     //可能是: txt 或是 excel 
-		String fileName = "number_template";
+		String fileName = "standard_template";
 		String mimeType = null;
 		
 		if(BlankUtils.isBlank(type)) {
