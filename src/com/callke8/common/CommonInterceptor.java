@@ -32,6 +32,10 @@ public class CommonInterceptor implements Interceptor {
 			ai.invoke();
 		}else if(controller.getClass().getSimpleName().equals("BSHOrderListController") && ai.getMethodName().equalsIgnoreCase("add")){   //如果博世家电向系统提交数据时，无需登录也可以提交数据
 			ai.invoke();
+		}else if(controller.getClass().getSimpleName().equals("AutoCallTaskController") && ai.getMethodName().equalsIgnoreCase("createSelfTask")) {
+			ai.invoke();
+		}else if(controller.getClass().getSimpleName().equals("AutoCallTaskController") && ai.getMethodName().equalsIgnoreCase("getResult")) {
+			ai.invoke();
 		}else {                                   //登录信息失效...
 			controller.forwardAction("/index");
 		}

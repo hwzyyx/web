@@ -2,6 +2,7 @@ package com.callke8.autocall.autocalltask;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,8 @@ import com.callke8.autocall.schedule.Schedule;
 import com.callke8.autocall.voice.Voice;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.org.Org;
+import com.callke8.system.param.Param;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
@@ -754,7 +757,88 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		return data;
 	}
 	
+	/**
+	 * 根据条件取出一个任务，主要是用于通过 网络接口提交数据上来创建任务，如果已经存在，直接通过这个方法取出
+	 * 
+	 * 条件有三：(1)任务类型   (2)催缴类型  （3）当前日期
+	 * 
+	 * @param taskType
+	 * 			任务类型：1普通外呼; 2调查问卷外呼   3：催缴外呼
+	 * @param reminderType
+	 * 			催缴类型： 1电费   2水费  3电话费  4燃气费 5物业费 6车辆违章  7交警移车  8社保催缴
+	 * @param currentDate
+	 * 			当前的日期，2018-10-18
+	 * @return
+	 */
+	public AutoCallTask getAutoCallTaskByCondition(String taskType,String reminderType,String currentDate) {
+		
+		AutoCallTask autoCallTask = null;
+		
+		String startTime = currentDate + " 00:00:00";
+		String endTime = currentDate + " 23:59:59";
+		
+		String sql = "select * from ac_call_task where TASK_TYPE=? and REMINDER_TYPE=? and CREATE_TIME>? and CREATE_TIME<? order by CREATE_TIME desc";
+		
+		autoCallTask = findFirst(sql, taskType,reminderType,startTime,endTime);
+		
+		return autoCallTask;
+	}
 	
+	/**
+	 * 创建外呼任务
+	 * 
+	 * @param taskType
+	 * 			任务类型：1普通外呼; 2调查问卷外呼   3：催缴外呼
+	 * @param reminderType
+	 * 			催缴类型： 1电费   2水费  3电话费  4燃气费 5物业费 6车辆违章  7交警移车  8社保催缴
+	 * @param userCode
+	 * 			创建者帐号
+	 * @param orgCode
+	 * 			组织机构代码
+	 * 			
+	 * @return
+	 */
+	public AutoCallTask createAutoCallTask(String taskType,String reminderType,String userCode,String orgCode) {
+		AutoCallTask autoCallTask = new AutoCallTask();
+		
+		long times = System.currentTimeMillis();                    //当前的毫秒数
+		long afterThreeDayTimes = times + 3 * 24 * 60 * 60 * 1000;      //三天后的毫秒数
 	
-
+		//自定义
+		autoCallTask.set("TASK_ID",DateFormatUtils.formatDateTime(new Date(), "yyyyMMddHHmm") + Math.round(Math.random()*9000 + 1000));         									//TASK_ID
+		autoCallTask.set("TASK_NAME","外呼任务(" + MemoryVariableUtil.getDictName("REMINDER_TYPE",reminderType) + ")" + DateFormatUtils.formatDateTime(new Date(), "yyyyMMdd"));     //外呼任务名字
+		autoCallTask.set("CREATE_TIME",DateFormatUtils.getCurrentDate());       //创建时间
+		autoCallTask.set("PLAN_START_TIME",DateFormatUtils.formatDateTime(new Date(times), "yyyy-MM-dd"));
+		autoCallTask.set("PLAN_END_TIME",DateFormatUtils.formatDateTime(new Date(afterThreeDayTimes), "yyyy-MM-dd"));
+		autoCallTask.set("TASK_STATE","2");       //任务状态直接设置为2，即已激活状态
+		autoCallTask.set("TASK_TYPE",taskType);
+		autoCallTask.set("REMINDER_TYPE",reminderType);
+		autoCallTask.set("RETRY_TIMES","3");
+		autoCallTask.set("RETRY_INTERVAL","10");
+		autoCallTask.set("PRIORITY","2");                       //优先级
+		autoCallTask.set("SEND_MESSAGE","0");
+		
+		//需要根据实际情况设计
+		autoCallTask.set("CALLERID",ParamConfig.paramConfigMap.get("paramType_4_defaultCallerId"));                       //主叫号码
+		autoCallTask.set("SCHEDULE_ID",ParamConfig.paramConfigMap.get("paramType_4_defaultScheduleId"));                  //调度
+		autoCallTask.set("CREATE_USERCODE",userCode);            //创建者账号
+		autoCallTask.set("ORG_CODE",orgCode);              		 //组织机构
+		
+		boolean b = add(autoCallTask);
+		if(!b) {
+			autoCallTask = null;
+		}
+		
+		return autoCallTask;
+	}
+	
 }
+
+
+
+
+
+
+
+
+

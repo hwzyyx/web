@@ -1,22 +1,33 @@
 package com.callke8.autocall.autocalltask;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.poi.ss.formula.eval.BlankEval;
 
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.common.CommonController;
 import com.callke8.common.IController;
 import com.callke8.system.operator.Operator;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.ExcelExportUtil;
+import com.callke8.utils.Md5Utils;
+import com.callke8.utils.MemoryVariableUtil;
+import com.callke8.utils.NumberUtils;
 import com.callke8.utils.RenderJson;
 import com.jfinal.core.Controller;
 import com.jfinal.kit.PathKit;
 import com.jfinal.plugin.activerecord.Record;
+
+import net.sf.json.JSONObject;
 
 /**
  * 自动外呼任务 
@@ -496,8 +507,327 @@ public class AutoCallTaskController extends Controller implements IController {
 		export.fileName(fileName).execExport();
 	}
 	
+	/**
+	 * 供交警移车通过网络提交数据，创建任务
+	 * 
+	 * 交警移车通过网络提交的数据格式如下：
+	 * 
+	       用户号码|报警人电话|车辆类型|车牌号码
+	   18951082343|13512771995|小型车辆|DF168
+	 * 
+	 * 处理策略如下：
+	 * （1）提交数据时，如果当天的外呼任务中没有创建交警移车任务，则系统自动创建一个外呼任务，如果当天已经创建了交警移车任务，则以该任务作为主任务接收数据
+	 * （2）接收4个参数
+	 * 
+	 */
 	public void createSelfTask() {
+		
+		String customerTel = null;         //用户号码
+		String callPoliceTel = null;	   //报警人电话号码
+		String vehicleType = null;  	   //车辆类型
+		String plateNumber = null;		   //车牌号码
+		String userCode = null;            //账号
+		String pwd = null;                 //密码
+		
+		String type = getRequest().getMethod();     //请求方式(GET|POST)
+		
+		System.out.println("交警移车提交数据的请求方式为:" + type);
+		
+		if(type.equalsIgnoreCase("GET")) {          //如果是 GET 的方式请求，就更简单一些，只需要直接 getPara("XXXX")   即可以获取到客户提交上来的数据 
+			
+			customerTel = getPara("customerTel");
+			callPoliceTel = getPara("callPoliceTel");
+			vehicleType = getPara("vehicleType");
+			plateNumber = getPara("plateNumber");
+			userCode = getPara("userCode");
+			pwd = getPara("pwd");
+			
+		}else {             //如果是通过 POST 提交时，接收 JSON 数据上传
+			
+			String jsonStr = null;
+			
+			try {           //客户以 header :application/json 上传 json数据
+				
+				StringBuilder sb = new StringBuilder();
+				BufferedReader reader = this.getRequest().getReader();
+				String line = null;
+				
+				while((line = reader.readLine()) !=null) {
+					sb.append(line);
+				}
+				jsonStr = sb.toString();
+			}catch(IOException ioe) {
+				ioe.printStackTrace();
+			}
+			
+			System.out.println("客户提交上来的 JSON 字符串为 :" + jsonStr);
+			
+			if(!BlankUtils.isBlank(jsonStr) && jsonStr.toString().length() > 20) {
+				
+				JSONObject paramJson = JSONObject.fromObject(jsonStr);
+				
+				customerTel  = String.valueOf(paramJson.get("customerTel"));
+				callPoliceTel = String.valueOf(paramJson.get("callPoliceTel"));
+				vehicleType = String.valueOf(paramJson.get("vehicleType"));
+				plateNumber = String.valueOf(paramJson.get("plateNumber"));
+				userCode = String.valueOf(paramJson.get("userCode"));
+				pwd = String.valueOf(paramJson.get("pwd"));
+			}
+			
+		}
+		
+		//获取到上述参数后，做进一步判断和处理
+		//(1) 判断上传的数据是否为空
+		if(BlankUtils.isBlank(customerTel)) {
+			renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:客户号码为空!",""));
+			return;
+		}else if(BlankUtils.isBlank(vehicleType)) {
+			renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:车辆类型为空!",""));
+			return;
+		}else if(BlankUtils.isBlank(plateNumber)) {
+			renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:车牌号码为空!",""));
+			return;
+		}else if(BlankUtils.isBlank(callPoliceTel)) {
+			renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:报警人号码为空!",""));
+			return;
+		}else if(BlankUtils.isBlank(userCode)) {  
+			renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:账号为空!",""));
+			return;
+		}else if(BlankUtils.isBlank(pwd)) {  
+			renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:密码为空!",""));
+			return;
+		}
+		
+		//（2）判断用户名和密码
+		Operator operator = Operator.dao.getOperatorByOperId(userCode);
+		if(BlankUtils.isBlank(operator)) {         //找不到用户时
+			renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:用户账号或密码错误!",""));
+			return;
+		}else {									   //帐户存在时，再检查密码
+			String password = operator.getStr("PASSWORD");     //取出密码
+			
+			if(!password.equals(Md5Utils.Md5(pwd))) {           //加密传上来的密码后再比较
+				renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:账号或密码错误!",""));
+				return;
+			}
+		}
+		
+		//（3）判断客户号码和报警人电话，是否为正常的手机号码或是座机号码
+		if(!(NumberUtils.isCellPhone(customerTel) || NumberUtils.isFixedPhone(customerTel))) {
+			renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:客户号码非正常的手机或座机号码!",""));
+			return;
+		}
+		
+		if(!(NumberUtils.isCellPhone(callPoliceTel) || NumberUtils.isFixedPhone(callPoliceTel))) {
+			renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:报警人电话号码非正常的手机或座机号码!",""));
+			return;
+		}
+		
+		//（4）处理车牌号码，车牌的格式为： 苏DA1179 , 即是长度为 7 位, 有可能提交的数据长度不是7位，而将 苏D 去掉了。
+		if(plateNumber.length()<5 || plateNumber.length() > 7) {    //如果车牌的长度有问题，返回错误
+			renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:车牌的长度小于5位或是大于7位!",""));
+			return;
+		}
+		
+		if(plateNumber.length() == 5) {    //如果是5位时，需要将前缀苏D强加上去，形成完整的车牌号码
+			plateNumber = ParamConfig.paramConfigMap.get("paramType_1_defaultPlateNumberPrefix") + plateNumber;
+		}
+		
+		//至此，表示上传的数据可以使用了
+		//(1)先从已经有任务中，取出相应的类型的当天的任务
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByCondition("3", "7", DateFormatUtils.formatDateTime(new Date(), "yyyy-MM-dd"));
+		
+		if(BlankUtils.isBlank(autoCallTask)) {    //如果任务为空时，直接创建一个新的外呼任务
+			autoCallTask = AutoCallTask.dao.createAutoCallTask("3","7",userCode,operator.getStr("ORG_CODE"));    //创建交警移车的外呼任务
+		}
+		
+		if(!BlankUtils.isBlank(autoCallTask)) {    //如果创建了任务之后不为空，则可以直接储存这些数据了
+			String taskId = autoCallTask.get("TASK_ID");
+			String serialNumber = String.valueOf(System.currentTimeMillis() + Math.round(Math.random()*9000 + 1000));   //创建一个唯一序列号，用于通过网络取外呼结果用
+			
+			Record actt = new Record();
+			actt.set("TASK_ID", taskId);
+			actt.set("CUSTOMER_TEL",customerTel);
+			actt.set("CUSTOMER_NAME",customerTel);
+			
+			actt.set("CALL_POLICE_TEL", callPoliceTel);     //报警人电话号码
+			actt.set("VEHICLE_TYPE", vehicleType);          //车辆类型
+			actt.set("PLATE_NUMBER", plateNumber);			//车牌号
+			
+			actt.set("RETRIED",0);
+			actt.set("STATE",0);
+			actt.set("RESPOND",null);
+			actt.set("CREATE_TIME", DateFormatUtils.getCurrentDate());
+			actt.set("SERIAL_NUMBER", serialNumber);                 //序列号
+			
+			boolean b = AutoCallTaskTelephone.dao.add(actt);
+			
+			if(b) {
+				renderJson(returnCreateSelfTaskMap("SUCCESS","提交数据成功", serialNumber));
+			}else {
+				renderJson(returnCreateSelfTaskMap("FAILUER","失败,失败原因:储存数据库失败!",""));
+			}
+			
+		}else {
+			renderJson(returnCreateSelfTaskMap("FAILUER","失败,失败原因:任务不存在,创建交警移车任务失败!",""));
+		}
+		
+	}
+	
+	public void getResult() {
+		
+		String serialNumber = null;		   //流水号，唯一标识符
+		String userCode = null;            //账号
+		String pwd = null;                 //密码
+		
+		String type = getRequest().getMethod();     //请求方式(GET|POST)
+		
+		System.out.println("交警移车提交数据的请求方式为:" + type);
+		
+		if(type.equalsIgnoreCase("GET")) {          //如果是 GET 的方式请求，就更简单一些，只需要直接 getPara("XXXX")   即可以获取到客户提交上来的数据 
+			
+			serialNumber = getPara("serialNumber");
+			userCode = getPara("userCode");
+			pwd = getPara("pwd");
+			
+		}else {             //如果是通过 POST 提交时，接收 JSON 数据上传
+			String jsonStr = null;
+			
+			try {           //客户以 header :application/json 上传 json数据
+				
+				StringBuilder sb = new StringBuilder();
+				BufferedReader reader = this.getRequest().getReader();
+				String line = null;
+				
+				while((line = reader.readLine()) !=null) {
+					sb.append(line);
+				}
+				jsonStr = sb.toString();
+			}catch(IOException ioe) {
+				ioe.printStackTrace();
+			}
+			
+			System.out.println("客户提交上来的 JSON 字符串为 :" + jsonStr);
+			
+			if(!BlankUtils.isBlank(jsonStr) && jsonStr.toString().length() > 20) {
+				
+				JSONObject paramJson = JSONObject.fromObject(jsonStr);
+				
+				serialNumber = String.valueOf(paramJson.get("serialNumber"));
+				userCode = String.valueOf(paramJson.get("userCode"));
+				pwd = String.valueOf(paramJson.get("pwd"));
+			}
+		}
+		
+		//获取到上述参数后，做进一步判断和处理
+		//(1) 判断上传的数据是否为空
+		if(BlankUtils.isBlank(serialNumber)) {
+			renderJson(returnGetResultMap("FAILURE","失败,失败原因：为空!",null));
+			return;
+		}else if(BlankUtils.isBlank(userCode)) {  
+			renderJson(returnGetResultMap("FAILURE","失败,失败原因:账号为空!",null));
+			return;
+		}else if(BlankUtils.isBlank(pwd)) {  
+			renderJson(returnGetResultMap("FAILURE","失败,失败原因:密码为空!",null));
+			return;
+		}
+		
+		
+		//（2）判断用户名和密码
+		Operator operator = Operator.dao.getOperatorByOperId(userCode);
+		if(BlankUtils.isBlank(operator)) {         //找不到用户时
+			renderJson(returnGetResultMap("FAILURE","失败,失败原因:用户账号或密码错误!",null));
+			return;
+		}else {									   //帐户存在时，再检查密码
+			String password = operator.getStr("PASSWORD");     //取出密码
+			
+			if(!password.equals(Md5Utils.Md5(pwd))) {           //加密传上来的密码后再比较
+				renderJson(returnGetResultMap("FAILURE","失败,失败原因:账号或密码错误!",null));
+				return;
+			}
+		}
+		
+		//（3）取得结果，并返回结果
+		AutoCallTaskTelephone actt = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneBySerialNumber(serialNumber);
+		if(BlankUtils.isBlank(actt)) {    //如果取回的记录为空，表示数据已经被删除或是其他的原因无法查询到记录
+			renderJson(returnGetResultMap("FAILURE","失败,失败原因：该流水号对应的外呼任务不存在",null));
+			return;
+		}else {                           //如果取回的记录不为空时，则返回外呼的结果
+			
+			int state = actt.getInt("STATE");                          //外呼状态
+			String lastCallResult = actt.getStr("LAST_CALL_RESULT");   //外呼结果
+			
+			
+			if(state==0) {                //未外呼
+				renderJson(returnGetResultMap("FAILURE", "呼叫不成功，状态：呼叫暂未外呼", null));
+				return;
+			}else if(state==1) {          //执行外呼过程中
+				renderJson(returnGetResultMap("FAILURE", "呼叫不成功，状态：正在外呼", null));
+			}else if(state==2) {          //外呼成功
+				
+				String taskId = actt.getStr("TASK_ID");
+				AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);    //取出任务
+				String callerId = autoCallTask.getStr("CALLERID");                               //主叫对应的ID
+				String displayNumber = MemoryVariableUtil.getDictName("CALLERID", callerId);     //主叫号码
+				
+				Map<String,String> m = new HashMap<String,String>();
+				
+				m.put("serialNumber",serialNumber);         		           //流水号
+				m.put("displayNumber",displayNumber);                          //外呼时显示的号码
+				m.put("calleeNumber", actt.getStr("CALLOUT_TEL"));             //被叫号码
+				m.put("time", actt.get("LOAD_TIME").toString());               //外呼时间
+				m.put("duration",actt.getInt("BILLSEC").toString());           //通话时长
+				
+				renderJson(returnGetResultMap("SUCCESS","呼叫成功",m));
+			}else if(state==3) {
+				renderJson(returnGetResultMap("FAILURE", "呼叫不成功，状态：待重外呼，失败原因：" + lastCallResult, null));
+			}else if(state==4) {
+				renderJson(returnGetResultMap("FAILURE", "呼叫失败，失败原因：" +lastCallResult, null));
+			}else {
+				renderJson(returnGetResultMap("FAILURE", "呼叫失败，失败原因：未知状态", null));
+			}
+			
+		}
 		
 	}
 
+	/**
+	 * 返回创建结果
+	 * 
+	 * @param resultCode
+	 * @param resultMsg
+	 * @param serialNumber
+	 * @return
+	 */
+	public Map<String,String> returnCreateSelfTaskMap(String resultCode,String resultMsg,String serialNumber) {
+		
+		Map<String,String> rsM = new HashMap<String,String>();
+		rsM.put("resultCode", resultCode);
+		rsM.put("resultMsg", resultMsg);
+		rsM.put("serialNumber", serialNumber);
+		
+		return rsM;
+	}
+	
+	/**
+	 * 返回外呼结果
+	 * 
+	 * @param resultCode
+	 * @param resultMsg
+	 * @param result
+	 * @return
+	 */
+	public Map<String,Object> returnGetResultMap(String resultCode,String resultMsg,Map<String,String> result) {
+		
+		Map<String,Object> rsM = new HashMap<String,Object>();
+		
+		rsM.put("resultCode", resultCode);
+		rsM.put("resultMsg", resultMsg);
+		rsM.put("result", result);
+		
+		return rsM;
+	}
+	
+	
+	
 }

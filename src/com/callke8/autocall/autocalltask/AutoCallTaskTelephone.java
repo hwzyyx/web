@@ -788,6 +788,21 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
+	 * 根据流水号，取得外呼号码
+	 * 
+	 * @param serialNumber
+	 * @return
+	 */
+	public AutoCallTaskTelephone getAutoCallTaskTelephoneBySerialNumber(String serialNumber) {
+		
+		String sql = "select * from ac_call_task_telephone where SERIAL_NUMBER=?";
+		
+		AutoCallTaskTelephone actt = findFirst(sql,serialNumber);
+		
+		return actt;
+	}
+	
+	/**
 	 * 根据号码的状态及外呼任务ID,取出外呼任务号码列表
 	 * 
 	 * @param state
