@@ -1035,6 +1035,32 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
+	 * 存入语音文件名，根据列名存储
+	 * 
+	 * @param column
+	 * @param voiceName
+	 * @param telId
+	 * @return
+	 */
+	public boolean setVoiceName(String columnName,String voiceName,int telId) {
+		
+		if(BlankUtils.isBlank(columnName) || BlankUtils.isBlank(voiceName) || BlankUtils.isBlank(telId)) {
+			return false;
+		}
+		
+		String sql = "update ac_call_task_telephone set " + columnName + "=? where TEL_ID=?";
+		
+		int count = Db.update(sql, voiceName,telId);
+		
+		if(count > 0) {
+			return true;
+		}else {
+			return false;
+		}
+		
+	}
+	
+	/**
 	 * 根据任务ID，取出所有的任务号码,并单独将号码加入List并返回
 	 * 
 	 * 用于通过文件批量上传号码时，做重复性判断
