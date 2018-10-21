@@ -247,6 +247,42 @@ public class StringUtil {
 	}
 	
 	/**
+	 * 将数字转换成字符串数量读法
+	 * 
+	 * 比如：2690.05 转换到得到 2q6b9sd05y;    104.36 转换得到 1b04d36
+	 * 
+	 * @param number
+	 * @return
+	 */
+	public static String numberExchangeToCount(String number) {
+		
+		String moneyStr = null; 
+		
+		//先判断是否为
+		boolean isMoney = isMoney(number); 
+		
+		if(!isMoney) {   //如果不是Money的表达方式
+			return null;
+		}
+		
+		//查看整形还是浮点型
+		boolean b = StringUtil.containsAny(number,".");   
+		
+		if(b) {    //表示浮点型
+			
+			String[] ns = number.split("\\.");   //以点分隔
+			moneyStr = NumberTransfrom.transfrom(ns[0]);
+			moneyStr += "d";   //点
+			moneyStr += ns[1];
+		}else {    //表示整形,返回转换后的字串 + ”元“
+			moneyStr = NumberTransfrom.transfrom(number);
+		}
+		
+		return moneyStr;
+		
+	}
+	
+	/**
 	 * 向指定的路径写入字符串
 	 * 
 	 * @param path

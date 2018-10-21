@@ -2,11 +2,13 @@ package com.callke8.predialqueueforautocallbyquartz;
 
 import java.util.Date;
 
+import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
+import com.callke8.autocall.flow.AutoFlowTTSJob;
 import com.callke8.bsh.bshorderlist.BSHHttpRequestThread;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.pridialqueueforbshbyquartz.BSHLaunchDialJob;
@@ -46,6 +48,12 @@ public class AutoCallPredial {
 		//执行到这里，表示服务器（tomcat）被重启过，需要将状态为 "已载入"记录，重置为0，执行一次数据回滚
 		int rollBackCount = AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(0, "1", "0", null);
 		StringUtil.log(this, "服务器(Tomcat)被重启，系统回滚'已载入'号码数据,此次回滚数据量为:" + rollBackCount);
+		
+		//线程额外：在扫描任务之前，需要进行一次自动外呼呼叫流程规则的语音转换
+		Scheduler schedulerForAutoFlowTTS = QuartzUtils.createScheduler("AutoFlowTTSJob" + System.currentTimeMillis(),1);
+		JobDetail jobDetail = QuartzUtils.createJobDetail(AutoFlowTTSJob.class);
+		schedulerForAutoFlowTTS.scheduleJob(jobDetail, QuartzUtils.createSimpleTrigger(new Date((System.currentTimeMillis() + 1000)), 0, 1));   //执行一次
+		schedulerForAutoFlowTTS.start();
 		
 		//线程一:扫描任务到排队机线程
 		Scheduler scheduler1 = QuartzUtils.createScheduler("AutoCallLoadTaskJob" + System.currentTimeMillis(),1);
