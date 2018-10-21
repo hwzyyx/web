@@ -14,6 +14,8 @@ import com.callke8.autocall.autocalltask.history.AutoCallTaskTelephoneHistory;
 import com.callke8.autocall.autonumber.AutoNumber;
 import com.callke8.autocall.autonumber.AutoNumberTelephone;
 import com.callke8.autocall.common.AutoCallRoute;
+import com.callke8.autocall.flow.AutoFlow;
+import com.callke8.autocall.flow.AutoFlowDetail;
 import com.callke8.autocall.questionnaire.Question;
 import com.callke8.autocall.questionnaire.QuestionItem;
 import com.callke8.autocall.questionnaire.Questionnaire;
@@ -150,6 +152,8 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("ac_blacklist_telephone",AutoBlackListTelephone.class);
 		arp.addMapping("ac_number",AutoNumber.class);
 		arp.addMapping("ac_number_telephone",AutoNumberTelephone.class);
+		arp.addMapping("ac_flow", AutoFlow.class);
+		arp.addMapping("ac_flow_detail", AutoFlowDetail.class);
 		
 		//报表管理表映射
 		arp.addMapping("cdr",Cdr.class);

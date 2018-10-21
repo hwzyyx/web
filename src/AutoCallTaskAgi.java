@@ -21,7 +21,9 @@ import com.callke8.predialqueueforautocallbyquartz.AutoCallPredial;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
+import com.callke8.utils.MemoryVariableUtil;
 import com.callke8.utils.StringUtil;
+import com.callke8.utils.TelephoneNumberLocationUtil;
 import com.jfinal.plugin.activerecord.Record;
 
 /**
@@ -65,7 +67,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			StringUtil.log(this, "[====GASYAGI===]播放列表中语音文件的数量为:" + playList.size());
 			if(taskType.equalsIgnoreCase("3") && reminderType.equalsIgnoreCase("7")) {    //如果任务类型为3即是催缴类型，且催缴类型为 7 即是交警移车时
 				
-				execPlayForTaskType3AndReminderType7(playList,actt,channel);
+				execPlayForTaskType3AndReminderType7(playList,actt,autoCallTask,channel);
 				
 			}else {
 				//第一次必定先播放一次
@@ -97,7 +99,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 	 * 
 	 * @param playList
 	 */
-	public void execPlayForTaskType3AndReminderType7(List<Record> playList,AutoCallTaskTelephone actt,AgiChannel channel) {
+	public void execPlayForTaskType3AndReminderType7(List<Record> playList,AutoCallTaskTelephone actt,AutoCallTask autoCallTask,AgiChannel channel) {
 		
 		//如果插入列表不为空时
 		if(!BlankUtils.isBlank(playList) && playList.size()>0) {
@@ -113,16 +115,35 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 						
 						//获取客户回复的按键
 						String respond = channel.getVariable("respond");
-						
+						System.out.println("客户回复的按键是：" + respond);
 						if(!BlankUtils.isBlank(respond)) {    //如果按键不为空时,将来电再呼叫报警人电话上
 							
 							String callPoliceTel = actt.getStr("CALL_POLICE_TEL");   //报警人电话号码
 							
 							if(!BlankUtils.isBlank(callPoliceTel)) {                //只有当报警人电话号码不为空时，才执行呼转到报警人电话号码上
 								exec("Noop","系统将通话呼转到报警人电话号码:" + callPoliceTel);
-								System.out.println("呼转到报警人电话无效，原因：报警人电话为空");
+								System.out.println("系统将通话呼转到报警人电话号码：" + callPoliceTel + " 上");
 								
-								String channelInfo = ParamConfig.paramConfigMap.get("paramType_4_trunkInfo") + "/" + callPoliceTel;
+								String callOutTel = callPoliceTel;
+								
+								//取归属地
+								Record customerTelLocation = TelephoneNumberLocationUtil.getLocation(callPoliceTel);    //取得号码归属地
+								System.out.println("customerTelLocation: " + customerTelLocation);
+								if(!BlankUtils.isBlank(customerTelLocation)) {
+									callOutTel = customerTelLocation.getStr("callOutTel");                     //得到外呼号码
+								}
+								
+								String numberPrefix = ParamConfig.paramConfigMap.get("paramType_4_numberPrefix");   //增加前缀
+								callOutTel = numberPrefix + callOutTel;
+								
+								String channelInfo = ParamConfig.paramConfigMap.get("paramType_4_trunkInfo") + "/" + callOutTel;
+								
+								//获取主叫号码
+								String callerIdInfo = autoCallTask.get("CALLERID");   								//主叫的ID信息
+								String callerIdNumber = MemoryVariableUtil.getDictName("CALLERID", callerIdInfo);
+								
+								channel.setCallerId(callerIdNumber);
+								
 								exec("Dial",channelInfo);
 								
 							}else {
@@ -334,15 +355,19 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			
 		}else if(taskType.equals("3")) {    //如果是催缴类任务
 			
-			AutoFlow autoFlow = AutoFlow.dao.getAutoFlowByReminderType(reminderType);    //根据催缴类型，取出流利规则
-			if(BlankUtils.isBlank(autoFlow)) {
-				
+			AutoFlow autoFlow = AutoFlow.dao.getAutoFlowByReminderType(reminderType);    //根据催缴类型，取出流程规则
+			
+			System.out.println("流程规则===== ：" + autoFlow);
+			
+			if(!BlankUtils.isBlank(autoFlow)) {
+				//System.out.println("执行流程规则分析和判断.........");
 				String flowId = autoFlow.getStr("FLOW_ID");    
+				//System.out.println("flowID：===：" + flowId);
 				List<Record> autoFlowDetailList = AutoFlowDetail.dao.getAutoFlowDetailByFlowId(flowId);     //根据流程规则ID,取得流程详情列表
-				
+				//System.out.println("autoFlowDetailList============:" + autoFlowDetailList + ",autoFlowDetailList.size():" + autoFlowDetailList.size());
 				if(!BlankUtils.isBlank(autoFlowDetailList)) {
-					
-					if(reminderType.equalsIgnoreCase("1")) {     //如果是电费催缴
+					//System.out.println("我要开始判断催缴类型了:" + reminderType);
+					if(reminderType.equals("1")) {     //如果是电费催缴
 						/*
 						用户号码|户号|地址|电费
 						18951082343|1009988777|南京市玄武区XXX号XXX小区|220.14
@@ -391,8 +416,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 						Record autoFlowDetail4 = autoFlowDetailList.get(4);        				//取出流程规则详情
 						list.add(setRecord("playback",autoFlowDetail4.getStr("VOICE_NAME")));   //元，请按时缴纳，逾期缴纳将产生滞纳金。详情可关注“国网江苏电力”公众微信号或下载掌上电力app。如您本次收到的用电地址有误，可在工作时间致电83272222。若已缴费请忽略本次提醒。
 						
-					}else if(reminderType.equalsIgnoreCase("2")) {                              //自来水费催缴
-						
+					}else if(reminderType.equals("2")) {                              //自来水费催缴
 						/*
 						用户|地址|本月抄见数|本月用量|本期金额|户号
 						18951082343|南京市玄武区XXX号XXX小区|5523|321|222.19|1001692206
@@ -455,7 +479,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 						Record autoFlowDetail6 = autoFlowDetailList.get(6);        				//取出流程规则详情
 						list.add(setRecord("playback",autoFlowDetail6.getStr("VOICE_NAME")));   //登录常州通用自来水公司网站或致电常水热线：88130008查询。
 						
-					}else if(reminderType.equalsIgnoreCase("3")) {       //电话费催缴
+					}else if(reminderType.equals("3")) {       //电话费催缴
 						/*
 						用户号码|户号|地址|电话费
 						18951082343|100138341|南京市玄武区XXX号XXX小区|220.14
@@ -485,170 +509,174 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 						//(5)元
 						Record autoFlowDetail2 = autoFlowDetailList.get(2);         //取出流程规则详情
 						list.add(setRecord("playback", autoFlowDetail2.getStr("VOICE_NAME")));    //元
+					}else if(reminderType.equals("4")) {       //燃气费催缴
+						/*
+						用户号码|户号|地址|燃气费
+					    18951082343|100138341|南京市玄武区XXX号XXX小区|220.14
+						
+						规则：
+						尊敬的客户您好，你%s的燃气费为%s元。
+						
+						*/
+						String period = actt.getStr("PERIOD");     //日期
+						String charge = actt.getStr("CHARGE");	   //费用
+						
+						//设计语音列表
+						//(1)尊敬的客户您好，你
+						Record autoFlowDetail0 = autoFlowDetailList.get(0);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail0.getStr("VOICE_NAME")));    //尊敬的客户您好，你
+						
+						//(2)日期
+						setPeriodPlayList(list, period);
+						
+						//(3)的燃气费为
+						Record autoFlowDetail1 = autoFlowDetailList.get(1);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail1.getStr("VOICE_NAME")));    //燃气费
+						
+						//（4）费用
+						setChargePlayList(list, charge);
+						
+						//(5)元
+						Record autoFlowDetail2 = autoFlowDetailList.get(2);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail2.getStr("VOICE_NAME")));    //元
+					}else if(reminderType.equals("5")) {       //物业费催缴
+						/*
+						用户号码|地址|物业费
+						18951082343|南京市玄武区XXX号XXX小区|220.14
+						
+						规则：
+						尊敬的客户您好，你%s的物业费为%s元。
+						
+						*/
+						String period = actt.getStr("PERIOD");     //日期
+						String charge = actt.getStr("CHARGE");	   //费用
+						
+						//设计语音列表
+						//(1)尊敬的客户您好，你
+						Record autoFlowDetail0 = autoFlowDetailList.get(0);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail0.getStr("VOICE_NAME")));    //尊敬的客户您好，你
+						
+						//(2)日期
+						setPeriodPlayList(list, period);
+						
+						//(3)的物业费为
+						Record autoFlowDetail1 = autoFlowDetailList.get(1);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail1.getStr("VOICE_NAME")));    //物业费
+						
+						//（4）费用
+						setChargePlayList(list, charge);
+						
+						//(5)元
+						Record autoFlowDetail2 = autoFlowDetailList.get(2);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail2.getStr("VOICE_NAME")));    //元
+					}else if(reminderType.equals("6")) {       //交通违章
+						/*
+						用户号码|车牌|违章日期|违章城市|违章事由|处罚单位
+						18951082343|苏DR1179|20181001|南京市|高速连续变道|南京市交警大队
+						
+						您的（车牌）汽车于（违章日期）在违反了相关的交通条例，请收到本告知之日起30日内接受处理。
+						
+						规则：
+						您的%s汽车于%s在违反了相关的交通条例，请收到本告知之日起30日内接受处理。
+						
+						*/
+						
+						
+						String period = actt.getStr("PERIOD");     //日期
+						String plateNumberVoiceName = actt.getStr("PLATE_NUMBER_VOICE_NAME");	   //车牌语音列表
+						
+						//设计语音列表
+						//(1)您的
+						Record autoFlowDetail0 = autoFlowDetailList.get(0);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail0.getStr("VOICE_NAME")));    //您的
+						
+						//(2)车牌
+						list.add(setRecord("playback",plateNumberVoiceName));
+						
+						//(3)汽车于
+						Record autoFlowDetail1 = autoFlowDetailList.get(1);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail1.getStr("VOICE_NAME")));    //汽车于
+						
+						//（4）日期
+						setPeriodPlayList(list, period);
+						
+						//(5)违反了相关的交通条例，请收到本告知之日起30日内接受处理。
+						Record autoFlowDetail2 = autoFlowDetailList.get(2);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail2.getStr("VOICE_NAME")));    //违反了相关的交通条例，请收到本告知之日起30日内接受处理。
+					}else if(reminderType.equals("7")) {       //交警移车
+						/*
+						用户号码|报警人电话|车辆类型|车牌号码
+						18951082343|13512771995|小型车辆|DF168
+						
+						您好，这是常州公安微警务051981990110挪车服务专线，您是(车牌)车主吗？你的（车辆类型）占用他人车位，请按任意键接听车位业主电话。
+
+						规则：
+						您好，这是常州公安微警务051981990110挪车服务专线，您是%s车主吗？你的%s占用他人车位，请按任意键接听车位业主电话。
+						
+						*/
+						//System.out.println("执行到交警移车的流程判断----------");
+						String plateNumberVoiceName = actt.getStr("PLATE_NUMBER_VOICE_NAME");	   //车牌语音列表
+						String vehicleTypeVoiceName = actt.getStr("VEHICLE_TYPE_VOICE_NAME");      //车辆类型语音名字
+						
+						//组织语音文件
+						//由于交警移车需要通过  read 响应客户回复的按键，如果客户回复了，则将通话转到报警人电话中
+						StringBuilder sb = new StringBuilder();
+						
+						//（1）您好，这是常州公安微警务051981990110挪车服务专线，您是
+						sb.append(voicePathSingle + "/" + autoFlowDetailList.get(0).getStr("VOICE_NAME"));    //您好，这是常州公安微警务051981990110挪车服务专线，您是
+						
+						//（2）车牌
+						sb.append("&" + voicePathSingle + "/" + plateNumberVoiceName);
+						
+						//(3)车主吗？你的
+						sb.append("&" + voicePathSingle + "/" + autoFlowDetailList.get(1).getStr("VOICE_NAME"));   //车主吗？你的
+						
+						//(4)车辆类型
+						sb.append("&" + voicePathSingle + "/" + vehicleTypeVoiceName);
+						
+						//(5)占用他人车位，请按任意键接听车位业主电话。
+						sb.append("&" + voicePathSingle + "/" + autoFlowDetailList.get(2).getStr("VOICE_NAME"));   //占用他人车位，请按任意键接听车位业主电话。
+						
+						Record readRecord = new Record();
+						readRecord.set("action", "Read");
+						readRecord.set("path","respond," + sb.toString() + ",1,,3,8");
+						
+						list.add(readRecord);
+					}else if(reminderType.equals("8")) {       //社保费催缴
+						/*
+						用户号码|社保费
+						18951082343|880.20
+						
+						规则：
+						尊敬的客户您好，你%s的社保费为%s元。
+						
+						*/
+						String period = actt.getStr("PERIOD");     //日期
+						String charge = actt.getStr("CHARGE");	   //费用
+						
+						//设计语音列表
+						//(1)尊敬的客户您好，你
+						Record autoFlowDetail0 = autoFlowDetailList.get(0);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail0.getStr("VOICE_NAME")));    //尊敬的客户您好，你
+						
+						//(2)日期
+						setPeriodPlayList(list, period);
+						
+						//(3)的社保费为
+						Record autoFlowDetail1 = autoFlowDetailList.get(1);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail1.getStr("VOICE_NAME")));    //社保费
+						
+						//（4）费用
+						setChargePlayList(list, charge);
+						
+						//(5)元
+						Record autoFlowDetail2 = autoFlowDetailList.get(2);         //取出流程规则详情
+						list.add(setRecord("playback", autoFlowDetail2.getStr("VOICE_NAME")));    //元
+					}else {
+						System.out.println("无法判断----------");
 					}
 					
-				}else if(reminderType.equalsIgnoreCase("4")) {       //燃气费催缴
-					/*
-					用户号码|户号|地址|燃气费
-				    18951082343|100138341|南京市玄武区XXX号XXX小区|220.14
-					
-					规则：
-					尊敬的客户您好，你%s的燃气费为%s元。
-					
-					*/
-					String period = actt.getStr("PERIOD");     //日期
-					String charge = actt.getStr("CHARGE");	   //费用
-					
-					//设计语音列表
-					//(1)尊敬的客户您好，你
-					Record autoFlowDetail0 = autoFlowDetailList.get(0);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail0.getStr("VOICE_NAME")));    //尊敬的客户您好，你
-					
-					//(2)日期
-					setPeriodPlayList(list, period);
-					
-					//(3)的燃气费为
-					Record autoFlowDetail1 = autoFlowDetailList.get(1);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail1.getStr("VOICE_NAME")));    //燃气费
-					
-					//（4）费用
-					setChargePlayList(list, charge);
-					
-					//(5)元
-					Record autoFlowDetail2 = autoFlowDetailList.get(2);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail2.getStr("VOICE_NAME")));    //元
-				}else if(reminderType.equalsIgnoreCase("5")) {       //物业费催缴
-					/*
-					用户号码|地址|物业费
-					18951082343|南京市玄武区XXX号XXX小区|220.14
-					
-					规则：
-					尊敬的客户您好，你%s的物业费为%s元。
-					
-					*/
-					String period = actt.getStr("PERIOD");     //日期
-					String charge = actt.getStr("CHARGE");	   //费用
-					
-					//设计语音列表
-					//(1)尊敬的客户您好，你
-					Record autoFlowDetail0 = autoFlowDetailList.get(0);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail0.getStr("VOICE_NAME")));    //尊敬的客户您好，你
-					
-					//(2)日期
-					setPeriodPlayList(list, period);
-					
-					//(3)的物业费为
-					Record autoFlowDetail1 = autoFlowDetailList.get(1);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail1.getStr("VOICE_NAME")));    //物业费
-					
-					//（4）费用
-					setChargePlayList(list, charge);
-					
-					//(5)元
-					Record autoFlowDetail2 = autoFlowDetailList.get(2);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail2.getStr("VOICE_NAME")));    //元
-				}else if(reminderType.equalsIgnoreCase("6")) {       //交通违章
-					/*
-					用户号码|车牌|违章日期|违章城市|违章事由|处罚单位
-					18951082343|苏DR1179|20181001|南京市|高速连续变道|南京市交警大队
-					
-					您的（车牌）汽车于（违章日期）在违反了相关的交通条例，请收到本告知之日起30日内接受处理。
-					
-					规则：
-					您的%s汽车于%s在违反了相关的交通条例，请收到本告知之日起30日内接受处理。
-					
-					*/
-					
-					
-					String period = actt.getStr("PERIOD");     //日期
-					String plateNumberVoiceName = actt.getStr("PLATE_NUMBER_VOICE_NAME");	   //车牌语音列表
-					
-					//设计语音列表
-					//(1)您的
-					Record autoFlowDetail0 = autoFlowDetailList.get(0);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail0.getStr("VOICE_NAME")));    //您的
-					
-					//(2)车牌
-					list.add(setRecord("playback",plateNumberVoiceName));
-					
-					//(3)汽车于
-					Record autoFlowDetail1 = autoFlowDetailList.get(1);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail1.getStr("VOICE_NAME")));    //汽车于
-					
-					//（4）日期
-					setPeriodPlayList(list, period);
-					
-					//(5)违反了相关的交通条例，请收到本告知之日起30日内接受处理。
-					Record autoFlowDetail2 = autoFlowDetailList.get(2);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail2.getStr("VOICE_NAME")));    //违反了相关的交通条例，请收到本告知之日起30日内接受处理。
-				}else if(reminderType.equalsIgnoreCase("7")) {       //交警移车
-					/*
-					用户号码|报警人电话|车辆类型|车牌号码
-					18951082343|13512771995|小型车辆|DF168
-					
-					您好，这是常州公安微警务051981990110挪车服务专线，您是(车牌)车主吗？你的（车辆类型）占用他人车位，请按任意键接听车位业主电话。
-
-					规则：
-					您好，这是常州公安微警务051981990110挪车服务专线，您是%s车主吗？你的%s占用他人车位，请按任意键接听车位业主电话。
-					
-					*/
-					
-					String plateNumberVoiceName = actt.getStr("PLATE_NUMBER_VOICE_NAME");	   //车牌语音列表
-					String vehicleTypeVoiceName = actt.getStr("VEHICLE_TYPE_VOICE_NAME");      //车辆类型语音名字
-					
-					//组织语音文件
-					//由于交警移车需要通过  read 响应客户回复的按键，如果客户回复了，则将通话转到报警人电话中
-					StringBuilder sb = new StringBuilder();
-					
-					//（1）您好，这是常州公安微警务051981990110挪车服务专线，您是
-					sb.append(voicePathSingle + "/" + autoFlowDetailList.get(0).getStr("VOICE_NAME"));    //您好，这是常州公安微警务051981990110挪车服务专线，您是
-					
-					//（2）车牌
-					sb.append("&" + voicePathSingle + "/" + plateNumberVoiceName);
-					
-					//(3)车主吗？你的
-					sb.append("&" + voicePathSingle + "/" + autoFlowDetailList.get(1).getStr("VOICE_NAME"));   //车主吗？你的
-					
-					//(4)车辆类型
-					sb.append("&" + voicePathSingle + "/" + vehicleTypeVoiceName);
-					
-					//(5)占用他人车位，请按任意键接听车位业主电话。
-					sb.append("&" + voicePathSingle + "/" + autoFlowDetailList.get(2).getStr("VOICE_NAME"));   //占用他人车位，请按任意键接听车位业主电话。
-					
-					list.add(setRecord("Read","respond," + sb.toString() + ",1,,1,8"));
-					
-				}else if(reminderType.equalsIgnoreCase("8")) {       //社保费催缴
-					/*
-					用户号码|社保费
-					18951082343|880.20
-					
-					规则：
-					尊敬的客户您好，你%s的社保费为%s元。
-					
-					*/
-					String period = actt.getStr("PERIOD");     //日期
-					String charge = actt.getStr("CHARGE");	   //费用
-					
-					//设计语音列表
-					//(1)尊敬的客户您好，你
-					Record autoFlowDetail0 = autoFlowDetailList.get(0);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail0.getStr("VOICE_NAME")));    //尊敬的客户您好，你
-					
-					//(2)日期
-					setPeriodPlayList(list, period);
-					
-					//(3)的社保费为
-					Record autoFlowDetail1 = autoFlowDetailList.get(1);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail1.getStr("VOICE_NAME")));    //社保费
-					
-					//（4）费用
-					setChargePlayList(list, charge);
-					
-					//(5)元
-					Record autoFlowDetail2 = autoFlowDetailList.get(2);         //取出流程规则详情
-					list.add(setRecord("playback", autoFlowDetail2.getStr("VOICE_NAME")));    //元
 				}
-				
 				
 			}
 			
@@ -791,7 +819,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		
 		Record record = new Record();
 		record.set("action", action);
-		record.set("path",voicePathSingle + voiceName);
+		record.set("path",voicePathSingle + "/" + voiceName);
 		
 		return record;
 		

@@ -42,6 +42,8 @@ public class AutoFlow extends Model<AutoFlow> {
 	 */
 	public AutoFlow getAutoFlowByReminderType(String reminderType) {
 		
+		//System.out.println("reminderType-===:" + reminderType);
+		
 		String sql = "select * from ac_flow where REMINDER_TYPE=?";
 		
 		AutoFlow autoFlow = findFirst(sql, reminderType);
