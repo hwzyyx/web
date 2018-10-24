@@ -73,7 +73,6 @@ public class SendMessageUtils {
 		//成功:<?xml version="1.0" encoding="utf-8" ?><returnsms><returnstatus>Failed</returnstatus><message>3</message><remainpoint>0</remainpoint></returnsms>
 		//失败:<?xml version="1.0" encoding="utf-8" ?><returnsms><returnstatus>Failed</returnstatus><message>3</message><remainpoint>0</remainpoint></returnsms>
 		String response = HttpClientUtil.doPost(messageUrl, params, "UTF-8");      
-		
 		if(BlankUtils.isBlank(response)) {
 			Record r = new Record();
 			r.set("returnstatus","Failed");

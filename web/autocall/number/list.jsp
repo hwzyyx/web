@@ -3,7 +3,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge"/>
 	<title>号码组管理</title>
 	<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
 	<link rel="stylesheet" type="text/css" href="themes/icon.css">
@@ -535,12 +534,12 @@
 	<a href="#" id="easyui-add" onclick="autoNumberAdd()" class="easyui-linkbutton" iconCls='icon-add' plain="true">新增号码组</a>
 </div>
 
-<div id="autoNumberDlg" class="easyui-dialog" style="width:1000px;height:600px;padding:5px;" modal="true" closed="true">
+<div id="autoNumberDlg" class="easyui-dialog" style="width:90%;height:80%;padding:5px;" modal="true" closed="true">
 		<!-- 包含号码组表单 -->
 		<%@ include file="/autocall/number/_form.jsp" %>
 </div>
 
-<div id="autoNumberTelephoneDlg" class="easyui-dialog" style="width:800px;height:500px;padding:5px;" modal="true" closed="true">
+<div id="autoNumberTelephoneDlg" class="easyui-dialog" style="width:40%;height:30%;padding:5px;" modal="true" closed="true">
 		<!-- 包含号码组号码表单 -->
 		<%@ include file="/autocall/number/_telephoneform.jsp" %>
 </div>

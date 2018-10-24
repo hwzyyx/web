@@ -977,21 +977,21 @@
 	
 	
 	<!-- 任务外呼结果弹窗 -->
-	<div id="autoCallTaskResultDlg" class="easyui-dialog" style="width:1100px;height:500px;padding:5px;" modal="true" closed="true">
+	<div id="autoCallTaskResultDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 		
 		<!-- 包含外呼结果显示页面 -->
 		<%@ include file="/autocall/autocalltask/_resultform.jsp" %>
 	</div>
 	
 	<!-- 调度详情弹窗 -->
-	<div id="scheduleDetailDlg" class="easyui-dialog" style="width:1000px;height:400px;padding:5px;" modal="true" closed="true">
+	<div id="scheduleDetailDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 		<div style="text-align: center" id="scheduleDetailInfo">
 					
 		</div>
 	</div>
 	
 	<!-- 调查问卷回复统计弹窗 -->	
-	<div id="autoCallTaskRespondDlg" class="easyui-dialog" style="width:1000px;height:450px;padding:5px;" modal="true" closed="true">
+	<div id="autoCallTaskRespondDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	
 		<!-- 包含调查问卷外呼回复统计显示 -->
 		<%@ include file="/autocall/autocalltask/_respondform.jsp" %>

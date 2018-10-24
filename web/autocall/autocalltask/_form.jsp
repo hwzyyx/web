@@ -181,11 +181,8 @@
 						</div>
 					</td>
 					<td>
-						<div id="MESSAGE_CONTENT_PREFIXNOTE_DIV" style="display:none;">
-							<input class="easyui-textbox" id="MESSAGE_CONTENT_PREFIXNOTE" readonly="true" style="width:550px;" value="尊敬的尾号为1995的客户, 您好! 您2018年7月发生(电话费/电费/水费/燃气费/物业费) XX元!"> <span style="color:red;margin-left: 20px;">*注：这部分内容由系统自动增加，创建任务时无需填写!</span>
-						</div>
 						<div style="padding-top:5px;">
-							<input class="easyui-textbox" name="autoCallTask.MESSAGE_CONTENT" id="MESSAGE_CONTENT" data-options="multiline:true"  style="width:300px;height:100px">
+							<input class="easyui-textbox" name="autoCallTask.MESSAGE_CONTENT" id="MESSAGE_CONTENT" data-options="multiline:true"  style="width:300px;height:100px"></input>
 		                </div>
 					</td>
 				</tr>
@@ -386,12 +383,12 @@
 				<table>
 					<tr style="vertical-align: top;">
 						<td>
-							客户姓名：<input id="customerName" type="text" class="easyui-textbox" style="width:150px;"/>
-							<span style="padding-left:30px;">
-								电话号码：<input id="customerTel" type="text" class="easyui-textbox" style="width:150px;"/>
+							客户姓名：<input id="customerName" type="text" class="easyui-textbox" style="width:100px;"/>
+							<span style="padding-left:20px;">
+								电话号码：<input id="customerTel" type="text" class="easyui-textbox" style="width:100px;"/>
 							</span>
-							<span style="padding-left:30px;">
-								外呼状态：<select id="state" class="easyui-combobox" name="state" style="width:150px;">
+							<span style="padding-left:20px;">
+								外呼状态：<select id="state" class="easyui-combobox" name="state" style="width:100px;">
 												<option value="5">请选择</option>
 												<option value="0">未处理</option>
 												<option value="1">已载入</option>
@@ -401,19 +398,19 @@
 										</select>
 							</span>
 							<span style="padding-left:20px;">
-								短信状态：<select class="easyui-combobox" id="messageState" name="messageState" style="width:200px;" data-options="panelHeight:'auto'"></select>
+								短信状态：<select class="easyui-combobox" id="messageState" name="messageState" style="width:130px;" data-options="panelHeight:'auto'"></select>
 							</span>
 						</td>
 					</tr>
 					<tr style="vertial-align:top;">
 						<td>
 							时间类型：
-							<a href="#" id="dateTimeTypeBtn0" class="easyui-linkbutton" data-options="toggle:true,group:'g2',selected:true" style="width:85px;background-color: #00ff00;">创建时间</a>
-							<a href="#" id="dateTimeTypeBtn1" class="easyui-linkbutton" data-options="toggle:true,group:'g2'" style="width:85px;margin-right:68px;background-color: #00ff00;">外呼时间</a>
-							<input id="startTimeForTelephone" name="startTimeForTelephone" class="easyui-datetimebox" style="width:150px;"/><span style="padding-left:50px;padding-right:35px;">至</span> <input id="endTimeForTelephone" name="endTimeForTelephone" class="easyui-datetimebox" style="width:150px;"/>
+							<a href="#" id="dateTimeTypeBtn0" class="easyui-linkbutton" data-options="toggle:true,group:'g2',selected:true" style="width:70px;background-color: #00ff00;">创建时间</a>
+							<a href="#" id="dateTimeTypeBtn1" class="easyui-linkbutton" data-options="toggle:true,group:'g2'" style="width:70px;margin-right:20px;background-color: #00ff00;">外呼时间</a>
+							<input id="startTimeForTelephone" name="startTimeForTelephone" class="easyui-datetimebox" style="width:150px;"/><span style="padding-left:10px;padding-right:10px;">至</span> <input id="endTimeForTelephone" name="endTimeForTelephone" class="easyui-datetimebox" style="width:150px;"/>
 							<span style="padding-left:20px;">
 								时间间隔：
-								<select id="dateInterval" style="width:80px;">
+								<select id="dateInterval" style="width:70px;">
 									<option value="1">1天</option>
 									<option value="2">2天</option>
 									<option value="3">3天</option>
@@ -429,7 +426,7 @@
 									<option value="180">半年月</option>
 								</select>
 							</span>
-							<span style="padding-left:50px;"><a href="javascript:findDataForTelephone()" class="easyui-linkbutton" style="width:100px;" data-options="iconCls:'icon-search'">查询</a></span>
+							<span style="padding-left:20px;"><a href="javascript:findDataForTelephone()" class="easyui-linkbutton" style="width:60px;" data-options="iconCls:'icon-search'">查询</a></span>
 						</td>
 					</tr>
 				</table>

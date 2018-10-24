@@ -1,15 +1,15 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+
 <form id="bshVoiceForm" method="post" enctype="multipart/form-data" data-options="novalidate:true">
-<table id="formTable" border="0" cellspacing="0" cellpadding="0" bordercolor="#c4e1ff" width="680"
-					  style="border-collapse: collapse;">
+<table id="formTable" border="0" cellspacing="0" cellpadding="0" bordercolor="#c4e1ff" style="border-collapse: collapse;">
 			<tr style="padding-top: 10px;margin-top:30px;">
 				<td style="width:120px;text-align:center;">
 					语音描述
 				</td>
 				<td>
 					<input name="bshVoice.VOICE_ID" id="VOICE_ID" type="hidden"></input>
-					<input class="easyui-textbox" name="bshVoice.VOICE_DESC" id="VOICE_DESC" data-options="multiline:true"  style="width:300px;height:100px" required="true" missingMessage="语音描述名称不能为空!">
+					<input class="easyui-textbox" name="bshVoice.VOICE_DESC" id="VOICE_DESC" data-options="multiline:true"  width="300" height="100" required="true" missingMessage="语音描述名称不能为空!">
 				</td>
 			</tr>
 			<tr>
@@ -27,7 +27,7 @@
 					语音命名
 				</td>
 				<td>
-					<input style="width:300px;" name="bshVoice.VOICE_NAME" id="VOICE_NAME" class="easyui-textbox" type="text" required="true" missingMessage="语音命名!"></input>
+					<input width="300" name="bshVoice.VOICE_NAME" id="VOICE_NAME" class="easyui-textbox" type="text" required="true" missingMessage="语音命名!"></input>
 				</td>
 			</tr>
 			<tr>
@@ -53,8 +53,6 @@
 			        </div>
 			        <div style="padding-top:10px;display:none;" id="ttsDiv">
 			        	<div>
-			        		<!-- input id="ttsContent" class="easyui-textbox" data-options="multiline:true,required:true,validType:{length:[0,200]}" 
-			        		style="width:300px;height:100px" onkeyup="LessThan()" -->
 			        		<textarea name="ttsContent" id="ttsContent" cols="55" rows="7"></textarea>
 			        	</div>
 			        	<div>

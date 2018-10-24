@@ -3,7 +3,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge"/>
 	<title>黑名单管理</title>
 	<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
 	<link rel="stylesheet" type="text/css" href="themes/icon.css">
@@ -537,12 +536,12 @@
 	<a href="#" id="easyui-add" onclick="autoBlackListAdd()" class="easyui-linkbutton" iconCls='icon-add' plain="true">新增黑名单</a>
 </div>
 
-<div id="autoBlackListDlg" class="easyui-dialog" style="width:1000px;height:600px;padding:5px;" modal="true" closed="true">
+<div id="autoBlackListDlg" class="easyui-dialog" style="width:90%;height:80%;padding:5px;" modal="true" closed="true">
 		<!-- 包含黑名单表单 -->
 		<%@ include file="/autocall/blacklist/_form.jsp" %>
 </div>
 
-<div id="autoBlackListTelephoneDlg" class="easyui-dialog" style="width:800px;height:500px;padding:5px;" modal="true" closed="true">
+<div id="autoBlackListTelephoneDlg" class="easyui-dialog" style="width:40%;height:30%;padding:5px;" modal="true" closed="true">
 		<!-- 包含黑名单号码表单 -->
 		<%@ include file="/autocall/blacklist/_telephoneform.jsp" %>
 </div>

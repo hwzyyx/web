@@ -55,7 +55,7 @@
 		//$("#scheduleTitle").html("调度名称：" + scheduleName);
 		var scheduleDetailHtml = "";
 
-		scheduleDetailHtml += "<h2 style='color:#0099FF;padding-top:20px;padding-bottom:20px;'>调度名称：" + scheduleName + "</h2>";
+		scheduleDetailHtml += "<h2 style='color:#0099FF;padding-top:0px;padding-bottom:0px;'>调度名称：" + scheduleName + "</h2>";
 		scheduleDetailHtml += "<HR style='FILTER:alpha(opacity=100,finishopacity=0,style=3);margin-left:3px;' width='95%' color=#cccccc SIZE=1>";
 		scheduleDetailHtml += "<table border='1' cellspacing='0' cellpadding='0' bordercolor='#c4e1ff' style='margin-left:5px;width:95%;height:220px;'>";
 		scheduleDetailHtml += "<tr><td style='width:80px;vertical-align: top;' rowspan='2'>";
@@ -243,7 +243,7 @@
 </div>
 
 <!-- 调度详情弹窗 -->
-<div id="scheduleDetailDlg" class="easyui-dialog" style="width:1000px;height:400px;padding:5px;" modal="true" closed="true">
+<div id="scheduleDetailDlg" class="easyui-dialog" style="width:1000px;height:350px;padding:5px;" modal="true" closed="true">
 	<div style="text-align: center" id="scheduleDetailInfo">
 				
 	</div>

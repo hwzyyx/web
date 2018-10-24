@@ -338,6 +338,9 @@ function state4DataFormatter(value,data,index){ return "<span style='color:#ff00
 		title += " 的号码列表";		
 		findDataForTelephoneFor2();
 		
+		//在打开之前，先做些显示和隐藏的操作
+		showExtraTabsFor2();
+		
 		$("#autoCallTelephoneDlg").dialog('setTitle',title).dialog('open');		
 		
 	});

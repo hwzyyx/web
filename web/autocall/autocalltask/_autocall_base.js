@@ -84,7 +84,6 @@ function autoCallTaskAdd() {
 	$("#autoCallTaskSaveBtn").attr("onclick","autoCallTaskSaveAdd()");
 	
 	$("#autoCallTaskDlg").dialog('setTitle','添加外呼任务').dialog("open");
-	$("#MESSAGE_CONTENT_PREFIXNOTE").textbox('setValue','尊敬的尾号为1995的客户, 您好! 您2018年7月发生(电话费/电费/水费/燃气费/物业费) XX元!');
 }
 
 function autoCallTaskSaveAdd() {
@@ -150,20 +149,6 @@ function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,sch
 	//设置任务类型
 	$("#TASK_TYPE").combobox('setValue',taskType);
 	
-	if(sendMessage == 1) {        //如果 sendMessage的值为1，表示有发送信息内容
-		$("#sendMessageButton").linkbutton('select');
-		$('#messageContentTr').css('display','');
-		if(taskType==3){          //如果任务类型为3，即是催缴类型时,将显示提示
-			$("#MESSAGE_CONTENT_PREFIXNOTE_DIV").css('display','');
-		}else {
-			$("#MESSAGE_CONTENT_PREFIXNOTE_DIV").css('display','none');
-		}
-	}else {
-		$("#notSendMessageButton").linkbutton('select');
-		$('#messageContentTr').css('display','none');
-		messageContent = '';
-	} 
-	
 	$("#autoCallTaskForm").form('load',{
 		'autoCallTask.TASK_ID':taskId,
 		'autoCallTask.TASK_NAME':taskName,
@@ -216,11 +201,23 @@ function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,sch
 
 	showExtraTabs(1);                                          //修改外呼任务时，导入号码、号码列表暂不显示
 	findDataForTelephone();                                    //加载任务的号码列表
+	
+	if(sendMessage == 1) {        //如果 sendMessage的值为1，表示有发送信息内容
+		$("#sendMessageButton").linkbutton('select');
+		$('#messageContentTr').css('display','');
+		$('#MESSAGE_CONTENT').textbox('setValue',messageContent);
+	}else {
+		$("#notSendMessageButton").linkbutton('select');
+		$('#messageContentTr').css('display','none');
+	} 
+	
+	//如果是修改时，就不允许再修改任务类型和催缴类型了
+	$("#TASK_TYPE").combobox('disable');
+	$("#REMINDER_TYPE").combobox('disable');
+	
+	
 	$("#autoCallTaskSaveBtn").attr("onclick","autoCallTaskSaveEdit()");
-	
 	$("#autoCallTaskDlg").dialog('setTitle','修改外呼任务').dialog("open");
-	
-	$("#MESSAGE_CONTENT_PREFIXNOTE").textbox('setValue','尊敬的尾号为1995的客户, 您好! 您2018年7月发生(电话费/电费/水费/燃气费/物业费) XX元!');
 	
 }
 
@@ -415,8 +412,13 @@ function loadDataForCreateAutoCallTaskSearch() {
 	$("#REMINDER_TYPE").combobox({
 		valueField:'id',
 		textField:'text',
-		panelHeight:'auto'
-	}).combobox('loadData',reminderTypeComboboxDataFor0);
+		panelHeight:'auto',
+		onChange:function(newValue,oldValue) {
+			$("#MESSAGE_CONTENT").textbox('setValue','');
+			$('#messageContentTr').css("display","none");
+			$("#notSendMessageButton").linkbutton('select');
+		}
+	}).combobox('loadData',reminderTypeComboboxDataFor0).combobox('setValue','1');
 	
 	$("#TASK_TYPE").combobox({
 		valueField:'id',
@@ -435,7 +437,9 @@ function loadDataForCreateAutoCallTaskSearch() {
 			}else if(newValue=="3") {
 				$("#reminderType_tr").css('display','');
 			}
-			
+			$("#MESSAGE_CONTENT").textbox('setValue','');
+			$('#messageContentTr').css("display","none");
+			$("#notSendMessageButton").linkbutton('select');
 		}
 	}).combobox('loadData',taskTypeComboboxDataFor0).combobox('setValue','1');
 	
@@ -588,13 +592,13 @@ function initOrgCodeForAutoCallTaskSearch() {
 	//搜索栏的组织加载
 	$("#orgCode").combotree('loadData',orgComboTreeData).combotree({
 		onLoadSuccess:function(node,data) {
-
 			var t = $("#orgCode").combotree("tree");
 
 			for(var i=0;i<data.length;i++) {
 				node = t.tree("find",data[i].id);
 				t.tree('check',node.target);
 			}
+			
 
 			var selectRs = $("#orgCode").combotree('getValues');
 			var orgCodes = selectRs.toString();
@@ -695,12 +699,14 @@ function finishrateformatter(value,data,index) {
 //外呼结果弹窗
 function callresultformatter(value,data,index) {
 	
-	return "<a href='#' onclick='javascript:showCallResult(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\")'>呼叫结果</a>";
+	return "<a href='#' onclick='javascript:showCallResult(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\",\"" + data.TASK_TYPE + "\",\"" + data.REMINDER_TYPE + "\")'>呼叫结果</a>";
 }
 
-function showCallResult(taskId,taskName) {
+function showCallResult(taskId,taskName,taskType,reminderType) {
 	currTaskName = taskName;
 	currTaskId = taskId;
+	currTaskType = taskType;
+	currReminderType = reminderType;
 	$("#callResultDlg").dialog('setTitle',"外呼任务:" + taskName + "--外呼结果").dialog('open');
 	reloadStatistics();
 }
@@ -1033,6 +1039,90 @@ function hideAllExtraTh() {   //隐藏所有的号码列表的额外字段（主
     $("#punishmentUnitDiv").css('display','none');
     $("#illegalReasonDiv").css('display','none');
     $("#companyDiv").css('display','none');
+}
+
+function showExtraTabsFor2() {   //是否显示额外Tab,主要是导入号码和号码列表
+	
+		hideAllExtraThFor2();         //先隐藏所有的号码列表的额外字段
+		//alert(currTaskType + "," + currReminderType);
+		if(currTaskType=="3") {   //催缴类型
+
+			if(currReminderType=="1") {         //电费催缴
+				
+				//额外字段的显示
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','PERIOD');               //日期
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','ACCOUNT_NUMBER');       //户号
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','ADDRESS');              //地址
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','CHARGE');               //费用
+				
+			}else if(currReminderType=="2") {    //水费催缴
+				//额外字段的显示
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','PERIOD');               //日期
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','ADDRESS');              //地址
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','DISPLAY_NUMBER');       //表显数量
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','DOSAGE');               //使用量
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','CHARGE');               //费用
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','ACCOUNT_NUMBER');       //户号
+				
+			}else if(currReminderType=="3") {    //电话费催缴
+				//额外字段的显示
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','PERIOD');               //日期
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','ACCOUNT_NUMBER');       //户号
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','ADDRESS');              //地址
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','CHARGE');               //费用
+				
+			}else if(currReminderType=="4") {    //燃气费催缴
+				//额外字段的显示
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','PERIOD');               //日期
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','ACCOUNT_NUMBER');       //户号
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','ADDRESS');              //地址
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','CHARGE');               //费用
+				
+			}else if(currReminderType=="5") {    //物业费催缴
+				//额外字段的显示
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','PERIOD');               //日期
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','ADDRESS');              //地址
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','CHARGE');               //费用
+				
+			}else if(currReminderType=="6") {    //车辆违章
+				//额外字段的显示
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','PERIOD');               //日期
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','PLATE_NUMBER');         //车牌号码
+			    $("#autoCallTaskTelephoneDg2").datagrid('showColumn','ILLEGAL_CITY');         //违法城市
+			    $("#autoCallTaskTelephoneDg2").datagrid('showColumn','PUNISHMENT_UNIT');      //处罚单位
+			    $("#autoCallTaskTelephoneDg2").datagrid('showColumn','ILLEGAL_REASON');       //违法理由
+				
+			}else if(currReminderType=="7") {    //交警移车
+				//额外字段的显示
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','CALL_POLICE_TEL');      //报警人电话
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','VEHICLE_TYPE');         //车辆类型
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','PLATE_NUMBER');         //车牌号码
+				
+			}else if(currReminderType=="8") {    //社保催缴
+				//额外字段的显示
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','PERIOD');               //日期
+				$("#autoCallTaskTelephoneDg2").datagrid('showColumn','CHARGE');               //费用
+				
+			}
+    		
+		}
+		
+}
+
+function hideAllExtraThFor2() {   //隐藏所有的号码列表的额外字段（主要是催缴类外呼任务）
+	$("#autoCallTaskTelephoneDg2").datagrid('hideColumn','PERIOD');               //日期
+	$("#autoCallTaskTelephoneDg2").datagrid('hideColumn','DISPLAY_NUMBER');       //表显数量
+	$("#autoCallTaskTelephoneDg2").datagrid('hideColumn','DOSAGE');               //使用量
+	$("#autoCallTaskTelephoneDg2").datagrid('hideColumn','CHARGE');               //费用
+	$("#autoCallTaskTelephoneDg2").datagrid('hideColumn','ACCOUNT_NUMBER');       //户号
+	$("#autoCallTaskTelephoneDg2").datagrid('hideColumn','ADDRESS');              //地址
+	$("#autoCallTaskTelephoneDg2").datagrid('hideColumn','CALL_POLICE_TEL');      //报警人电话
+	$("#autoCallTaskTelephoneDg2").datagrid('hideColumn','VEHICLE_TYPE');         //车辆类型
+	$("#autoCallTaskTelephoneDg2").datagrid('hideColumn','PLATE_NUMBER');         //车牌号码
+    $("#autoCallTaskTelephoneDg2").datagrid('hideColumn','ILLEGAL_CITY');         //违法城市
+    $("#autoCallTaskTelephoneDg2").datagrid('hideColumn','PUNISHMENT_UNIT');      //处罚单位
+    $("#autoCallTaskTelephoneDg2").datagrid('hideColumn','ILLEGAL_REASON');       //违法理由
+    $("#autoCallTaskTelephoneDg2").datagrid('hideColumn','COMPANY');              //公司
 }
 
 
@@ -1597,27 +1687,40 @@ function isSendMessager(flag) {
 	var taskType = $("#TASK_TYPE").combobox('getValue');
 	
 	if(flag==1) {
-		if(taskType == 2) {
-			alert("任务类型为调查问卷类,不能执行短信下发功能!");
-			return;
-		}
-		
-		if(taskType == 1) {    //如果任务类型为1，普通外呼（通知类），则需要给一个大概模板
-			$("#MESSAGE_CONTENT_PREFIXNOTE_DIV").css("display","none");
-			$("#MESSAGE_CONTENT").textbox({prompt:'短信内存与创建任务的语音内容对应即可！'});
-		}
-		
-		if(taskType == 3) {    //如果任务类型为1，则需要给一个大概模板
-			$("#MESSAGE_CONTENT_PREFIXNOTE_DIV").css("display","");
-			//$("#MESSAGE_CONTENT_PREFIXNOTE").textbox('setValue',"尊敬的尾号为1995的客户, 您好! 您2018年7月发生(电话费/电费/水费/燃气费/物业费) XX元!");
-		
-			$("#MESSAGE_CONTENT").textbox({prompt:'请按时缴纳，逾期缴纳将产生滞纳金。详情可关注“国网江苏电力”公众微信号或下载掌上电力app。如您对费用有异议，可在工作时间致电83272222。若已缴费请忽略本次提醒。'});
-		}
-		
-		$('#messageContentTr').css("display","");
+		setMessageContentValue();
 	}else {
 		$("#MESSAGE_CONTENT").textbox('setValue','');
 		$('#messageContentTr').css("display","none");
+	}
+	
+}
+
+function setMessageContentValue() {
+	
+	var taskType = $("#TASK_TYPE").combobox('getValue');
+	var reminderType = $("#REMINDER_TYPE").combobox("getValue");
+	
+	if(taskType == 1) {    //如果任务类型为1，普通外呼（通知类），则需要给一个大概模板
+		$("#MESSAGE_CONTENT").textbox({prompt:'普通外呼短信内容,自定义，与播报语音内容一致即可!'}).textbox('textbox').attr('readonly',false);
+	}else if(taskType == 2) {
+		$("#MESSAGE_CONTENT").textbox('setValue','');
+		$('#messageContentTr').css("display","none");
+	}else if(taskType==3){    //如果是催缴类外呼
+		$.ajax({
+			url:'autoCallTask/getMssageContentTemplate?reminderType=' + reminderType,
+			method:'POST',
+			dataType:'json',
+			success:function(rs) {
+				$.messager.progress('close');
+				var statusCode = rs.statusCode;   
+				var message = rs.message;
+				if(statusCode=='success') {
+					$('#messageContentTr').css("display","");
+					$("#MESSAGE_CONTENT").textbox("setValue","短信内容样例如下（系统定义，无需填写）：" + message).textbox('textbox').attr('readonly',true);
+				}
+				
+			}	
+		});
 	}
 	
 }

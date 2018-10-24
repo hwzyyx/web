@@ -3,7 +3,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge"/>
 <title>自动外呼任务实时数据</title>
 	<style>
 		.font17{
@@ -38,7 +37,7 @@
 <%@ include file="/base_loading.jsp" %>
 
 <!-- 定义一个div -->
-<div id="container" style="width:1400px;height:800px;margin-top:10px;padding-left:20px; background-color: '#eee';"></div>
+<div id="container" style="width:90%;height:500px;margin-top:0px;padding-left:20px; background-color: '#00ee00';"></div>
 
 <script type="text/javascript">
 	
@@ -57,12 +56,13 @@
 			show: 'true',
 			align:'center',
 			x: 'center',
+			top:0,
 			textStyle: {
-				fontSize: 30,
+				fontSize: 20,
 				align: 'center'
 			},
 			subtextStyle: {
-				fontSize: 20,
+				fontSize: 12,
 				color: '#ff0000'
 			}
 		},
@@ -76,12 +76,12 @@
 			}
 		},
 		grid: {
-			top: 120,
+			top: 100,
 			left: 50
 		},
 		legend: {
 			data: ['排队机数据','活跃通道数据'],
-			top: 80
+			top: 60
 		},
 		color: ['#f8d013','#00ff00'],
 		xAxis: {
@@ -115,6 +115,9 @@
 	;
 	if (option && typeof option === "object") {
 	    myChart.setOption(option, true);
+	    window.onresize = function(){
+	    	myChart.resize();
+	    }
 	}
 	
 	setInterval(function(){

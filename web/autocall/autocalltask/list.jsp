@@ -3,7 +3,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge"/>
 <title>博世订单信息</title>
 	<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
 	<link rel="stylesheet" type="text/css" href="themes/color.css">
@@ -21,6 +20,8 @@
 		
 		var currTaskId = null;
 		var currTaskName = null;
+		var currTaskType = null;
+		var currReminderType = null;
 		var isShowMore = 0;
 		var conditionState = null;
 		
@@ -133,9 +134,12 @@
 					
 					//将信息内容关闭，并将信息内容清空
 					$('#messageContentTr').css('display','none');
-					$("#MESSAGE_CONTENT_PREFIXNOTE_DIV").css('display','none');
 					$("#MESSAGE_CONTENT").textbox('setValue','');
 					$("#notSendMessageButton").linkbutton('select');
+					
+					//任务类型和催缴类型要置为可编辑
+					$("#TASK_TYPE").combobox('setValue','1').combobox('enable');
+					$("#REMINDER_TYPE").combobox('setValue','1').combobox('enable');
 				}
 			});
     		
@@ -271,34 +275,34 @@
 		<table>
 			<tr style="vertical-align: top;">
 				<td> 
-					任务名称：<input id="taskName" type="text" class="easyui-textbox" style="width:200px;"/>
-					<span style="padding-left:20px;">
-						任务类型：<select class="easyui-combobox" id="taskType" name="taskType" style="width:200px;" data-options="panelHeight:'auto'"></select>
+					任务名称：<input id="taskName" type="text" class="easyui-textbox" style="width:130px;"/>
+					<span style="padding-left:25px;">
+						任务类型：<select class="easyui-combobox" id="taskType" name="taskType" style="width:130px;" data-options="panelHeight:'auto'"></select>
 					</span>
 					<span style="padding-left:20px;">
-						催缴类型：<select class="easyui-combobox" id="reminderType" name="reminderType" style="width:200px;" data-options="panelHeight:'auto'"></select>
+						催缴类型：<select class="easyui-combobox" id="reminderType" name="reminderType" style="width:130px;" data-options="panelHeight:'auto'"></select>
 					</span>
 					<span style="padding-left:20px;">
-						选择组织：<select class="easyui-combotree" id="orgCode" name="orgCode" style="width:200px;" data-options="panelHeight:'auto'"></select>
+						选择组织：<select class="easyui-combotree" id="orgCode" name="orgCode" style="width:130px;" data-options="panelHeight:'auto'"></select>
 					</span>
 				</td>
 				
 			</tr>
 			<tr style="vertial-align:top;">
 				<td>
-					创建时间：<input id="startTime" name="startTime" class="easyui-datebox" style="width:200px;"/><span style="padding-left:38px;padding-right:36px;">至</span> <input id="endTime" name="endTime" class="easyui-datebox" style="width:200px;" />
+					创建时间：<input id="startTime" name="startTime" class="easyui-datebox" style="width:130px;"/><span style="padding-left:38px;padding-right:36px;">至</span> <input id="endTime" name="endTime" class="easyui-datebox" style="width:130px;" />
 					<span style="padding-left:20px;">
-						任务状态：<select class="easyui-combobox" id="taskState" name="taskState" style="width:200px;" data-options="panelHeight:'auto'"></select>
+						任务状态：<select class="easyui-combobox" id="taskState" name="taskState" style="width:130px;" data-options="panelHeight:'auto'"></select>
 					</span>
 					<span style="padding-left:20px;">
-						下发短信：<select class="easyui-combobox" id="sendMessage" name="sendMessage" style="width:200px;" data-options="panelHeight:'auto'">
+						下发短信：<select class="easyui-combobox" id="sendMessage" name="sendMessage" style="width:130px;" data-options="panelHeight:'auto'">
 									<option value="empty">请选择</option>
 									<option value="1">是</option>
 									<option value="0">否</option>
 								</select>
 					</span>
-					<span style="padding-left:88px;">
-						<a href="javascript:findData()" class="easyui-linkbutton" style="width:200px;" data-options="iconCls:'icon-search'">查询</a>
+					<span style="padding-left:40px;">
+						<a href="javascript:findData()" class="easyui-linkbutton" style="width:100px;" data-options="iconCls:'icon-search'">查询</a>
 					</span>
 				</td>
 			</tr>
@@ -350,60 +354,60 @@
 	
 </div>
 
-<div id="autoCallTaskDlg" class="easyui-dialog" style="width:1200px;height:700px;padding:5px;" modal="true" closed="true">
+<div id="autoCallTaskDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	<!-- 包含外呼任务的表单 -->
 	<%@ include file="/autocall/autocalltask/_form.jsp" %>
 </div>
 
 <!-- 调度计划选择窗 -->
-<div id="scheduleDlg" class="easyui-dialog" style="width:950px;height:450px;padding:5px;" modal="true" closed="true">
+<div id="scheduleDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	 <%@ include file="/autocall/schedule/selectlist.jsp"%>
 </div>
 
 <!-- 语音选择弹窗 -->
-<div id="voiceDlg" class="easyui-dialog" style="width:750px;height:400px;padding:5px;" modal="true" closed="true">
+<div id="voiceDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	 <%@ include file="/autocall/voice/selectlist.jsp"%>
 </div>
 
 <!-- 调查问卷选择窗 -->
-<div id="questionnaireDlg" class="easyui-dialog" style="width:880px;height:400px;padding:5px;" modal="true" closed="true">
+<div id="questionnaireDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	 <%@ include file="/autocall/questionnaire/selectlist.jsp"%>
 </div>
 
 <!-- 黑名单选择窗 -->
-<div id="blackListDlg" class="easyui-dialog" style="width:880px;height:400px;padding:5px;" modal="true" closed="true">
+<div id="blackListDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	 <%@ include file="/autocall/blacklist/selectlist.jsp"%>
 </div>
 
 <!-- 号码组选择窗 -->
-<div id="autoNumberDlg" class="easyui-dialog" style="width:880px;height:400px;padding:5px;" modal="true" closed="true">
+<div id="autoNumberDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	 <%@ include file="/autocall/number/selectlist.jsp"%>
 </div>
 
-<div id="autoCallTaskTelephoneDlg" class="easyui-dialog" style="width:600px;height:400px;padding:5px;" modal="true" closed="true">
+<div id="autoCallTaskTelephoneDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 		<!-- 包含外呼任务号码表单 -->
 		<%@ include file="/autocall/autocalltask/_telephoneform.jsp" %>
 </div>
 
 <!-- 调度详情弹窗 -->
-<div id="scheduleDetailDlg" class="easyui-dialog" style="width:1000px;height:400px;padding:5px;" modal="true" closed="true">
+<div id="scheduleDetailDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	<div style="text-align: center" id="scheduleDetailInfo">
 				
 	</div>
 </div>
 
 <!-- 语音创建弹窗 -->
-<div id="voiceFormDlg" class="easyui-dialog" style="width:750px;height:400px;padding:5px;" modal="true" closed="true">
+<div id="voiceFormDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	 <%@ include file="/autocall/voice/_form.jsp" %>
 </div>
 
 <!-- 外呼结果弹窗 -->
-<div id="callResultDlg" class="easyui-dialog" style="width:1050px;height:700px;padding:5px;" modal="true" closed="true">
+<div id="callResultDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	<%@ include file="/autocall/autocalltask/_callresult.jsp" %>
 </div>
 
 <!-- 任务号码列表 -->
-<div id="autoCallTelephoneDlg" class="easyui-dialog" style="width:1200px;height:800px;padding:10px 20px;" modal="true" closed="true">
+<div id="autoCallTelephoneDlg" class="easyui-dialog" style="width:80%;height:80%;padding:10px 20px;" modal="true" closed="true">
 	<div data-options="fit:true" class="easyui-layout">
 		<div data-options="region:'center',split:true,border:false">
 			<table id="autoCallTaskTelephoneDg2" class="easyui-datagrid">
@@ -425,11 +429,18 @@
 						<th data-options="field:'MESSAGE_STATE_DESC',width:100,align:'center'">短信状态</th>
 						<th data-options="field:'MESSAGE_FAILURE_CODE',width:100,align:'center'">短信失败代码</th>
 													
+						<th data-options="field:'PERIOD',width:120,align:'center'">日期</th>
+						<th data-options="field:'DISPLAY_NUMBER',width:100,align:'center'">表显数量</th>
+						<th data-options="field:'DOSAGE',width:100,align:'center'">使用量</th>							
+						<th data-options="field:'CHARGE',width:100,align:'center'">费用</th>
+						<th data-options="field:'ACCOUNT_NUMBER',width:120,align:'center'">户号</th>
+						<th data-options="field:'ADDRESS',width:120,align:'center'">地址</th>
+						<th data-options="field:'CALL_POLICE_TEL',width:100,align:'center'">报警人电话</th>
+						<th data-options="field:'VEHICLE_TYPE',width:120,align:'center'">车辆类型</th>
+						<th data-options="field:'PLATE_NUMBER',width:120,align:'center'">车牌号码</th>
 						<th data-options="field:'ILLEGAL_CITY',width:100,align:'center'">违章城市</th>
 						<th data-options="field:'PUNISHMENT_UNIT',width:150,align:'center'">处罚单位</th>
 						<th data-options="field:'ILLEGAL_REASON',width:150,align:'center'">违章事由</th>
-						<th data-options="field:'PERIOD',width:120,align:'center'">日期</th>
-						<th data-options="field:'CHARGE',width:100,align:'center'">费用</th>
 						<th data-options="field:'COMPANY',width:150,align:'center'">代缴单位</th>
 						<th data-options="field:'id',width:100,align:'center',formatter:telephonerowformatter">操作</th>
 					</tr>

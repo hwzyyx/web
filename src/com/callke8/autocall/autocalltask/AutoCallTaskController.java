@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.apache.poi.ss.formula.eval.BlankEval;
 
+import com.callke8.autocall.flow.AutoFlow;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.common.CommonController;
 import com.callke8.common.IController;
@@ -828,6 +829,52 @@ public class AutoCallTaskController extends Controller implements IController {
 		return rsM;
 	}
 	
+	public void getMssageContentTemplate() {
+		
+		String reminderType = getPara("reminderType");   //催缴类型
+		
+		if(BlankUtils.isBlank(reminderType)) {
+			reminderType = "1";
+		}
+		
+		AutoFlow autoFlow = AutoFlow.dao.getAutoFlowByReminderType(reminderType);
+		
+		if(!BlankUtils.isBlank(autoFlow)) {
+			
+			String flowRule = autoFlow.getStr("FLOW_RULE");    //取出规则
+			
+			String content = null;
+			
+			if(reminderType.equals("1")) {     //电费催缴时
+				//常州供电公司友情提醒：您户地址%s，总户号%s于%s发生电费%s元，请按时缴纳，逾期缴纳将产生滞纳金。详情可关注“国网江苏电力”公众微信号或下载掌上电力app。如您本次收到的用电地址有误，可在工作时间致电83272222。若已缴费请忽略本次提醒。
+				content = String.format(flowRule, "南京市幸福小区5栋204室","107343433","2018年10月","224.22");
+			}else if(reminderType.equals("2")) {    //水费催缴
+				//尊敬的自来水用户您好，下面为您播报本期水费对账单。您水表所在地址%s于%s抄见数为%s，月用水量为%s吨，水费为%s元。特此提醒。详情可凭用户号%s登录常州通用自来水公司网站或致电常水热线：88130008查询。
+				content = String.format(flowRule, "南京市幸福小区5栋204室","2018年10月","5432","122","231.43","107343433");
+			}else if(reminderType.equals("3")) {    //电话费催缴
+				//尊敬的客户您好，你%s的电话费为%s元。
+				content = String.format(flowRule,"2018年10月","123.32");
+			}else if(reminderType.equals("4")) {    //燃气费催缴
+				//尊敬的客户您好，你%s的燃气费为%s元。
+				content = String.format(flowRule,"2018年10月","123.32");
+			}else if(reminderType.equals("5")) {    //物业费催缴
+				//尊敬的客户您好，你%s的物业费为%s元。
+				content = String.format(flowRule,"2018年10月","123.32");
+			}else if(reminderType.equals("6")) {    //交通违章
+				//您的%s汽车于%s违反了相关的交通条例，请收到本告知之日起30日内接受处理。
+				content = String.format(flowRule,"苏DR1179","2018年10月");
+			}else if(reminderType.equals("7")) {    //交警移车
+				//您好，这是常州公安微警务051981990110挪车服务专线，您是%s车主吗？你的%s占用他人车位，请按任意键接听车位业主电话。
+				content = String.format(flowRule,"苏DR1179","小型汽车");
+			}else if(reminderType.equals("8")) {    //交警移车
+				//尊敬的客户您好，你%s的社保费为%s元。
+				content = String.format(flowRule,"2018年10月","123.32");
+			}
+			
+			render(RenderJson.success(content));
+		}
+		
+	}
 	
 	
 }

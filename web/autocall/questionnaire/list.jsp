@@ -3,7 +3,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge"/>
 	<title>Client Side Pagination in DataGrid - jQuery EasyUI Demo</title>
 	<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
 	<link rel="stylesheet" type="text/css" href="themes/icon.css">
@@ -1102,13 +1101,13 @@
 	<a href="#" id="questionItemDelBtn" onclick="questionItemDel()" class="easyui-linkbutton" iconCls='icon-cancel' plain="true">删除问题项</a>
 </div>
 
-<div id="questionnaireDlg" class="easyui-dialog" data-options="title:'添加问卷'" style="width:1200px;height:600px;padding:2px;" modal="true" closed="true" buttons="#addQuestionnaireBtn">
+<div id="questionnaireDlg" class="easyui-dialog" data-options="title:'添加问卷'" style="width:90%;height:80%;padding:2px;" modal="true" closed="true" buttons="#addQuestionnaireBtn">
 		<!-- 包含问卷的表单 -->
 		<%@ include file="/autocall/questionnaire/_form.jsp" %>
 </div>
 
 <!-- 包含问题的表单弹窗 -->
-<div id="questionDlg" class="easyui-dialog" data-options="title:'新增问题'" style="width:1000px;height:500px;padding:2px;" modal="true" closed="true" buttons="#addQuestionBtn"> 
+<div id="questionDlg" class="easyui-dialog" data-options="title:'新增问题'" style="width:80%;height:70%;padding:2px;" modal="true" closed="true" buttons="#addQuestionBtn"> 
 		<!-- 包含问卷的表单 -->
 		<%@ include file="/autocall/questionnaire/_questionform.jsp" %>
 

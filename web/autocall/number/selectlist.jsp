@@ -151,16 +151,16 @@
 	</div>
 </div>
 
-<div id="autoNumberTelephoneDlg" class="easyui-dialog" style="width:600px;height:600px;padding:5px;" modal="true" closed="true">
+<div id="autoNumberTelephoneDlg" class="easyui-dialog" style="width:50%;height:80%;padding:5px;" modal="true" closed="true">
 	<div data-options="fit:true" class="easyui-layout">
 		<!-- 顶部查询区 -->
 		<div data-options="region:'north',split:true,border:true" style="height:45px;padding-top:5px;padding-left:5px;">
 			<table>
 				<tr style="vertical-align: top;">
-					<td>电话号码：<input id="numberTelephone_customerTel" type="text" class="easyui-textbox" style="width:150px;"/>
+					<td>电话号码：<input id="numberTelephone_customerTel" type="text" class="easyui-textbox" style="width:100px;"/>
 					
 						<span style="padding-left:20px;">
-							客户姓名：<input id="numberTelephone_customerName" type="text" class="easyui-textbox" style="width:150px;"/>
+							客户姓名：<input id="numberTelephone_customerName" type="text" class="easyui-textbox" style="width:100px;"/>
 						</span>
 						<span style="padding-left:10px;">
 							<a href="javascript:number_findDataForTelephone()" style="width:80px;" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>

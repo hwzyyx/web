@@ -3,7 +3,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge"/>
 <title>博世呼叫流程</title>
 	<style>
 		.font17{
@@ -478,8 +477,7 @@
 	
 </div>
 
-<div id="bshVoiceDlg" class="easyui-dialog" style="width:1200px;height:400px;padding:5px;" modal="false" closed="true">
-
+<div id="bshVoiceDlg" class="easyui-dialog" style="width:80%;height:60%;padding:5px;" modal="false" closed="true">
 		<table class="easyui-datagrid" id="bshVoiceDg">
 		    <thead>
 				<tr>
@@ -495,7 +493,7 @@
 		</table>
 </div>	
 
-<div id="bshVoiceFormDlg" class="easyui-dialog" style="width:700px;height:400px;padding:5px;" modal="true" closed="true" buttons="#addVoiceBtn">
+<div id="bshVoiceFormDlg" class="easyui-dialog" style="width:50%;height:50%;padding:5px;" modal="true" closed="true" buttons="#addVoiceBtn">
 		<!-- 包含语音信息的表单 -->
 		<%@ include file="/bsh/bshcallflow/_form.jsp" %>
 </div>

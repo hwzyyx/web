@@ -3,7 +3,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge"/>
 	<title>Client Side Pagination in DataGrid - jQuery EasyUI Demo</title>
 	<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
 	<link rel="stylesheet" type="text/css" href="themes/icon.css">
@@ -458,7 +457,7 @@
 	</div>
 </div>
 
-<div id="voiceDlg" class="easyui-dialog" style="width:1000px;height:600px;padding:5px;" modal="true" closed="true" buttons="#addVoiceBtn">
+<div id="voiceDlg" class="easyui-dialog" style="width:90%;height:70%;padding:5px;" modal="true" closed="true" buttons="#addVoiceBtn">
 		<!-- 包含语音信息的表单 -->
 		<%@ include file="/autocall/voice/_form.jsp" %>
 </div>

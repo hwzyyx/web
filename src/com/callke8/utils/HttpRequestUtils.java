@@ -90,12 +90,17 @@ public class HttpRequestUtils {
 		String lan = "zh";          	//语言：zh表示中文
 		String cuid = "13512771995";    //唯一标识符
 		String ctp = "1";          		//ctp 1表示web 端访问
-		String spd = "5";          		//语速，正常为5，较慢为3，最慢为1，7为较快，最快为9
+		String spd = "3";          		//语速，正常为5，较慢为3，最慢为1，7为较快，最快为9
 		String vol = "5";          		//音量：5为正常，9最大
 		String per = "0";          		//１：男性  ０：女性
 		String aue = "6";               //语音文件格式：3为mp3格式(默认)； 4为pcm-16k；5为pcm-8k；6为wav（内容同pcm-16k）;
 		
 		String execTtsUrl = ParamConfig.paramConfigMap.get("paramType_2_ttsExecTtsUrl");   //执行TTS转换的URL
+		String defaultSpeed = ParamConfig.paramConfigMap.get("paramType_2_defaultSpeed");   //默认语速
+		
+		if(!BlankUtils.isBlank(defaultSpeed)) {
+			spd = defaultSpeed;
+		}
 		
 		InputStream is = null;
 		FileOutputStream fos = null;

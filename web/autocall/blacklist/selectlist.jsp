@@ -152,7 +152,7 @@
 	</div>
 </div>
 
-<div id="autoBlackListTelephoneDlg" class="easyui-dialog" style="width:600px;height:600px;padding:5px;" modal="true" closed="true">
+<div id="autoBlackListTelephoneDlg" class="easyui-dialog" style="width:70%;height:70%;padding:5px;" modal="true" closed="true">
 	<div data-options="fit:true" class="easyui-layout">
 		<!-- 顶部查询区 -->
 		<div data-options="region:'north',split:true,border:true" style="height:45px;padding-top:5px;padding-left:5px;">
