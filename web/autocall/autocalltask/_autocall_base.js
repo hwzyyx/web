@@ -104,7 +104,6 @@ function autoCallTaskSaveAdd() {
 					interval:3000
 				});
 			}
-			
 			return $(this).form('validate');
 		},
 		success:function(data) {
@@ -158,6 +157,8 @@ function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,sch
 		'autoCallTask.RETRY_TIMES':retryTimes,
 		'autoCallTask.RETRY_INTERVAL':retryInterval,
 		'autoCallTask.PRIORITY':priority,
+		'autoCallTask.TASK_TYPE':taskType,
+		'autoCallTask.REMINDER':reminderType,
 		'autoCallTask.MESSAGE_CONTENT':messageContent
 	});
 
@@ -203,17 +204,23 @@ function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,sch
 	findDataForTelephone();                                    //加载任务的号码列表
 	
 	if(sendMessage == 1) {        //如果 sendMessage的值为1，表示有发送信息内容
-		$("#sendMessageButton").linkbutton('select');
 		$('#messageContentTr').css('display','');
 		$('#MESSAGE_CONTENT').textbox('setValue',messageContent);
+		$("#isSendMessageCheckBox").prop("checked",true);
+		
+		if($("#TASK_TYPE").combobox('getValue')=='1') {          //普通任务
+			$("#MESSAGE_CONTENT").textbox('textbox').attr('readonly',false);
+		}else if($("#TASK_TYPE").combobox('getValue')=='3') {    //催缴任务
+			$("#MESSAGE_CONTENT").textbox('textbox').attr('readonly',true);
+		}
 	}else {
-		$("#notSendMessageButton").linkbutton('select');
+		$("#isSendMessageCheckBox").prop("checked",false);
 		$('#messageContentTr').css('display','none');
 	} 
 	
 	//如果是修改时，就不允许再修改任务类型和催缴类型了
-	$("#TASK_TYPE").combobox('disable');
-	$("#REMINDER_TYPE").combobox('disable');
+	$("#TASK_TYPE").combobox('readonly',true);
+	$("#REMINDER_TYPE").combobox('readonly',true);
 	
 	
 	$("#autoCallTaskSaveBtn").attr("onclick","autoCallTaskSaveEdit()");
@@ -228,11 +235,11 @@ function autoCallTaskSaveEdit() {
 	if(!chedkRs) {
 		return;
 	}
-
+	//alert($("#TASK_TYPE").combobox('getValue') + "---" + $('#REMINDER_TYPE').combobox('getValue'));
 	$('#autoCallTaskForm').form('submit',{
 
 		url:'autoCallTask/update',
-		onSubmit:function(){
+		onSubmit:function(param){
 			var v = $(this).form('validate');
 			if(v) {
 				$.messager.progress({
@@ -240,7 +247,6 @@ function autoCallTaskSaveEdit() {
 					interval:3000
 				});
 			}
-			
 			return $(this).form('validate');
 		},
 		success:function(data) {
@@ -414,9 +420,10 @@ function loadDataForCreateAutoCallTaskSearch() {
 		textField:'text',
 		panelHeight:'auto',
 		onChange:function(newValue,oldValue) {
-			$("#MESSAGE_CONTENT").textbox('setValue','');
-			$('#messageContentTr').css("display","none");
-			$("#notSendMessageButton").linkbutton('select');
+			//是否下发短信的开合和数据
+			if($("#isSendMessageCheckBox").prop('checked')) {
+				setMessageContentValue();
+			}
 		}
 	}).combobox('loadData',reminderTypeComboboxDataFor0).combobox('setValue','1');
 	
@@ -437,9 +444,10 @@ function loadDataForCreateAutoCallTaskSearch() {
 			}else if(newValue=="3") {
 				$("#reminderType_tr").css('display','');
 			}
-			$("#MESSAGE_CONTENT").textbox('setValue','');
-			$('#messageContentTr').css("display","none");
-			$("#notSendMessageButton").linkbutton('select');
+			//是否下发短信的开合和数据
+			if($("#isSendMessageCheckBox").prop('checked')) {
+				setMessageContentValue();
+			}
 		}
 	}).combobox('loadData',taskTypeComboboxDataFor0).combobox('setValue','1');
 	
@@ -1679,19 +1687,6 @@ function saveVoiceAdd() {
 		}
 		
 	});
-	
-}
-
-function isSendMessager(flag) {
-	
-	var taskType = $("#TASK_TYPE").combobox('getValue');
-	
-	if(flag==1) {
-		setMessageContentValue();
-	}else {
-		$("#MESSAGE_CONTENT").textbox('setValue','');
-		$('#messageContentTr').css("display","none");
-	}
 	
 }
 
