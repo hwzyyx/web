@@ -57,6 +57,7 @@
 					setMessageContentValue();
 				}else {
 					//alert("没有被选中");
+					$("#MESSAGE_CONTENT").textbox("setValue",null);
 					$('#messageContentTr').css("display","none");
 				}
 			});
