@@ -50,7 +50,7 @@
 					</td>
 					<td style="padding-top:10px;">
 						<input type="hidden" name="autoCallTask.SCHEDULE_ID" id="SCHEDULE_ID_INFO" />
-						<input style="width:200px;" name="autocallTask.SCHEDULE_NAME" id="SCHEDULE_NAME" class="easyui-textbox" type="text" disabled="true"></input>
+						<input style="width:200px;" name="autoCallTask.SCHEDULE_NAME" id="SCHEDULE_NAME" class="easyui-textbox" type="text" disabled="true"></input>
 						<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:100px" onClick="selectSchedule()">选&nbsp;&nbsp;择</a>
 					</td>
 				</tr>
@@ -168,8 +168,7 @@
 					</td>
 					<td>
 						<div style="padding-top:10px;">
-							<a href="#" id="notSendMessageButton" onclick="isSendMessager(0)" class="easyui-linkbutton" data-options="iconCls:'icon-no',toggle:true,group:'g2',selected:true" style="width:120px;">不下发短信</a>
-							<a href="#" id="sendMessageButton" onclick="isSendMessager(1)" class="easyui-linkbutton" data-options="iconCls:'icon-ok',toggle:true,group:'g2'" style="width:120px;">下发短信</a>
+							<input type="checkbox" id="isSendMessageCheckBox" value="1"><label for="isSendMessageCheckBox">下发短信</label>
 							<span style="color:red;margin-left: 20px;">*注：在执行外呼时，同时下发短信</span>
 						</div>
 					</td>

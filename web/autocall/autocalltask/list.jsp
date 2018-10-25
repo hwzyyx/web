@@ -49,6 +49,18 @@
     	var dateTimeType = 0;       //主要用于查询数据时，时间区段代表是以创建时间为查询区段，还是以外呼时间为查询区段
 		
 		$(function(){
+			
+			$("#isSendMessageCheckBox").change(function(){
+				if($("#isSendMessageCheckBox").prop('checked')) {
+					//alart("被选中了");
+					$('#messageContentTr').css("display","");
+					setMessageContentValue();
+				}else {
+					//alert("没有被选中");
+					$('#messageContentTr').css("display","none");
+				}
+			});
+			
 			//tts创建语音时，对于内容的长度限制,最长限制200个字
 			ttsContentTextLengthLimit();
 			
@@ -144,22 +156,6 @@
 			});
     		
     		$('#summaryDg').datagrid('loadData','');
-    		
-    		/*$("#dateYearCombobox").combobox({
-				onChange:function(newValue,oldValue){
-					var yearValue = $("#dateYearCombobox").combobox('getValue');
-					var monthValue = $("#dateMonthCombobox").combobox('getValue');
-					$("#PERIOD").textbox('setValue',yearValue + monthValue);
-				}
-			});
-			
-			$("#dateMonthCombobox").combobox({
-				onChange:function(newValue,oldValue){
-					var yearValue = $("#dateYearCombobox").combobox('getValue');
-					var monthValue = $("#dateMonthCombobox").combobox('getValue');
-					$("#PERIOD").textbox('setValue',yearValue + monthValue);
-				}
-			});*/
 			
 		});
     	
@@ -167,6 +163,10 @@
 		
 		function findData() {
 			var selectRs = $("#orgCode").combotree('getValues');
+			if(selectRs.length<1) {
+				alert("查询时,组织不能为空!");
+				return;
+			}
 			var orgCodes = selectRs.toString();
 			var startTime = $("#startTime").datebox('getValue');
 			var endTime = $("#endTime").datebox('getValue');
@@ -283,7 +283,7 @@
 						催缴类型：<select class="easyui-combobox" id="reminderType" name="reminderType" style="width:130px;" data-options="panelHeight:'auto'"></select>
 					</span>
 					<span style="padding-left:20px;">
-						选择组织：<select class="easyui-combotree" id="orgCode" name="orgCode" style="width:130px;" data-options="panelHeight:'auto'"></select>
+						选择组织：<select class="easyui-combotree" id="orgCode" name="orgCode" style="width:130px;" data-options="panelHeight:'auto',multiple:true"></select>
 					</span>
 				</td>
 				
