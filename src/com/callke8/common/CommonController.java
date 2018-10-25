@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
 import net.sf.json.JSONArray;
 import sun.management.resources.agent;
 
@@ -94,6 +96,47 @@ public class CommonController extends Controller {
 		
 		return sb.toString();
 		
+	}
+	
+	/**
+	 * 如果传入一组组织代码(代码格式: "a,b,c,d")，返回创建记录的操作员 ID 的条件
+	 * 
+	 * @param orgCode
+	 * 			orgCode 的格式是这样的："a,b,c,d"
+	 * @return
+	 * 			返回的字符串格式：'a','b','c'
+	 */
+	public static String getOperIdStringByOrgCode(String orgCode,HttpSession httpSession) {
+		
+		String rs = null;
+		
+		String currOperId = String.valueOf(httpSession.getAttribute("currOperId"));      //当前登录的用户ID
+		String currOrgCode = String.valueOf(httpSession.getAttribute("currOrgCode"));    //当前登录的组织码
+		System.out.println("-------=======查询任务，登录的用户ID ：" + currOperId + ", 登录用户的组织:" + currOrgCode);
+		if(!(BlankUtils.isBlank(currOperId) || BlankUtils.isBlank(currOrgCode))) {
+			//由于查询出来的记录，只能是自己及自己下属的记录，所以不能以组织码为条件去查询，只能是根据组织码条件，查询出相应的组织码下有什么用户
+			List<Record> opertorList = Operator.dao.getOperatorByOrgCode(orgCode);    //根据传入组织代码字符串，查出这些组织的所有的操作员
+			if(!BlankUtils.isBlank(opertorList)) {    //如果操作员不为空时
+				String operIdString = "";
+				for(Record r:opertorList) {
+					String operIdRs = r.getStr("OPER_ID");              //操作员ID
+					String orgCodeRs = r.getStr("ORG_CODE");            //组织代码
+					
+					//查出来的操作员，与登录的用户的组织一样时，就表示这个与登录的人是同级的人，需要去除掉
+					if(!operIdRs.equals(currOperId) && orgCodeRs.equals(currOrgCode)) {    //如果当前客户ID不是当前登录的人，但是组织码与当前登录用户相同的组织代码时，表示这个客户应该与登录用户是同级关系，要去掉
+						continue;
+					}
+					operIdString += "\'" + operIdRs + "\',";
+				}
+				
+				System.out.println("查询的组织代码的字串: " + operIdString);
+				if(!BlankUtils.isBlank(operIdString)) {
+					rs = operIdString.substring(0,operIdString.length()-1);     //删除最后一个逗号
+				}
+			}
+		}
+		
+		return rs;
 	}
 	
 	

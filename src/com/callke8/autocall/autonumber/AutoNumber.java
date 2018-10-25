@@ -21,7 +21,7 @@ public class AutoNumber extends Model<AutoNumber> {
 	
 	public static AutoNumber dao = new AutoNumber();
 	
-	public Page getAutoNumberByPaginate(int pageNumber,int pageSize,String numberName,String orgCode,String startTime,String endTime) {
+	public Page getAutoNumberByPaginate(int pageNumber,int pageSize,String numberName,String createUserCode,String startTime,String endTime) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
@@ -35,18 +35,9 @@ public class AutoNumber extends Model<AutoNumber> {
 			index++;
 		}
 		
-		//根据组织编码，取得所有的下属的组织编码创建的语音
-		if(!BlankUtils.isBlank(orgCode)) {
-			//先取出下属所有的编码
-			String ocs = "";   //组织 in 的内容，即是 select * from voice where ORG_CODE in ('a','b')    
-			String[] orgCodes = orgCode.split(",");   //分割组织代码
-			for(String oc:orgCodes) {
-				ocs += "\'" + oc + "\',";
-			}
-			
-			ocs = ocs.substring(0,ocs.length()-1);           //去掉最后一个逗号
-			System.out.println("OCS:" + ocs);
-			sb.append(" and ORG_CODE in(" + ocs + ")");
+		//根据创建ID
+		if(!BlankUtils.isBlank(createUserCode)) {
+			sb.append(" and CREATE_USERCODE in(" + createUserCode + ")");
 		}
 		
 		if(!BlankUtils.isBlank(startTime)) {
@@ -69,9 +60,9 @@ public class AutoNumber extends Model<AutoNumber> {
 	}
 	
 	
-	public Map getAutoNumberByPaginateToMap(int pageNumber,int pageSize,String numberName,String orgCode,String startTime,String endTime) {
+	public Map getAutoNumberByPaginateToMap(int pageNumber,int pageSize,String numberName,String createUserCode,String startTime,String endTime) {
 		
-		Page<Record> p = getAutoNumberByPaginate(pageNumber, pageSize, numberName,orgCode,startTime,endTime);
+		Page<Record> p = getAutoNumberByPaginate(pageNumber, pageSize, numberName,createUserCode,startTime,endTime);
 		
 		int total = p.getTotalRow();     //取出总数量
 		

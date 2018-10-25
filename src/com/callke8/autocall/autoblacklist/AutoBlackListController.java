@@ -42,10 +42,15 @@ public class AutoBlackListController extends Controller implements IController {
 		String startTime = getPara("startTime");
 		String endTime = getPara("endTime");
 		
+		String createUserCode = null;    //创建的用户ID
+		if(!BlankUtils.isBlank(orgCode)) {
+			createUserCode = CommonController.getOperIdStringByOrgCode(orgCode,getSession());
+		}
+		
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoBlackList.dao.getAutoBlackListByPaginateToMap(pageNumber, pageSize, blackListName, orgCode, startTime, endTime);
+		Map map = AutoBlackList.dao.getAutoBlackListByPaginateToMap(pageNumber, pageSize, blackListName, createUserCode, startTime, endTime);
 		
 		System.out.println("取AutoBlackListController datagrid的结束时间:" + DateFormatUtils.getTimeMillis());
 		renderJson(map);

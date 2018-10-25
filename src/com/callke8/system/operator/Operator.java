@@ -140,6 +140,32 @@ public class Operator extends Model<Operator> {
 		
 		return list;
 	}
+
+	/**
+	 * 根据组织码列表，取出这些组织码所有的记录
+	 * 
+	 * @param orgCode
+	 * 			orgCode 的格式是这样的："a,b,c,d"
+	 * @return
+	 * 		 	用户列表
+	 */
+	public List<Record> getOperatorByOrgCode(String orgCode) {
+		
+		if(BlankUtils.isBlank(orgCode)) {    return null;    }
+		
+		String ocs = "";            //组织成这样的  select * from questionnaire where ORG_CODE in ('a','b'); 方式查询
+		String[] orgCodes = orgCode.split(",");    //分隔组织代码
+		for(String oc:orgCodes) {
+			ocs += "\'" + oc + "\',"; 
+		}
+		ocs = ocs.substring(0,ocs.length()-1);     //删除最后一个逗号
+		
+		String sql = "select * from sys_operator where ORG_CODE in(" + ocs + ")";
+		
+		List<Record> list = Db.find(sql);
+		
+		return list;
+	}
 	
 	/**
 	 * 根据组织代码，查询当前组织下，是否有操作员，主要是用于删除组织时做判断用

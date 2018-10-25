@@ -40,10 +40,15 @@ public class QuestionnaireController extends Controller implements IController {
 		String startTime = getPara("startTime");   //这是一个dateBox,需要加入时间
 		String endTime = getPara("endTime");       //这是一个dateBox,需要加入时间
 		
+		String createUserCode = null;    //创建的用户ID
+		if(!BlankUtils.isBlank(orgCode)) {
+			createUserCode = CommonController.getOperIdStringByOrgCode(orgCode,getSession());
+		}
+		
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = Questionnaire.dao.getQuestionnaireByPaginateToMap(pageNumber, pageSize, questionnaireDesc, orgCode,startTime,endTime);
+		Map map = Questionnaire.dao.getQuestionnaireByPaginateToMap(pageNumber, pageSize, questionnaireDesc, createUserCode,startTime,endTime);
 		
 		System.out.println("取QuestionnaireController datagrid的结束时间:" + DateFormatUtils.getTimeMillis());
 		renderJson(map);

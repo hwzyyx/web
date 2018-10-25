@@ -32,7 +32,7 @@ public class Questionnaire extends Model<Questionnaire> {
 	 * 				组织编码
 	 * @return
 	 */
-	public Page<Record> getQuestionnaireByPaginate(int pageNumber,int pageSize,String questionnaireDesc,String orgCode,String startTime,String endTime) {
+	public Page<Record> getQuestionnaireByPaginate(int pageNumber,int pageSize,String questionnaireDesc,String createUserCode,String startTime,String endTime) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
@@ -46,18 +46,8 @@ public class Questionnaire extends Model<Questionnaire> {
 			index++;
 		}
 		
-		if(!BlankUtils.isBlank(orgCode)) {
-			
-			String ocs = "";   //组织 in 的内容，即是 select * from questionnaire where ORG_CODE in ('a','b');
-			String[] orgCodes = orgCode.split(",");    //分隔组织代码
-			
-			for(String oc:orgCodes) {
-				ocs += "\'" + oc + "\',"; 
-			}
-			
-			ocs = ocs.substring(0,ocs.length()-1);     //删除最后一个逗号
-			
-			sb.append(" and ORG_CODE in(" + ocs + ")");
+		if(!BlankUtils.isBlank(createUserCode)) {
+			sb.append(" and CREATE_USERCODE in(" + createUserCode + ")");
 		}
 		
 		if(!BlankUtils.isBlank(startTime)) {
@@ -91,9 +81,9 @@ public class Questionnaire extends Model<Questionnaire> {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public Map getQuestionnaireByPaginateToMap(int pageNumber,int pageSize,String questionnaireDesc,String orgCode,String startTime,String endTime) {
+	public Map getQuestionnaireByPaginateToMap(int pageNumber,int pageSize,String questionnaireDesc,String createUserCode,String startTime,String endTime) {
 		
-		Page<Record> p = getQuestionnaireByPaginate(pageNumber,pageSize,questionnaireDesc,orgCode,startTime,endTime);
+		Page<Record> p = getQuestionnaireByPaginate(pageNumber,pageSize,questionnaireDesc,createUserCode,startTime,endTime);
 		
 		int total = p.getTotalRow();    //取出总数据量
 		

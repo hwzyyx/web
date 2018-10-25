@@ -42,10 +42,15 @@ public class AutoNumberController extends Controller implements IController {
 		String startTime = getPara("startTime");
 		String endTime = getPara("endTime");
 		
+		String createUserCode = null;    //创建的用户ID
+		if(!BlankUtils.isBlank(orgCode)) {
+			createUserCode = CommonController.getOperIdStringByOrgCode(orgCode,getSession());
+		}
+		
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoNumber.dao.getAutoNumberByPaginateToMap(pageNumber, pageSize, numberName, orgCode, startTime, endTime);
+		Map map = AutoNumber.dao.getAutoNumberByPaginateToMap(pageNumber, pageSize, numberName, createUserCode, startTime, endTime);
 		
 		renderJson(map);
 	}

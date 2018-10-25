@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
 import com.callke8.autocall.autoblacklist.AutoBlackList;
 import com.callke8.autocall.questionnaire.Questionnaire;
 import com.callke8.autocall.schedule.Schedule;
@@ -36,12 +38,12 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * @param pageNumber
 	 * @param pageSize
 	 * @param taskName
-	 * @param orgCode
+	 * @param createUserCode
 	 * @param startTime
 	 * @param endTime
 	 * @return
 	 */
-	public Page<Record> getAutoCallTaskByPaginate(int pageNumber,int pageSize,String taskName,String taskType,String reminderType,String taskState,String orgCode,String sendMessage,String startTime,String endTime) {
+	public Page<Record> getAutoCallTaskByPaginate(int pageNumber,int pageSize,String taskName,String taskType,String reminderType,String taskState,String createUserCode,String sendMessage,String startTime,String endTime) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[8];
@@ -73,18 +75,8 @@ public class AutoCallTask extends Model<AutoCallTask> {
 			index++;
 		}
 		
-		if(!BlankUtils.isBlank(orgCode)) {
-			
-			String ocs = "";   //组织 in 的内容，即是 select * from questionnaire where ORG_CODE in ('a','b');
-			String[] orgCodes = orgCode.split(",");    //分隔组织代码
-			
-			for(String oc:orgCodes) {
-				ocs += "\'" + oc + "\',"; 
-			}
-			
-			ocs = ocs.substring(0,ocs.length()-1);     //删除最后一个逗号
-			
-			sb.append(" and ORG_CODE in(" + ocs + ")");
+		if(!BlankUtils.isBlank(createUserCode)) {
+			sb.append(" and CREATE_USERCODE in(" + createUserCode + ")");
 		}
 		
 		if(!BlankUtils.isBlank(sendMessage) && !sendMessage.equalsIgnoreCase("empty")) {
@@ -111,9 +103,9 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		return p;
 	}
 	
-	public Map getAutoCallTaskByPaginateToMap(int pageNumber,int pageSize,String taskName,String taskType,String reminderType,String taskState,String orgCode,String sendMessage,String startTime,String endTime) {
+	public Map getAutoCallTaskByPaginateToMap(int pageNumber,int pageSize,String taskName,String taskType,String reminderType,String taskState,String createUserCode,String sendMessage,String startTime,String endTime) {
 		
-		Page<Record> p = getAutoCallTaskByPaginate(pageNumber, pageSize, taskName,taskType,reminderType,taskState,orgCode,sendMessage,startTime, endTime);
+		Page<Record> p = getAutoCallTaskByPaginate(pageNumber, pageSize, taskName,taskType,reminderType,taskState,createUserCode,sendMessage,startTime, endTime);
 		
 		int total = p.getTotalRow();   //取出总数据量
 		

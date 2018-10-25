@@ -21,7 +21,7 @@ public class AutoBlackList extends Model<AutoBlackList> {
 	
 	public static AutoBlackList dao = new AutoBlackList();
 	
-	public Page getAutoBlackListByPaginate(int pageNumber,int pageSize,String blackListName,String orgCode,String startTime,String endTime) {
+	public Page getAutoBlackListByPaginate(int pageNumber,int pageSize,String blackListName,String createUserCode,String startTime,String endTime) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
@@ -35,18 +35,9 @@ public class AutoBlackList extends Model<AutoBlackList> {
 			index++;
 		}
 		
-		//根据组织编码，取得所有的下属的组织编码创建的语音
-		if(!BlankUtils.isBlank(orgCode)) {
-			//先取出下属所有的编码
-			String ocs = "";   //组织 in 的内容，即是 select * from voice where ORG_CODE in ('a','b')    
-			String[] orgCodes = orgCode.split(",");   //分割组织代码
-			for(String oc:orgCodes) {
-				ocs += "\'" + oc + "\',";
-			}
-			
-			ocs = ocs.substring(0,ocs.length()-1);           //去掉最后一个逗号
-			System.out.println("OCS:" + ocs);
-			sb.append(" and ORG_CODE in(" + ocs + ")");
+		//根据创建者ID
+		if(!BlankUtils.isBlank(createUserCode)) {
+			sb.append(" and CREATE_USERCODE in(" + createUserCode + ")");
 		}
 		
 		if(!BlankUtils.isBlank(startTime)) {
@@ -69,9 +60,9 @@ public class AutoBlackList extends Model<AutoBlackList> {
 	}
 	
 	
-	public Map getAutoBlackListByPaginateToMap(int pageNumber,int pageSize,String blackListName,String orgCode,String startTime,String endTime) {
+	public Map getAutoBlackListByPaginateToMap(int pageNumber,int pageSize,String blackListName,String createUserCode,String startTime,String endTime) {
 		
-		Page<Record> p = getAutoBlackListByPaginate(pageNumber, pageSize, blackListName,orgCode,startTime,endTime);
+		Page<Record> p = getAutoBlackListByPaginate(pageNumber, pageSize, blackListName,createUserCode,startTime,endTime);
 		
 		int total = p.getTotalRow();     //取出总数量
 		

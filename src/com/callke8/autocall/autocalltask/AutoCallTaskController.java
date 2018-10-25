@@ -81,13 +81,18 @@ public class AutoCallTaskController extends Controller implements IController {
 		String orgCode = getPara("orgCode");
 		String sendMessage = getPara("sendMessage");
 		
+		String createUserCode = null;    //创建的用户ID
+		if(!BlankUtils.isBlank(orgCode)) {
+			createUserCode = CommonController.getOperIdStringByOrgCode(orgCode,getSession());
+		}
+		
 		String startTime = getPara("startTime");
 		String endTime = getPara("endTime");
 		
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoCallTask.dao.getAutoCallTaskByPaginateToMap(pageNumber, pageSize, taskName,taskType,reminderType,taskState,orgCode,sendMessage, startTime, endTime);
+		Map map = AutoCallTask.dao.getAutoCallTaskByPaginateToMap(pageNumber, pageSize, taskName,taskType,reminderType,taskState,createUserCode,sendMessage, startTime, endTime);
 		
 		System.out.println("取AutoCallTaskController datagrid的开始时间:" + DateFormatUtils.getTimeMillis());
 		renderJson(map);
