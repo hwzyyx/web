@@ -60,7 +60,8 @@ public class BSHPredial {
 		
 		//线程二:扫描排队机,若排队机中有数据,则执行外呼
 		Scheduler scheduler2 = createScheduler("BSHLaunchDialJob" + System.currentTimeMillis(),1);
-		scheduler2.scheduleJob(createJobDetail(BSHLaunchDialJob.class), createTrigger(startTime, 1));    //每秒钟发起一次呼叫
+		//scheduler2.scheduleJob(createJobDetail(BSHLaunchDialJob.class), createTrigger(startTime, 1));    //每秒钟发起一次呼叫
+		scheduler2.scheduleJob(createJobDetail(BSHLaunchDialJob.class), createSimpleTrigger(startTime,-1,50));    //每50毫秒扫描一次数据
 		scheduler2.start();
 		
 		//线程三:处理超时记录的 Job

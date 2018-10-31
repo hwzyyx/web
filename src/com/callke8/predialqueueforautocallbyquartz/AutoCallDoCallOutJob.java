@@ -20,6 +20,7 @@ import org.quartz.SchedulerException;
 import com.callke8.astutils.AsteriskUtils;
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
+import com.callke8.system.callerid.SysCallerId;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.MemoryVariableUtil;
@@ -131,8 +132,12 @@ public class AutoCallDoCallOutJob implements Job {
 		callOutTel = numberPrefix + callOutTel;                                             //将前缀增加到这个号码
 		
 		//获取主叫号码
+		String callerIdNumber = null;
 		String callerIdInfo = autoCallTask.get("CALLERID");   								//主叫的ID信息
-		String callerIdNumber = MemoryVariableUtil.getDictName("CALLERID", callerIdInfo);
+		SysCallerId sysCallerId = SysCallerId.dao.getSysCallerIdById(Integer.valueOf(callerIdInfo));
+		if(!BlankUtils.isBlank(sysCallerId)) {
+			callerIdNumber = sysCallerId.getStr("CALLERID");
+		}
 		
 		//准备拼接外呼参数
 		String channel = trunkInfo + "/" + callOutTel;
