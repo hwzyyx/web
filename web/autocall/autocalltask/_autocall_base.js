@@ -65,7 +65,7 @@ function ttsContentTextLengthLimit() {
 
 //点击新增任务按钮,打开添加任务的弹窗
 function autoCallTaskAdd() {
-	$("#CALLERID").combobox('setValue','1');                   //默认第一个号码
+	$("#CALLERID").combobox('setValue','empty');                   //默认第一个号码
 	$("#REMINDER_TYPE").combobox('setValue','1');              //催缴类型为1，即是电话费
 	$("#TASK_TYPE").combobox('setValue','1');                  //默认任务类型为普通任务
 	$("#RETRY_TIMES").combobox('setValue','3');                //默认的重试次数3次
@@ -90,6 +90,12 @@ function autoCallTaskSaveAdd() {
 
 	var chedkRs = checkOutInput();   //输入校验,主要是检查输入项是否为空
 	if(!chedkRs) {
+		return;
+	}
+	
+	var callerId = $("#CALLERID").combobox('getValue');
+	if(callerId=='empty') {
+		alert("主叫号码不能为空 ,请重新选择!");
 		return;
 	}
 	
@@ -214,6 +220,7 @@ function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,sch
 			$("#MESSAGE_CONTENT").textbox('textbox').attr('readonly',true);
 		}
 	}else {
+		$('#MESSAGE_CONTENT').textbox('setValue','');
 		$("#isSendMessageCheckBox").prop("checked",false);
 		$('#messageContentTr').css('display','none');
 	} 
@@ -235,6 +242,13 @@ function autoCallTaskSaveEdit() {
 	if(!chedkRs) {
 		return;
 	}
+	
+	var callerId = $("#CALLERID").combobox('getValue');
+	if(callerId=='empty') {
+		alert("主叫号码不能为空 ,请重新选择!");
+		return;
+	}
+	
 	//alert($("#TASK_TYPE").combobox('getValue') + "---" + $('#REMINDER_TYPE').combobox('getValue'));
 	$('#autoCallTaskForm').form('submit',{
 
@@ -456,7 +470,7 @@ function loadDataForCreateAutoCallTaskSearch() {
 		valueField:'id',
 		textField:'text',
 		panelHeight:'auto'
-	}).combobox('loadData',callerIdComboboxDataFor0);
+	}).combobox('loadData',callerIdComboboxDataFor1).combobox('setValue','empty');
 	
 	$("#START_DATE").datebox('setValue',getCurrDate());   	//任务开始时间
 	$("#END_DATE").datebox('setValue',getDateAfter(3));     //任务结束时间
