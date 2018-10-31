@@ -3,7 +3,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge"/>
 	<title>组织管理</title>
 	<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
 	<link rel="stylesheet" type="text/css" href="themes/icon.css">
@@ -76,6 +75,7 @@
 
 			$("#ORG_CODE").textbox("readonly",false);
 			$("#ORG_CODE").textbox('textbox').css('background-color','');
+			$("#ORG_CODE").textbox('setValue',Date.now());
 			
 			$("#PARENT_ORG_CODE").val($("#orgCode").val());
 			$("#saveBtn").removeAttr("onclick");
