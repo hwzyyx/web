@@ -172,6 +172,8 @@ public class CommonController extends Controller {
 	}
 	
 	public void login() {
+		setAttr("webSiteName",ParamConfig.paramConfigMap.get("paramType_1_webSiteName"));
+		setAttr("copyrightInfo",ParamConfig.paramConfigMap.get("paramType_1_copyrightInfo"));
 		render("login.jsp");
 	}
 	

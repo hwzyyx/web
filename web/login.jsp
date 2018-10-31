@@ -15,7 +15,7 @@
 
 		var webSiteName = '${webSiteName}';
 		var copyrightInfo = '${copyrightInfo}';
-	
+		//alert("webSiteName:" + webSiteName + ",copyrightInfo:" + copyrightInfo);
 		$(function(){
 			$(document).keydown(function(event) { 
 				if (event.keyCode == 13) { 
@@ -26,24 +26,14 @@
 			$("#webSiteNameSpan").text(webSiteName);
 			$("#copyrightSpan").text(copyrightInfo);
 
-			/*$.ajax({
-				url:'getDictName?groupCode=COPYRIGHT&dictCode=1',
-				method:'POST',
-				dataType:'json',
-				success:function(rs) {
-					var statusCode = rs.statusCode; //返回的结果类型
-					var message = rs.message;       //返回执行的信息
-					if(statusCode == 'success') {         //返回的数据不为空时，才进行勾选当前操作员的角色
-						$("#copyright").text(message);						
-					}
-				}
-			});*/
 		});
 		
 		function doLogin() {
-			var operId = $.trim($("#OPER_ID").val());
-			var password = $.trim($("#PASSWORD").val());
 			
+			
+			var operId = $.trim($("#OPER_ID").textbox('getValue'));
+			var password = $.trim($("#PASSWORD").textbox('getValue'));
+			//alert(operId + "    ==   " + password);
 			if(operId.length==0 || password.length==0) {
 				$.messager.alert("提示",'工号及密码不能为空，请重新填写登录信息!',"error");
 			}else {
@@ -70,22 +60,22 @@
 
 	</script>
 </head>
-<body style="text-align: center;background:url('themes/icons/login_bg.png') repeat-x;">
+
+<body style="text-align: center;background:url('themes/icons/login_bg_2.png') repeat-x;">
 	<div style="position: absolute;top:120px;left:350px;">
 		<span style="color:white;font-weight: bold;font-size: 30px;" id="webSiteNameSpan"></span>
 	</div>
-	<input name="operator.OPER_ID" id="OPER_ID" style="position:absolute;top:245px;left:755px;width:175px;border:0px;"/>
-	<input type="password" name="operator.PASSWORD" id="PASSWORD" style="position:absolute;top:295px;left:755px;width:175px;border:0px;"/>
-	<!-- input name="operator.CALL_NUMBER" id="CALL_NUMBER" style="position:absolute;top:300px;left:755px;width:104px;border:0px;"/ -->
-	</div>		
-	<div style="position:absolute;top:342px;left:732px;width:177px;heigth:26px;text-align: left;" onclick="doLogin();">
-		<span style="color:#4D90FE">|</span>
+	
+	<div style="position: absolute;top:230px;left:690px;">
+		工&nbsp;&nbsp;&nbsp;&nbsp;号：<input style="width:180px;" name="operId" id="OPER_ID" class="easyui-textbox" type="text"></input><br/><br/>
+		密&nbsp;&nbsp;&nbsp;&nbsp;码：<input style="width:180px;" name="password" id="PASSWORD" class="easyui-textbox" type="password"></input><br/><br/><br/>
+		<a href="#" id="autoCallTaskSaveBtn" style="width:240px;" class="easyui-linkbutton" iconCls="icon-man" onclick="doLogin()">登录</a>
 	</div>
 
 	<div style="position:absolute;top:470px;left:540px;">
 		<span style="color:#9E9FA0;font-size: 13px;" id="copyrightSpan"></span>
 	</div>
-
 			
 </body>
+
 </html>
