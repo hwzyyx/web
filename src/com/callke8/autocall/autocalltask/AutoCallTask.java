@@ -13,6 +13,7 @@ import com.callke8.autocall.autoblacklist.AutoBlackList;
 import com.callke8.autocall.questionnaire.Questionnaire;
 import com.callke8.autocall.schedule.Schedule;
 import com.callke8.autocall.voice.Voice;
+import com.callke8.system.callerid.SysCallerId;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.org.Org;
 import com.callke8.system.param.Param;
@@ -128,8 +129,11 @@ public class AutoCallTask extends Model<AutoCallTask> {
 			}
 			
 			//设置主叫号码（由于是从数据字典选择的，要从字典中取出真实号码）
-			String callerIdDesc = MemoryVariableUtil.getDictName("CALLERID", r.getStr("CALLERID"));
-			r.set("CALLERID_DESC", callerIdDesc);
+			//String callerIdDesc = MemoryVariableUtil.getDictName("CALLERID", r.getStr("CALLERID"));
+			SysCallerId sysCallerId = SysCallerId.dao.getSysCallerIdById(Integer.valueOf(r.getStr("CALLERID")));
+			if(!BlankUtils.isBlank(sysCallerId)) {
+				r.set("CALLERID_DESC", sysCallerId.getStr("CALLERID"));
+			}
 			
 			//设置调度计划名称
 			String scheduleId = r.get("SCHEDULE_ID");   //取出调度计划ID

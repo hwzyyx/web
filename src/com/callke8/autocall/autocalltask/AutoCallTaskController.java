@@ -15,6 +15,7 @@ import com.callke8.autocall.flow.AutoFlow;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.common.CommonController;
 import com.callke8.common.IController;
+import com.callke8.system.callerid.SysCallerIdController;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
@@ -39,6 +40,9 @@ public class AutoCallTaskController extends Controller implements IController {
 
 	@Override
 	public void index() {
+		
+		String currOrgCode = getSession().getAttribute("currOrgCode").toString();
+		System.out.println(currOrgCode);
 		
 		//获取并返回组织代码
 		setAttr("orgComboTreeData", CommonController.getOrgComboTreeToString("1",getSession().getAttribute("currOrgCode").toString()));
@@ -65,7 +69,9 @@ public class AutoCallTaskController extends Controller implements IController {
 		setAttr("messageStateComboboxDataFor1", CommonController.getComboboxToString("COMMON_MESSAGE_STATE","1"));
 		
 		//主叫号码
-		setAttr("callerIdComboboxDataFor0", CommonController.getComboboxToString("CALLERID","0"));
+		String currOperId = String.valueOf(getSession().getAttribute("currOperId"));     //取出当前登录的用户
+		setAttr("callerIdComboboxDataFor1",SysCallerIdController.getSysCallerIdToComboboxByOperId(currOperId, "1"));
+		//setAttr("callerIdComboboxDataFor0", CommonController.getComboboxToString("CALLERID","0"));
 		
 		render("list.jsp");
 	}
