@@ -25,7 +25,7 @@
     <script type="text/javascript" src="locale/easyui-lang-zh_CN.js"></script>
     
     <script type="text/javascript">
-    
+   		var yAxisMax = ${queueMaxCount};    //获取后台传过来的排队机最大限制
     	$(function(){
     		
     	});
@@ -96,7 +96,7 @@
 	    yAxis: {
 	        type: 'value',
 	        min: 0,
-	        max: 50,
+	        max: yAxisMax,
 	        minInterval: 1
 	    },
 	    series: [{
