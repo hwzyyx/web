@@ -43,7 +43,7 @@
 		
 		var messageStateComboboxDataFor1 = eval('${messageStateComboboxDataFor1}');
 	
-		var callerIdComboboxDataFor0 = eval('${callerIdComboboxDataFor0}');
+		var callerIdComboboxDataFor1 = eval('${callerIdComboboxDataFor1}');
 		
 		//时间类型,0:创建时间;1:外呼时间, 默认为0。
     	var dateTimeType = 0;       //主要用于查询数据时，时间区段代表是以创建时间为查询区段，还是以外呼时间为查询区段
