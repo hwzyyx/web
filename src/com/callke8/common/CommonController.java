@@ -8,23 +8,17 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
-import net.sf.json.JSONArray;
-import sun.management.resources.agent;
-
 import org.asteriskjava.live.AsteriskChannel;
 import org.asteriskjava.live.CallerId;
 import org.asteriskjava.live.LiveException;
 import org.asteriskjava.live.OriginateCallback;
-import org.eclipse.jetty.util.log.Log;
 
 import com.callke8.astutils.AstMonitor;
-import com.callke8.astutils.AsteriskConfig;
 import com.callke8.astutils.CtiUtils;
 import com.callke8.astutils.LaunchCtiService;
 import com.callke8.call.incoming.InComing;
 import com.callke8.system.loginlog.LoginLog;
 import com.callke8.system.module.ModuleController;
-import com.callke8.system.operator.OperRole;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.org.Org;
 import com.callke8.system.param.ParamConfig;
@@ -32,15 +26,16 @@ import com.callke8.utils.BlankUtils;
 import com.callke8.utils.ComboboxJson;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.HttpRequestUtils;
-import com.callke8.utils.Md5Utils;
 import com.callke8.utils.MemoryVariableUtil;
+import com.callke8.utils.OrgTreeUtils;
 import com.callke8.utils.RenderJson;
 import com.callke8.utils.TreeJson;
-import com.google.common.util.concurrent.Monitor;
 import com.jfinal.aop.ClearInterceptor;
 import com.jfinal.core.Controller;
 import com.jfinal.log.Logger;
 import com.jfinal.plugin.activerecord.Record;
+
+import net.sf.json.JSONArray;
 
 @ClearInterceptor
 public class CommonController extends Controller {
@@ -112,7 +107,7 @@ public class CommonController extends Controller {
 		
 		String currOperId = String.valueOf(httpSession.getAttribute("currOperId"));      //当前登录的用户ID
 		String currOrgCode = String.valueOf(httpSession.getAttribute("currOrgCode"));    //当前登录的组织码
-		System.out.println("-------=======查询任务，登录的用户ID ：" + currOperId + ", 登录用户的组织:" + currOrgCode);
+		//System.out.println("-------=======查询任务，登录的用户ID ：" + currOperId + ", 登录用户的组织:" + currOrgCode);
 		if(!(BlankUtils.isBlank(currOperId) || BlankUtils.isBlank(currOrgCode))) {
 			//由于查询出来的记录，只能是自己及自己下属的记录，所以不能以组织码为条件去查询，只能是根据组织码条件，查询出相应的组织码下有什么用户
 			List<Record> opertorList = Operator.dao.getOperatorByOrgCode(orgCode);    //根据传入组织代码字符串，查出这些组织的所有的操作员
@@ -123,8 +118,10 @@ public class CommonController extends Controller {
 					String orgCodeRs = r.getStr("ORG_CODE");            //组织代码
 					
 					//查出来的操作员，与登录的用户的组织一样时，就表示这个与登录的人是同级的人，需要去除掉
-					if(!operIdRs.equals(currOperId) && orgCodeRs.equals(currOrgCode)) {    //如果当前客户ID不是当前登录的人，但是组织码与当前登录用户相同的组织代码时，表示这个客户应该与登录用户是同级关系，要去掉
-						continue;
+					if(!currOperId.equals("super")) {
+						if(!operIdRs.equals(currOperId) && orgCodeRs.equals(currOrgCode)) {    //如果当前客户ID不是当前登录的人，但是组织码与当前登录用户相同的组织代码时，表示这个客户应该与登录用户是同级关系，要去掉
+							continue;
+						}
 					}
 					operIdString += "\'" + operIdRs + "\',";
 				}
@@ -500,14 +497,57 @@ public class CommonController extends Controller {
 	 * @return
 	 */
 	public static String getOrgComboTreeToString(String flag,String currOrgCode) {
+		
+		//查询所有的组织
+		List<Record> orgList = Org.dao.getAllOrg(); 
+		
+		OrgTreeUtils otu = new OrgTreeUtils();
+		List<Record> childList = otu.getChildNode(orgList, currOrgCode);     //得到当前组织的所有下属组织部门
+		
+		List<TreeJson> tjs = new ArrayList<TreeJson>();    //定义一个 treeJson 的List
+		
+		for(Record r:childList) {
+			
+			TreeJson tj = new TreeJson();
+			tj.setId(r.get("ORG_CODE").toString());
+			tj.setText(r.get("ORG_NAME").toString());
+			tj.setPid(r.get("PARENT_ORG_CODE").toString());
+			tj.setDesc(r.get("ORG_DESC").toString());
+			
+			tjs.add(tj);
+		}
+		
+		List<TreeJson> results = TreeJson.formatTree(tjs);
+		
+		JSONArray jsonArray = JSONArray.fromObject(results);
+		
+		return jsonArray.toString();
+		
+	}
+	
+	/**
+	 * 获取组织代码的选择树
+	 * 
+	 * @param flag
+	 * 		注：
+	 * 		flag=0   表示得到的是所有的组织代码选择树
+	 * 		flag=1   表示仅得到自己所在组织以下的选择树
+	 * @param currOrgCode
+	 * 		当前的登录用户所在用户组织代码
+	 * @return
+	 */
+	public static String getOrgComboTreeToString_bak(String flag,String currOrgCode) {
 		System.out.println("取 getOrgComboTree的开始时间:" + DateFormatUtils.getTimeMillis());
 		
 		String parentOrgCode = "-1";
 		
 		if(!BlankUtils.isBlank(flag) && flag.equalsIgnoreCase("1")) {   //如果为1时，表示返回自己所在组织以下的选择树
 			Record org = Org.dao.getOrgByOrgCode(currOrgCode);          //根据当前登录用户所在的组织，得到组织信息
-			parentOrgCode = org.get("PARENT_ORG_CODE").toString();
+			//parentOrgCode = org.get("PARENT_ORG_CODE").toString();
+			parentOrgCode = org.get("ORG_CODE").toString();
 		}
+		
+		System.out.println("parentOrgCode:-----" + parentOrgCode);
 		
 		//查询所有的组织
 		List<Record> orgList = Org.dao.getAllOrg(); 
