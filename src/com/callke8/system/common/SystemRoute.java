@@ -1,5 +1,7 @@
 package com.callke8.system.common;
 
+import com.callke8.system.callerid.SysCallerIdController;
+import com.callke8.system.calleridassign.SysCallerIdAssignController;
 import com.callke8.system.dict.DictGroupController;
 import com.callke8.system.dict.DictItemController;
 import com.callke8.system.loginlog.LoginLogController;
@@ -28,7 +30,8 @@ public class SystemRoute extends Routes {
 		add("/dictItem",DictItemController.class,"system/dictgroup");
 		add("/operationLog",OperationLogController.class,"system/operationlog");
 		add("/param",ParamController.class,"system/param");
-		
+		add("/sysCallerId",SysCallerIdController.class,"system/callerid");
+		add("/sysCallerIdAssign",SysCallerIdAssignController.class,"system/callerid");
 		
 	}
 
