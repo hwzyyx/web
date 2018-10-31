@@ -127,27 +127,24 @@ public class SysCallerIdController extends Controller implements IController  {
 		String comboboxString = null;
 		
 		List<Record> sysCallerIdList = SysCallerId.dao.getAllSysCallerId();    						//取出所有的主叫号码
-		if(BlankUtils.isBlank(sysCallerIdList) || sysCallerIdList.size()==0) {  return comboboxString;  }    //如果主叫号码为空时，返回空
-		
 		List<Record> assignList = SysCallerIdAssign.dao.getSysCallerIdAssignByOperId(operId);       //取出操作员被分配到的情况
-		if(BlankUtils.isBlank(assignList) || assignList.size()==0) {  return comboboxString;  }				  //如果被分配到的结果为空，返回空
 		
 		List<Record> newList = new ArrayList<Record>();     //定义一个新的 list
 		
-		for(Record sysCallerId:sysCallerIdList) {      //遍历主叫号码
-			
-			int id = sysCallerId.getInt("ID");              //ID
-			String callerId = sysCallerId.getStr("CALLERID");
-			for(Record sysCallerIdAssign:assignList) {      //再遍历分配的结果
-				int callerId_Id = sysCallerIdAssign.getInt("CALLERID_ID");    //取出分配到的 ID
-				if(id == callerId_Id) {
-					newList.add(sysCallerId);
+		if(!BlankUtils.isBlank(sysCallerIdList) && sysCallerIdList.size()>0) {                       //主叫号码列表大于0时
+			if(!BlankUtils.isBlank(assignList) && assignList.size()>0) {
+				for(Record sysCallerId:sysCallerIdList) {      //遍历主叫号码
+					int id = sysCallerId.getInt("ID");              		//ID
+					//String callerId = sysCallerId.getStr("CALLERID");       //主叫号码
+					for(Record sysCallerIdAssign:assignList) {      //再遍历分配的结果
+						int callerId_Id = sysCallerIdAssign.getInt("CALLERID_ID");    //取出分配到的 ID
+						if(id == callerId_Id) {
+							newList.add(sysCallerId);
+						}
+					}
 				}
 			}
 		}
-		
-		//然后再根据新的 list 拼接 combobox 的字符串
-		if(BlankUtils.isBlank(newList) || newList.size()==0) {     return comboboxString;  }
 		
 		
 		List<ComboboxJson> cbjs = new ArrayList<ComboboxJson>();   //定义一个TreeJson 的 list
@@ -161,7 +158,7 @@ public class SysCallerIdController extends Controller implements IController  {
 			
 		}
 		
-		if(!BlankUtils.isBlank(newList)) {
+		if(!BlankUtils.isBlank(newList) && newList.size()>0) {
 			for(Record record:newList) {
 				ComboboxJson cbj = new ComboboxJson();
 				cbj.setId(record.get("ID").toString());
