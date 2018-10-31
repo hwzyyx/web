@@ -40,6 +40,9 @@ import com.callke8.report.cdr.Cdr;
 import com.callke8.report.clientinfo.ClientInfo;
 import com.callke8.report.clienttouch.ClientTouchRecord;
 import com.callke8.report.common.ReportRoute;
+import com.callke8.system.callerid.SysCallerId;
+import com.callke8.system.callerid.SysCallerIdController;
+import com.callke8.system.calleridassign.SysCallerIdAssign;
 import com.callke8.system.common.SystemRoute;
 import com.callke8.system.dict.DictGroup;
 import com.callke8.system.dict.DictItem;
@@ -131,6 +134,8 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("sys_dict_group", DictGroup.class);
 		arp.addMapping("sys_operation_log", OperationLog.class);
 		arp.addMapping("sys_param", Param.class);
+		arp.addMapping("sys_callerid", SysCallerId.class);
+		arp.addMapping("sys_callerid_assign", SysCallerIdAssign.class);
 		
 		//外呼管理表映射
 		arp.addMapping("call_task", CallTask.class);
