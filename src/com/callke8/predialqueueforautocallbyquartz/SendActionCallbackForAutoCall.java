@@ -1,5 +1,8 @@
 package com.callke8.predialqueueforautocallbyquartz;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import org.asteriskjava.manager.SendActionCallback;
 import org.asteriskjava.manager.response.ManagerResponse;
 
@@ -38,6 +41,15 @@ public class SendActionCallbackForAutoCall implements SendActionCallback {
 			//在 BSHHandleCallOutRecordResultJob中的操作并不一定会去更改状态了
 			AutoCallPredial.updateTelehponeStateForFailure("未接或请求通道失败", actt, autoCallTask);
 			StringUtil.log(this, "执行外呼 Response结果为:" + responseResult + ",外呼信息:" + actt + " 外呼失败!");
+			
+			//返回所有的此 Response 的内容
+			/*System.out.println("外呼失败，失败时，返回的响应的键值对信息如下：");
+			Map<String,Object> allAttrs = response.getAttributes();
+			Iterator<Map.Entry<String,Object>> iterator = allAttrs.entrySet().iterator();
+			while(iterator.hasNext()) {
+				Map.Entry<String, Object> entry = iterator.next();
+				System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+			}*/
 			
 			//如果外呼失败，则应该马上释放外呼资源
 			AutoCallPredial.activeChannelCount--;

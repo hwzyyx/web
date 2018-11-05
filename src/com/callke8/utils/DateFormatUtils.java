@@ -282,6 +282,38 @@ public class DateFormatUtils {
 			return getDate();
 		}
 	}
+	
+	/**
+	 * 检查某个日期,是否符合传入的规则
+	 * 
+	 * @param date
+	 *            日期时间字符串
+	 * @param pattern
+	 *            日期时间格式
+	 * @return true OR false
+	 */
+	public static boolean checkDateFormat(String date, String pattern) {
+		boolean b = true;
+		if (BlankUtils.isBlank(date)) {
+			return false;
+		}
+
+		if (BlankUtils.isBlank(pattern)) {
+			return false;
+		}
+
+		SimpleDateFormat format = new SimpleDateFormat(pattern);
+		
+		try {
+			format.setLenient(false);
+			format.parse(date);
+		} catch (ParseException e) {
+			b = false;
+		}
+		
+		return b;
+		
+	}
 
 	/**
 	 * 获取当前时间的日期对象

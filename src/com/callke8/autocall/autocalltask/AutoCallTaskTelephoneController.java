@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.NumberUtils;
+
 import com.callke8.autocall.autoblacklist.AutoBlackListTelephone;
 import com.callke8.autocall.autonumber.AutoNumberTelephone;
 import com.callke8.common.IController;
@@ -78,6 +80,10 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		
 		//根据taskId,先取出任务信息
 		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+		if(BlankUtils.isBlank(autoCallTask)) {
+			render(RenderJson.error("新增号码失败,外呼任务已经不存在，可能已被删除!"));
+			return;
+		}
 		boolean checkRs = checkBlackList(customerTel,autoCallTask);   //黑名单检查
 		if(checkRs) {
 			render(RenderJson.error("新增号码失败,号码" + customerTel + "在黑名单中!"));
@@ -114,6 +120,13 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		autoCallTaskTelephone.set("RESPOND",null);
 		autoCallTaskTelephone.set("CREATE_TIME", DateFormatUtils.getCurrentDate());
 		
+		//(3)检查号码的格式
+		String checkResult = checkDataFormat(autoCallTask,autoCallTaskTelephone);    //检查号码格式
+		if(!BlankUtils.isBlank(checkResult)) {
+			render(RenderJson.error(checkResult));
+			return;
+		}
+		
 		boolean b = AutoCallTaskTelephone.dao.add(autoCallTaskTelephone);
 		
 		if(b) {
@@ -122,6 +135,216 @@ public class AutoCallTaskTelephoneController extends Controller implements
 			render(RenderJson.error("新增号码失败!"));
 		}
 	}
+	
+	/**
+	 * 检查号码格式
+	 * 
+	 * @param act
+	 * @param actt
+	 * @return
+	 * 		如果返回的信息中，为空，表示检查正常；如果不为空，返回的结果就是错误的原因。
+	 */
+	public String checkDataFormat(AutoCallTask act,Record actt) {
+		String msg = null;
+		
+		String taskType = act.getStr("TASK_TYPE");               //任务类型
+		String reminderType = act.getStr("REMINDER_TYPE");       //催缴类型
+		if(taskType.equals("3")) {     //如果为催缴任务时，才执行号码类型检查
+			String period = actt.getStr("PERIOD");						//日期
+			String accountNumber = actt.getStr("ACCOUNT_NUMBER");        //户号
+			String address = actt.getStr("ADDRESS");               	 	//地址
+			String charge = actt.getStr("CHARGE");						//费用
+			String displayNumber = actt.getStr("DISPLAY_NUMBER"); 		//表显数量
+			String dosage = actt.getStr("DOSAGE");						//使用量
+			String illegalCity = actt.getStr("ILLEGAL_CITY");			//违章城市	
+			String illegalReason = actt.getStr("ILLEGAL_REASON");		//违章事由
+			String punishmentUnit = actt.getStr("PUNISHMENT_UNIT");		//处罚单位	
+			String callPoliceTel = actt.getStr("CALL_POLICE_TEL");		//报警人电话
+			String vehicleType = actt.getStr("VEHICLE_TYPE");			//车辆类型
+			String plateNumber = actt.getStr("PLATE_NUMBER");			//车牌号码
+			//催缴类型编号： 1电费   2水费  3电话费  4燃气费 5物业费 6车辆违章  7交警移车  8社保催缴
+			if(reminderType.equalsIgnoreCase("1")) {              	//电费催缴
+				//需要检查：日期、户号、地址、费用
+				//(1)检查日期
+				if(!checkPeriodFormat(period)) {
+					msg = "新增号码失败,日期为空或格式不对!";
+					return msg;
+				}
+				//(2)检查户号
+				if(!checkAccountNumber(accountNumber)) {
+					msg = "新增号码失败,户号为空或格式不对!";
+					return msg;
+				}
+				//（3）检查地址
+				if(BlankUtils.isBlank(address)) {
+					msg = "新增号码失败,地址为空!";
+					return msg;
+				}
+				//(4) 检查费用
+				if(!checkCharge(charge)) {
+					msg = "新增号码失败,费用为空或格式不对!";
+					return msg;
+				}
+				
+			}else if(reminderType.equalsIgnoreCase("2")) {			//水费催缴
+				//需要检查：日期、地址、表显数据、使用量、费用、户号
+				//（1）检查日期
+				if(!checkPeriodFormat(period)) {
+					msg = "新增号码失败,日期为空或格式不对!";
+					return msg;
+				}
+				//(2)检查地址
+				if(BlankUtils.isBlank(address)) {
+					msg = "新增号码失败,地址为空!";
+					return msg;
+				}
+				//(3)检查表显数据
+				if(!checkDisplayNumber(displayNumber)) {
+					msg = "新增号码失败,表显数据为空或格式不对!";
+					return msg;
+				}
+				//（4）使用量
+				if(!checkDosage(dosage)) {
+					msg = "新增号码失败,使用量为空或格式不对!";
+					return msg;
+				}
+				//（5）检查费用
+				if(!checkCharge(charge)) {
+					msg = "新增号码失败,费用为空或格式不对!";
+					return msg;
+				}
+				//(6)检查户号
+				if(!checkAccountNumber(accountNumber)) {
+					msg = "新增号码失败,户号为空或格式不对!";
+					return msg;
+				}
+				
+			}else if(reminderType.equalsIgnoreCase("3")) {			//电话费催缴
+				//需要检查：日期、户号、地址、电话费
+				//（1）检查日期
+				if(!checkPeriodFormat(period)) {
+					msg = "新增号码失败,日期为空或格式不对!";
+					return msg;
+				}
+				//(2)检查户号
+				if(!checkAccountNumber(accountNumber)) {
+					msg = "新增号码失败,户号为空或格式不对!";
+					return msg;
+				}
+				//(3)检查地址
+				if(BlankUtils.isBlank(address)) {
+					msg = "新增号码失败,地址为空!";
+					return msg;
+				}
+				//（4）检查费用
+				if(!checkCharge(charge)) {
+					msg = "新增号码失败,费用为空或格式不对!";
+					return msg;
+				}
+			}else if(reminderType.equalsIgnoreCase("4")) {			//燃气费催缴
+				//需要检查：日期、户号、地址、电话费
+				//（1）检查日期
+				if(!checkPeriodFormat(period)) {
+					msg = "新增号码失败,日期为空或格式不对!";
+					return msg;
+				}
+				//(2)检查户号
+				if(!checkAccountNumber(accountNumber)) {
+					msg = "新增号码失败,户号为空或格式不对!";
+					return msg;
+				}
+				//(3)检查地址
+				if(BlankUtils.isBlank(address)) {
+					msg = "新增号码失败,地址为空!";
+					return msg;
+				}
+				//（4）检查费用
+				if(!checkCharge(charge)) {
+					msg = "新增号码失败,费用为空或格式不对!";
+					return msg;
+				}
+			}else if(reminderType.equalsIgnoreCase("5")) {			//物业费催缴
+				//需要检查：日期、地址、物业费
+				//（1）检查日期
+				if(!checkPeriodFormat(period)) {
+					msg = "新增号码失败,日期为空或格式不对!";
+					return msg;
+				}
+				//(2)检查地址
+				if(BlankUtils.isBlank(address)) {
+					msg = "新增号码失败,地址为空!";
+					return msg;
+				}
+				//（3）检查费用
+				if(!checkCharge(charge)) {
+					msg = "新增号码失败,费用为空或格式不对!";
+					return msg;
+				}
+				
+			}else if(reminderType.equalsIgnoreCase("6")) {			//车辆违章
+				//需要检查：车牌号码、日期、违法城市、违法事由、处罚单位
+				//（1）检查车牌号码
+				if(BlankUtils.isBlank(plateNumber)) {
+					msg = "新增号码失败,车牌号码为空!";
+					return msg;
+				}
+				//（2）检查日期
+				if(!checkPeriodFormat(period)) {
+					msg = "新增号码失败,日期为空或格式不对!";
+					return msg;
+				}
+				//(3)检查违法城市
+				if(BlankUtils.isBlank(illegalCity)) {
+					msg = "新增号码失败,违法城市为空!";
+					return msg;
+				}
+				//（4)检查事由
+				if(BlankUtils.isBlank(illegalReason)) {
+					msg = "新增号码失败,违法事由为空!";
+					return msg;
+				}
+				//(5)自罚单位
+				if(BlankUtils.isBlank(punishmentUnit)) {
+					msg = "新增号码失败,处罚单位为空!";
+					return msg;
+				}
+				
+			}else if(reminderType.equalsIgnoreCase("7")) {          //7交警移车
+				//需要检查：报警人电话、车辆类型、车牌号码
+				//（1）检查报警人电话，
+				if(!checkCallPoliceTel(callPoliceTel)) {
+					msg = "新增号码失败,报警人电话为空或格式不对!";
+					return msg;
+				}
+				//(2)检查车辆类型
+				if(BlankUtils.isBlank(vehicleType)) {
+					msg = "新增号码失败,车辆类型为空!";
+					return msg;
+				}
+				//(3)检查车牌号码
+				if(BlankUtils.isBlank(plateNumber)) {
+					msg = "新增号码失败,车牌号码为空!";
+					return msg;
+				}
+			}else if(reminderType.equalsIgnoreCase("8")) {          //社保催缴
+				//需要检查：日期、费用
+				//（1）检查日期
+				if(!checkPeriodFormat(period)) {
+					msg = "新增号码失败,日期为空或格式不对!";
+					return msg;
+				}
+				//(2)检查费用
+				if(!checkCharge(charge)) {
+					msg = "新增号码失败,费用为空或格式不对!";
+					return msg;
+				}
+			}
+		}
+		
+		return null;
+		
+	}
+	
 	
 	/**
 	 * 通过号码组的方式添加号码
@@ -288,6 +511,26 @@ public class AutoCallTaskTelephoneController extends Controller implements
 			return;
 		}
 		
+		Record actt = new Record();
+		actt.set("PERIOD", period);
+		actt.set("DISPLAY_NUMBER", displayNumber);
+		actt.set("DOSAGE", dosage);
+		actt.set("CHARGE", charge);
+		actt.set("ACCOUNT_NUMBER", accountNumber);
+		actt.set("ADDRESS", address);
+		actt.set("CALL_POLICE_TEL", callPoliceTel);
+		actt.set("VEHICLE_TYPE", vehicleType);
+		actt.set("PLATE_NUMBER", plateNumber);
+		actt.set("ILLEGAL_CITY", illegalCity);
+		actt.set("PUNISHMENT_UNIT", punishmentUnit);
+		actt.set("ILLEGAL_REASON", illegalReason);
+		actt.set("COMPANY", company);
+		//(3)检查号码的格式
+		String checkResult = checkDataFormat(autoCallTask,actt);    //检查号码格式
+		if(!BlankUtils.isBlank(checkResult)) {
+			render(RenderJson.error(checkResult));
+			return;
+		}
 		
 		boolean b = AutoCallTaskTelephone.dao.update(customerTel,customerName,period,displayNumber,dosage,charge,accountNumber,address,callPoliceTel,vehicleType,plateNumber,illegalCity,punishmentUnit,illegalReason,company,telId);
 		
@@ -414,6 +657,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		//新建两个 list，用于格式化成可以存储到数据库的 Record
 		ArrayList<Record> afterBlackListResult = new ArrayList<Record>();
 		ArrayList<Record> afterRepetitionResult = new ArrayList<Record>();
+		ArrayList<Record> afterFormatCheckResult = new ArrayList<Record>();           //数据格式检查
 		
 		//取出黑名单中的号码,并以List返回,用于黑名单过滤
 		List<String> blackListTelephones = AutoBlackListTelephone.dao.getAutoBlackListTelephoneByBlackListId(blackListId);
@@ -600,13 +844,296 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		
 		sb.append("<br/>重复的号码数量为:" + repetitionCount);
 		
-		int count  = AutoCallTaskTelephone.dao.batchSave(afterRepetitionResult);
+		//第三步，对数据的格式检查，比如日期格式：201810，户号格式：纯数字，金额、等的检查
+		int formatWrongCount = 0;
+		if(taskType.equalsIgnoreCase("3")) {   //如果是催缴类时,进行数据格式检查
+			for(Record act:afterRepetitionResult) {  //进行数据格式检查
+				String period = act.getStr("PERIOD");						//日期
+				String accountNumber = act.getStr("ACCOUNT_NUMBER");        //户号
+				String address = act.getStr("ADDRESS");               	 	//地址
+				String charge = act.getStr("CHARGE");						//费用
+				String displayNumber = act.getStr("DISPLAY_NUMBER"); 		//表显数量
+				String dosage = act.getStr("DOSAGE");						//使用量
+				String illegalCity = act.getStr("ILLEGAL_CITY");			//违章城市	
+				String illegalReason = act.getStr("ILLEGAL_REASON");		//违章事由
+				String punishmentUnit = act.getStr("PUNISHMENT_UNIT");		//处罚单位	
+				String callPoliceTel = act.getStr("CALL_POLICE_TEL");		//报警人电话
+				String vehicleType = act.getStr("VEHICLE_TYPE");			//车辆类型
+				String plateNumber = act.getStr("PLATE_NUMBER");			//车牌号码
+				//催缴类型编号： 1电费   2水费  3电话费  4燃气费 5物业费 6车辆违章  7交警移车  8社保催缴
+				if(reminderType.equalsIgnoreCase("1")) {              	//电费催缴
+					//需要检查：日期、户号、地址、费用
+					//(1)检查日期
+					if(!checkPeriodFormat(period)) {    
+						formatWrongCount++;
+						continue;
+					}
+					//(2)检查户号
+					if(!checkAccountNumber(accountNumber)) {
+						formatWrongCount++;
+						continue;
+					}
+					//（3）检查地址
+					if(BlankUtils.isBlank(address)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(4) 检查费用
+					if(!checkCharge(charge)) {
+						formatWrongCount++;
+						continue;
+					}
+					
+				}else if(reminderType.equalsIgnoreCase("2")) {			//水费催缴
+					//需要检查：日期、地址、表显数据、使用量、费用、户号
+					//（1）检查日期
+					if(!checkPeriodFormat(period)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(2)检查地址
+					if(BlankUtils.isBlank(address)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(3)检查表显数据
+					if(!checkDisplayNumber(displayNumber)) {
+						formatWrongCount++;
+						continue;
+					}
+					//（4）使用量
+					if(!checkDosage(dosage)) {
+						formatWrongCount++;
+						continue;
+					}
+					//（5）检查费用
+					if(!checkCharge(charge)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(6)检查户号
+					if(!checkAccountNumber(accountNumber)) {
+						formatWrongCount++;
+						continue;
+					}
+					
+				}else if(reminderType.equalsIgnoreCase("3")) {			//电话费催缴
+					//需要检查：日期、户号、地址、电话费
+					//（1）检查日期
+					if(!checkPeriodFormat(period)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(2)检查户号
+					if(!checkAccountNumber(accountNumber)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(3)检查地址
+					if(BlankUtils.isBlank(address)) {
+						formatWrongCount++;
+						continue;
+					}
+					//（4）检查费用
+					if(!checkCharge(charge)) {
+						formatWrongCount++;
+						continue;
+					}
+				}else if(reminderType.equalsIgnoreCase("4")) {			//燃气费催缴
+					//需要检查：日期、户号、地址、电话费
+					//（1）检查日期
+					if(!checkPeriodFormat(period)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(2)检查户号
+					if(!checkAccountNumber(accountNumber)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(3)检查地址
+					if(BlankUtils.isBlank(address)) {
+						formatWrongCount++;
+						continue;
+					}
+					//（4）检查费用
+					if(!checkCharge(charge)) {
+						formatWrongCount++;
+						continue;
+					}
+				}else if(reminderType.equalsIgnoreCase("5")) {			//物业费催缴
+					//需要检查：日期、地址、物业费
+					//（1）检查日期
+					if(!checkPeriodFormat(period)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(2)检查地址
+					if(BlankUtils.isBlank(address)) {
+						formatWrongCount++;
+						continue;
+					}
+					//（3）检查费用
+					if(!checkCharge(charge)) {
+						formatWrongCount++;
+						continue;
+					}
+					
+				}else if(reminderType.equalsIgnoreCase("6")) {			//车辆违章
+					//需要检查：车牌号码、日期、违法城市、违法事由、处罚单位
+					//（1）检查车牌号码
+					if(BlankUtils.isBlank(plateNumber)) {
+						formatWrongCount++;
+						continue;
+					}
+					//（2）检查日期
+					if(!checkPeriodFormat(period)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(3)检查违法城市
+					if(BlankUtils.isBlank(illegalCity)) {
+						formatWrongCount++;
+						continue;
+					}
+					//（4)检查事由
+					if(BlankUtils.isBlank(illegalReason)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(5)自罚单位
+					if(BlankUtils.isBlank(punishmentUnit)) {
+						formatWrongCount++;
+						continue;
+					}
+					
+				}else if(reminderType.equalsIgnoreCase("7")) {          //7交警移车
+					//需要检查：报警人电话、车辆类型、车牌号码
+					//（1）检查报警人电话，
+					if(!checkCallPoliceTel(callPoliceTel)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(2)检查车辆类型
+					if(BlankUtils.isBlank(vehicleType)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(3)检查车牌号码
+					if(BlankUtils.isBlank(plateNumber)) {
+						formatWrongCount++;
+						continue;
+					}
+				}else if(reminderType.equalsIgnoreCase("8")) {          //社保催缴
+					//需要检查：日期、费用
+					//（1）检查日期
+					if(!checkPeriodFormat(period)) {
+						formatWrongCount++;
+						continue;
+					}
+					//(2)检查费用
+					if(!checkCharge(charge)) {
+						formatWrongCount++;
+						continue;
+					}
+				}
+				afterFormatCheckResult.add(act);
+			}
+			
+			sb.append("<br/>格式错误号码数量为:" + formatWrongCount);
+			
+		}else {
+			afterFormatCheckResult = afterRepetitionResult;
+		}
+		int count  = AutoCallTaskTelephone.dao.batchSave(afterFormatCheckResult);
 	
 		sb.append("<br/>成功插入号码数量为 :" + count + "!");
 		
 		return sb.toString();
 		
 	}
+	
+	//检查日期，一般日期为 201810或是20181020 
+	public static boolean checkPeriodFormat(String period) {
+		if(BlankUtils.isBlank(period)) {    //为空时，返回 false
+			return false;
+		}
+		
+		boolean b = DateFormatUtils.checkDateFormat(period,"yyyyMM");
+		boolean b1 = DateFormatUtils.checkDateFormat(period,"yyyyMMdd");   
+		
+		if(b || b1) {     //只要有一种格式匹配，即表示正确
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
+	//检查户号,是否不为空，且为纯数字
+	public static boolean checkAccountNumber(String accountNumber) {
+		if(BlankUtils.isBlank(accountNumber)) {
+			return false;
+		}
+		//是否为纯数字
+		boolean b =  StringUtil.isNumber(accountNumber);
+		return b;
+	}
+	
+	//检查费用
+	public static boolean checkCharge(String charge) {
+		if(BlankUtils.isBlank(charge)) {
+			return false;
+		}
+		
+		boolean isMoney = StringUtil.isMoney(charge);
+		return isMoney;
+	}
+	
+	//检查表显数量
+	public static boolean checkDisplayNumber(String displayNumber) {
+		if(BlankUtils.isBlank(displayNumber)) {
+			return false;
+		}
+		
+		//是否为纯数字
+		boolean b =  StringUtil.isNumber(displayNumber);
+		return b;
+	}
+	
+	//检查用量
+	public static boolean checkDosage(String dosage) {
+		if(BlankUtils.isBlank(dosage)) {
+			return false;
+		}
+		
+		//是否为纯数字
+		boolean b =  StringUtil.isNumber(dosage);
+		return b;
+	}
+	
+	//检查报警人电话号码
+	public static boolean checkCallPoliceTel(String callPoliceTel) {
+		
+		if(BlankUtils.isBlank(callPoliceTel)) {
+			return false;
+		}
+		
+		//是否为数字
+		boolean b = StringUtil.isNumber(callPoliceTel);
+		if(!b) {
+			return false;
+		}
+		
+		//长度是否大于7位以上
+		if(callPoliceTel.length()>=7) {
+			return true;
+		}else {
+			return false;
+		}
+		
+	}
+	
+	
 	
 	public void exportExcel() {
 		
