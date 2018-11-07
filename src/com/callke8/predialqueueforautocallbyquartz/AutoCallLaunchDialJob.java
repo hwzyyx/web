@@ -15,6 +15,7 @@ import org.quartz.SchedulerException;
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.system.param.ParamConfig;
+import com.callke8.utils.AddressReplaceUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.QuartzUtils;
@@ -127,7 +128,7 @@ public class AutoCallLaunchDialJob implements Job {
 						Record r = new Record();
 						r.set("fileName", String.valueOf(DateFormatUtils.getTimeMillis() + Math.round(Math.random()*9000 + 1000)));    //定义一个文件名);
 						r.set("columnName","ADDRESS_VOICE_NAME");
-						r.set("ttsContent", address);
+						r.set("ttsContent", AddressReplaceUtils.replaceAddressContent(address));    //调用地址替换工具类，将请求TTS的地址内容，去替换一些特殊字符，如数字、-
 						
 						list.add(r);
 					}
