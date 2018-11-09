@@ -18,6 +18,7 @@ import com.callke8.autocall.questionnaire.QuestionnaireRespond;
 import com.callke8.autocall.voice.Voice;
 import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.predialqueueforautocallbyquartz.AutoCallPredial;
+import com.callke8.system.callerid.SysCallerId;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
@@ -139,10 +140,15 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 								String channelInfo = ParamConfig.paramConfigMap.get("paramType_4_trunkInfo") + "/" + callOutTel;
 								
 								//获取主叫号码
-								String callerIdInfo = autoCallTask.get("CALLERID");   								//主叫的ID信息
-								String callerIdNumber = MemoryVariableUtil.getDictName("CALLERID", callerIdInfo);
+								String callerIdInfo = autoCallTask.get("CALLERID");   									//主叫的ID信息
+								SysCallerId sci = SysCallerId.dao.getSysCallerIdById(Integer.valueOf(callerIdInfo));    //得到主叫的记录
+								String callerIdNumber = null;
+								if(!BlankUtils.isBlank(sci)) {
+									callerIdNumber = sci.getStr("CALLERID");
+								}
 								
 								channel.setCallerId(callerIdNumber);
+								exec("Noop","准备执行外呼到报警人的电话上，主叫号码为:" + callerIdNumber + ",报警人通道为:" + channelInfo);
 								
 								exec("Dial",channelInfo);
 								
@@ -287,6 +293,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 	public List<Record> getPlayList(AutoCallTask autoCallTask,AutoCallTaskTelephone actt) {
 		
 		List<Record> list = new ArrayList<Record>();                    //新建一个List,用于储存播放语音
+		list.add(setRecord("wait","0.5",null));         				//先停顿0.5秒
 		
 		String taskType = autoCallTask.get("TASK_TYPE");   					//任务类型
 		String reminderType = autoCallTask.get("REMINDER_TYPE");        	//催缴类型

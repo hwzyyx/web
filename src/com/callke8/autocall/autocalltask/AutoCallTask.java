@@ -794,7 +794,7 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * 			
 	 * @return
 	 */
-	public AutoCallTask createAutoCallTask(String taskType,String reminderType,String userCode,String orgCode) {
+	public AutoCallTask createAutoCallTask(String taskType,String reminderType,String userCode,String orgCode,String callerId,String scheduleId) {
 		AutoCallTask autoCallTask = new AutoCallTask();
 		
 		long times = System.currentTimeMillis();                    //当前的毫秒数
@@ -815,8 +815,8 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		autoCallTask.set("SEND_MESSAGE","0");
 		
 		//需要根据实际情况设计
-		autoCallTask.set("CALLERID",ParamConfig.paramConfigMap.get("paramType_4_defaultCallerId"));                       //主叫号码
-		autoCallTask.set("SCHEDULE_ID",ParamConfig.paramConfigMap.get("paramType_4_defaultScheduleId"));                  //调度
+		autoCallTask.set("CALLERID",callerId);                       //主叫号码
+		autoCallTask.set("SCHEDULE_ID",scheduleId);                  //调度
 		autoCallTask.set("CREATE_USERCODE",userCode);            //创建者账号
 		autoCallTask.set("ORG_CODE",orgCode);              		 //组织机构
 		

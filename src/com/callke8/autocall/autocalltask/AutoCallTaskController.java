@@ -16,6 +16,7 @@ import com.callke8.bsh.bshorderlist.BSHOrderList;
 import com.callke8.common.CommonController;
 import com.callke8.common.IController;
 import com.callke8.system.callerid.SysCallerIdController;
+import com.callke8.system.calleridassign.SysCallerIdAssign;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
@@ -650,7 +651,18 @@ public class AutoCallTaskController extends Controller implements IController {
 		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByCondition("3", "7", DateFormatUtils.formatDateTime(new Date(), "yyyy-MM-dd"));
 		
 		if(BlankUtils.isBlank(autoCallTask)) {    //如果任务为空时，直接创建一个新的外呼任务
-			autoCallTask = AutoCallTask.dao.createAutoCallTask("3","7",userCode,operator.getStr("ORG_CODE"));    //创建交警移车的外呼任务
+			//(1)创建前，先得到主叫的 ID
+			List<Record> sciaList = SysCallerIdAssign.dao.getSysCallerIdAssignByOperId(userCode);   //取出该账号分配的所有主叫，取得第一个
+			if(BlankUtils.isBlank(sciaList) && sciaList.size()==0) {
+				renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:当前账号没有分配主叫号码!",""));
+				return;
+			}
+			Record scia = sciaList.get(0);
+			String callerId = String.valueOf(scia.getInt("CALLERID_ID"));
+			//(2)创建前，得到配置的调度ID
+			String scheduleId = ParamConfig.paramConfigMap.get("paramType_4_defaultScheduleId");
+			
+			autoCallTask = AutoCallTask.dao.createAutoCallTask("3","7",userCode,operator.getStr("ORG_CODE"),callerId,scheduleId);    //创建交警移车的外呼任务
 		}
 		
 		if(!BlankUtils.isBlank(autoCallTask)) {    //如果创建了任务之后不为空，则可以直接储存这些数据了
