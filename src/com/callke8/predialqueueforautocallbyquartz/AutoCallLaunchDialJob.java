@@ -146,7 +146,7 @@ public class AutoCallLaunchDialJob implements Job {
 						Record r = new Record();
 						r.set("fileName", String.valueOf(DateFormatUtils.getTimeMillis() + Math.round(Math.random()*9000 + 1000)));    //定义一个文件名);
 						r.set("columnName","PLATE_NUMBER_VOICE_NAME");
-						r.set("ttsContent", plateNumber);
+						r.set("ttsContent", AddressReplaceUtils.replaceAddressContent(plateNumber));   //车牌号码，也需要将数字转换，避免读成数值
 						list.add(r);
 					}
 				}
