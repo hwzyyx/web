@@ -63,7 +63,7 @@ public class AutoCallPredial {
 		//线程二:扫描排队机,若排队机中有数据,则执行外呼
 		Scheduler scheduler2 = QuartzUtils.createScheduler("AutoCallLaunchDialJob" + System.currentTimeMillis(),1);
 		//scheduler2.scheduleJob(QuartzUtils.createJobDetail(AutoCallLaunchDialJob.class),QuartzUtils.createTrigger(startTime, 1));    //每秒钟发起一次呼叫
-		scheduler2.scheduleJob(QuartzUtils.createJobDetail(AutoCallLaunchDialJob.class),QuartzUtils.createSimpleTrigger(startTime,-1,50));    //每50毫秒发起一次呼叫
+		scheduler2.scheduleJob(QuartzUtils.createJobDetail(AutoCallLaunchDialJob.class),QuartzUtils.createSimpleTrigger(startTime,-1,500));    //每500毫秒发起一次呼叫
 		scheduler2.start();
 		
 		//线程三:扫描待重呼记录到排队机线程
