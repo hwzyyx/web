@@ -144,6 +144,7 @@
 								</td>
 								<td>
 									<div style="padding-top:5px;">
+										<!-- 
 										<select class="easyui-combobox" style="width:150px;" name="autoCallTask.REMINDER_TYPE" id="REMINDER_TYPE" disabled="true" data-options="editable:false,panelHeight:'auto'">
 								              <option value="1">电话费</option>
 								              <option value="2">电费</option>
@@ -153,6 +154,9 @@
 								              <option value="6">车辆违章</option>
 								              <option value="7">社保催缴</option>
 								        </select>
+										 -->
+								        <select class="easyui-combobox" style="width: 150px;" name="autoCallTask.REMINDER_TYPE" id="REMINDER_TYPE" readonly="true" data-options="editable:false,panelHeight:'auto'">
+					       	 			</select>
 					                </div>
 								</td>
 							</tr>

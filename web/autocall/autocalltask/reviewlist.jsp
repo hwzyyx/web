@@ -25,6 +25,9 @@
 		var taskTypeComboboxDataFor0 = eval('${taskTypeComboboxDataFor0}');
 		var taskTypeComboboxDataFor1 = eval('${taskTypeComboboxDataFor1}');
 		
+		var reminderTypeComboboxDataFor0 = eval('${reminderTypeComboboxDataFor0}');
+		var reminderTypeComboboxDataFor1 = eval('${reminderTypeComboboxDataFor1}');
+		
 		var taskStateComboboxDataFor0 = eval('${taskStateComboboxDataFor0}');
 		var taskStateComboboxDataFor1 = eval('${taskStateComboboxDataFor1}');
 
@@ -117,6 +120,11 @@
 				}
 			}).combobox('loadData',taskTypeComboboxDataFor0).combobox('setValue','1');
 
+			$("#REMINDER_TYPE").combobox({
+				valueField:'id',
+				textField:'text',
+				panelHeight:'auto'
+			}).combobox('loadData',reminderTypeComboboxDataFor0).combobox('setValue','1');
 
 			$("#CALLERID").combobox({
 				valueField:'id',
@@ -836,7 +844,7 @@
 				<tr style="height:12px;">
 					<th data-options="field:'ck',checkbox:true"></th>		
 					<th data-options="field:'TASK_NAME',width:200,align:'center'">任务名称</th>
-					<th data-options="field:'taskTypeField',width:100,align:'center',formatter:tasktyperowformatter">任务类型</th>
+					<th data-options="field:'TASK_TYPE_DESC',width:100,align:'center'">任务类型</th>
 					<th data-options="field:'CALLERID_DESC',width:100,align:'center'">主叫号码</th>
 					<th data-options="field:'taskStateField',width:100,align:'center',formatter:taskstaterowformatter">状态</th>
 					<th data-options="field:'validityDate',width:180,align:'center',formatter:validitydaterowformatter">有效期</th>

@@ -28,6 +28,9 @@ public class AutoCallTaskReviewController extends Controller {
 		setAttr("taskTypeComboboxDataFor0", CommonController.getComboboxToString("TASK_TYPE","0"));
 		setAttr("taskTypeComboboxDataFor1", CommonController.getComboboxToString("TASK_TYPE","1"));
 		
+		setAttr("reminderTypeComboboxDataFor0", CommonController.getComboboxToString("REMINDER_TYPE","0"));
+		setAttr("reminderTypeComboboxDataFor1", CommonController.getComboboxToString("REMINDER_TYPE","1"));
+		
 		setAttr("taskStateComboboxDataFor0", CommonController.getComboboxToString("AC_TASK_STATE","0"));
 		setAttr("taskStateComboboxDataFor1", CommonController.getComboboxToString("AC_TASK_STATE","1"));
 		
