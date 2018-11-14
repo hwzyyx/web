@@ -2,16 +2,18 @@
     pageEncoding="UTF-8"%>
 <table>
 	<tr>
-		<td>主叫号码</td>
 		<td>
-			<input type="hidden" name="sysCallerId.ID" id="ID"/>
-			<input name="sysCallerId.CALLERID" id="CALLERID" style="width:150px;" class="easyui-textbox"  type="text" required="true" missingMessage="主叫号码不能为空!"></input>
+			<div>
+				主叫号码：<input type="hidden" name="sysCallerId.ID" id="ID"/>
+				<input name="sysCallerId.CALLERID" id="CALLERID" style="width:150px;" class="easyui-textbox"  type="text" required="true" missingMessage="主叫号码不能为空!"></input>
+			</div>
 		</td>
 	</tr>
 	<tr>
-		<td>号码用途</td>
 		<td>
-			<input name="sysCallerId.PURPOSE" id="PURPOSE" style="width:300px;" class="easyui-textbox" type="text" required="true" missingMessage="号码用途不能为空!"></input>
+			<div style="padding-top:10px;">
+				号码用途：	<input name="sysCallerId.PURPOSE" id="PURPOSE" style="width:300px;" class="easyui-textbox" type="text" required="true" missingMessage="号码用途不能为空!"></input>
+			</div>
 		</td>
 	</tr>
 	
