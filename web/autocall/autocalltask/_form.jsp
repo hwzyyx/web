@@ -27,7 +27,7 @@
 					</td>
 					<td>
 						<div style="padding-top:5px;">
-							<select class="easyui-combobox" style="width: 150px;" name="autoCallTask.CALLERID" id="CALLERID" data-options="panelHeight:'auto'">
+							<select class="easyui-combobox" style="width: 400px;" name="autoCallTask.CALLERID" id="CALLERID" data-options="panelHeight:'auto'">
 					        </select>
 				        </div>
 					</td>

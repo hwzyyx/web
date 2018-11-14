@@ -159,7 +159,7 @@ public class SysCallerIdController extends Controller implements IController  {
 			for(Record record:newList) {
 				ComboboxJson cbj = new ComboboxJson();
 				cbj.setId(record.get("ID").toString());
-				cbj.setText(record.get("CALLERID").toString());
+				cbj.setText(record.get("CALLERID").toString() + "(" + record.getStr("PURPOSE") + ")");
 				
 				cbjs.add(cbj);
 			}
