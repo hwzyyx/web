@@ -1389,7 +1389,7 @@ function autoCallTaskTelephoneAdd() {
 }
 
 function autoCallTaskTelephoneEdit(telId,customerTel,customerName,period,displayNumber,dosage,charge,accountNumber,address,callPoliceTel,vehicleType,plateNumber,illegalCity,punishmentUnit,illegalReason,company) {
-	$("#TEL_ID").val(telId);
+	/*$("#TEL_ID").val(telId);
 	$("#CUSTOMER_TEL").numberbox('setValue',customerTel);
 	$("#CUSTOMER_NAME").textbox('setValue',customerName);
 
@@ -1406,9 +1406,28 @@ function autoCallTaskTelephoneEdit(telId,customerTel,customerName,period,display
 	$("#PUNISHMENT_UNIT").textbox('setValue',punishmentUnit);		 //处罚单位
 	$("#ILLEGAL_REASON").textbox('setValue',illegalReason);			 //违法理由
 	$("#COMPANY").textbox('setValue',company);						 //公司
-
+	*/
 	$("#autoCallTaskTelephoneSaveBtn").attr("onclick","autoCallTaskTelephoneSaveEdit()");
 
+	$("#autoCallTaskTelephoneForm").form('load',{
+		'autoCallTaskTelephone.TEL_ID':telId,
+		'autoCallTaskTelephone.CUSTOMER_TEL':customerTel,
+		'autoCallTaskTelephone.CUSTOMER_NAME':customerName,
+		'autoCallTaskTelephone.PERIOD':period,
+		'autoCallTaskTelephone.DISPLAY_NUMBER':displayNumber,
+		'autoCallTaskTelephone.DOSAGE':dosage,
+		'autoCallTaskTelephone.CHARGE':charge,
+		'autoCallTaskTelephone.ACCOUNT_NUMBER':accountNumber,
+		'autoCallTaskTelephone.ADDRESS':address,
+		'autoCallTaskTelephone.CALL_POLICE_TEL':callPoliceTel,
+		'autoCallTaskTelephone.VEHICLE_TYPE':vehicleType,
+		'autoCallTaskTelephone.PLATE_NUMBER':plateNumber,
+		'autoCallTaskTelephone.ILLEGAL_CITY':illegalCity,
+		'autoCallTaskTelephone.PUNISHMENT_UNIT':punishmentUnit,
+		'autoCallTaskTelephone.ILLEGAL_REASON':illegalReason,
+		'autoCallTaskTelephone.COMPANY':company
+	});
+	
 	$("#autoCallTaskTelephoneDlg").dialog('setTitle','修改号码').dialog('open');
 	
 }

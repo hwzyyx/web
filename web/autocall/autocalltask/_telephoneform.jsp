@@ -7,7 +7,8 @@
 			<div style="padding-left:10px;padding-top:10px;">
 				客户号码：&nbsp;&nbsp;&nbsp;
 				<input type="hidden" name="autoCallTaskTelephone.TEL_ID" id="TEL_ID"/>
-				<input style="width:200px;" data-options="prompt:'13512771995'" id="CUSTOMER_TEL" name="autoCallTaskTelephone.CUSTOMER_TEL" class="easyui-numberbox" type="text" required="true" missingMessage="电话号码不能为空!"></input>
+				<!-- <input style="width:200px;" data-options="prompt:'13512771995'" id="CUSTOMER_TEL" name="autoCallTaskTelephone.CUSTOMER_TEL" class="easyui-textbox" type="text" required="true" missingMessage="电话号码不能为空!"></input> -->
+				<input name="autoCallTaskTelephone.CUSTOMER_TEL" id="CUSTOMER_TEL" style="width:200px;" class="easyui-textbox" data-options="prompt:'13512771995'" required="true" missingMessage="电话号码不能为空!"></input>
 			</div>
 			
 			<div style="padding-left:10px;padding-top:5px;">
@@ -21,7 +22,7 @@
 			</div>
 			<div id="displayNumberDiv" style="padding-left:10px;padding-top:5px;">
 				表显数量：&nbsp;&nbsp;&nbsp;
-				<input style="width:200px;" id="DISPLAY_NUMBER" name="autoCallTaskTelephone.DISPLAY_NUMBER" class="easyui-numberbox" data-options="min:0,max:50000,prompt:'0'">
+				<input style="width:200px;" id="DISPLAY_NUMBER" name="autoCallTaskTelephone.DISPLAY_NUMBER" class="easyui-textbox" data-options="min:0,max:50000,prompt:'0'">
 			</div>
 			<div id="dosageDiv" style="padding-left:10px;padding-top:5px;">
 				使&nbsp;用&nbsp;&nbsp;量：&nbsp;&nbsp;&nbsp;
@@ -33,7 +34,7 @@
 			</div>
 			<div id="accountNumberDiv" style="padding-left:10px;padding-top:5px;">
 				户&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号：&nbsp;&nbsp;&nbsp;
-				<input style="width:200px;" data-options="prompt:'1001692206'" id="ACCOUNT_NUMBER" name="autoCallTaskTelephone.ACCOUNT_NUMBER" class="easyui-numberbox" data-options="min:0,prompt:'0'">
+				<input style="width:200px;" data-options="prompt:'1001692206'" id="ACCOUNT_NUMBER" name="autoCallTaskTelephone.ACCOUNT_NUMBER" class="easyui-textbox" data-options="min:0,prompt:'0'">
 			</div>
 			<div id="addressDiv" style="padding-left:10px;padding-top:5px;">
 				地&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;址：&nbsp;&nbsp;&nbsp;
@@ -41,7 +42,7 @@
 			</div>
 			<div id="callPoliceTelDiv" style="padding-left:10px;padding-top:5px;">
 				报警人电话：
-				<input style="width:200px;" data-options="prompt:'13512771995'" id="CALL_POLICE_TEL" name="autoCallTaskTelephone.CALL_POLICE_TEL" class="easyui-numberbox" type="text"></input>
+				<input style="width:200px;" data-options="prompt:'13512771995'" id="CALL_POLICE_TEL" name="autoCallTaskTelephone.CALL_POLICE_TEL" class="easyui-textbox" type="text"></input>
 			</div>
 			<div id="vehicleTypeDiv" style="padding-left:10px;padding-top:5px;">
 				车辆类型：&nbsp;&nbsp;&nbsp;
