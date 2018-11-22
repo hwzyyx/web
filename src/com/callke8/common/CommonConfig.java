@@ -53,9 +53,11 @@ import com.callke8.system.operator.OperRole;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.org.Org;
 import com.callke8.system.param.Param;
+import com.callke8.system.remindertype.SysReminderType;
 import com.callke8.system.role.Role;
 import com.callke8.system.rolegroup.RoleGroup;
 import com.callke8.system.rolemodule.RoleModule;
+import com.callke8.system.tasktype.SysTaskType;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.MemoryVariableUtil;
 import com.jfinal.config.Constants;
@@ -136,6 +138,8 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("sys_param", Param.class);
 		arp.addMapping("sys_callerid", SysCallerId.class);
 		arp.addMapping("sys_callerid_assign", SysCallerIdAssign.class);
+		arp.addMapping("sys_task_type", SysTaskType.class);
+		arp.addMapping("sys_reminder_type", SysReminderType.class);
 		
 		//外呼管理表映射
 		arp.addMapping("call_task", CallTask.class);

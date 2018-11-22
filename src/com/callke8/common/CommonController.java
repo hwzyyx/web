@@ -2,6 +2,7 @@ package com.callke8.common;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -217,7 +218,22 @@ public class CommonController extends Controller {
 					getSession().setAttribute("logId", logId);
 				}
 				
-				render(RenderJson.success("登录成功!"));
+				//登录成功
+				//在登录成功之前，是否需要提示修改密码
+				String changePasswordNotice = null;
+				if(BlankUtils.isBlank(operator.get("UPDATE_PASSWORD_TIME"))) {       		//检查上次更新密码的时间
+					changePasswordNotice = "温馨提示：为了安全，请及时修改你的登录密码!";
+				}else {    //如果不为空时，对比当前时间，是否已经超过三个月没有修改密码了
+					String updatePasswordTime = String.valueOf(operator.get("UPDATE_PASSWORD_TIME"));   //上次修改密码的时间
+					long threeMonthTimeMillis = 60L * 60L * 24L * 1000L * 90L;        //3个月毫秒数
+					Date updatePasswordTime2Date = DateFormatUtils.parseDateTime(updatePasswordTime, "yyyy-MM-dd HH:mm:ss");   //将修改密码的时间，与当前的时期对比
+					long interval = System.currentTimeMillis() - updatePasswordTime2Date.getTime();       //对比当前时间的毫秒差
+					if(interval > threeMonthTimeMillis) {
+						changePasswordNotice = "温馨提示：您的登录密码已经3个月没有更新，为了安全，请及时修改你的登录密码!";
+					}
+				}
+				
+				render(RenderJson.success("登录成功!",changePasswordNotice));   
 			}
 		}else {
 			render(RenderJson.error("用户名或密码为空!"));
