@@ -187,7 +187,7 @@ public class LaunchDialService implements Runnable {
 	public void updateTelehponeStateForFailure(String lastCallResult) {
 		if(retried < retryTimes) {   //如果已重试次数小于限定的重试次数时
 			//设置当前号码的状态为重试状态
-			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(Integer.valueOf(autoCallTaskTelephone.get("TEL_ID").toString()),"3", retryInterval,lastCallResult);
+			//AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(Integer.valueOf(autoCallTaskTelephone.get("TEL_ID").toString()),"3", retryInterval,lastCallResult);
 		}else {
 			//设置当前号码的状态为失败
 			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(Integer.valueOf(autoCallTaskTelephone.get("TEL_ID").toString()),null, "4",lastCallResult);	
