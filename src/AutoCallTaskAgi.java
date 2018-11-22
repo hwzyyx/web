@@ -93,6 +93,8 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		AutoCallPredial.activeChannelCount--;
 		
 		exec("hangup");
+		
+		AutoCallPredial.deleteVoiceFileByTelId(Integer.valueOf(telId));    //删除该记录的录音文件
 	}
 	
 	/**
