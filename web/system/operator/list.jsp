@@ -218,7 +218,7 @@
 		//重置密码
 		function operatorInitPassword(operId) {
 			
-			var newPassword = "aaa123";
+			var newPassword = "1234rfvBHU*";
 			
 			$.messager.confirm('提示','你确定要重置操作员  '+ operId + ' 的密码为' + newPassword + ' 吗?',function(r){
 				
@@ -291,7 +291,7 @@
 					var message = result.message;       //返回执行的信息
 
 					window.parent.showMessage(message,statusCode);
-					if('success') {         //保存成功时，才关闭窗口及加载数据
+					if(statusCode == 'success') {         //保存成功时，才关闭窗口及加载数据
 						$("#operatorDg").datagrid({url:'operator/datagrid?orgCode=' + currSelectNodeId});
 						$("#addOperatorDlg").dialog("close");
 					}
@@ -340,7 +340,7 @@
 					var message = result.message;       //返回执行的信息
 
 					window.parent.showMessage(message,statusCode);
-					if('success') {         //保存成功时，才关闭窗口及加载数据
+					if(statusCode == 'success') {         //保存成功时，才关闭窗口及加载数据
 						$("#operatorDg").datagrid({url:'operator/datagrid?orgCode=' + currSelectNodeId});
 						$("#addOperatorDlg").dialog("close");
 					}
@@ -369,7 +369,7 @@
 		function rowformater(value,data,index) {
 			return "<a href='#' onclick='javascript:operatorEdit(\"" + data.OPER_ID +"\",\""+ data.OPER_NAME +"\",\"" + data.STATE + "\",\"" + data.SEX + "\",\"" + data.PASSWORD + "\",\"" + data.TELNO + "\",\"" + data.ORG_CODE + "\",\"" + data.CALL_NUMBER + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>" + 
 			"&nbsp;&nbsp;<a href='#' onclick='javascript:operatorDel(\"" + data.OPER_ID +"\")'><img src='themes/icons/cancel.png' border='0'>删除</a>" +
-			"&nbsp;&nbsp;<a href='#' onclick='javascript:operatorInitPassword(\"" + data.OPER_ID +"\")'><img src='themes/icons/reload.png' border='0'>重置密码为:aaa123</a>";
+			"&nbsp;&nbsp;<a href='#' onclick='javascript:operatorInitPassword(\"" + data.OPER_ID +"\")'><img src='themes/icons/reload.png' border='0'>重置密码为:1234rfvBHU*</a>";
 		}
 		
 		//格式化：将状态格式化，如果状态值为1,则为绿色，且定义为有效；状态值为0，则为红色，且定义为无效

@@ -20,7 +20,7 @@
 				<td style="padding-left:30px;">
 					<div id="PWD_DIV">
 						密码：
-						<input name="operator.PASSWORD" id="PWD_ID"  type="password" class="easyui-validatebox textbox" data-options="validType:'length[3,10]'">
+						<input name="operator.PASSWORD" id="PWD_ID"  type="password" class="easyui-validatebox textbox" data-options="validType:'length[6,20]'">
 					</div>
 				</td>
 			</tr>

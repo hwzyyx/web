@@ -9,10 +9,12 @@ import javax.swing.text.DateFormatter;
 import net.sf.json.JSONArray;
 
 import com.callke8.common.IController;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.Md5Utils;
 import com.callke8.utils.MemoryVariableUtil;
+import com.callke8.utils.PasswordCheckUtils;
 import com.callke8.utils.RenderJson;
 import com.callke8.utils.TreeJson;
 import com.jfinal.core.Controller;
@@ -89,7 +91,7 @@ public class OperatorController extends Controller implements IController {
 		
 		String operId = getSessionAttr("currOperId");
 		
-		//检查当前的登录的账户是否过期，如果为空时，则返回错误
+		//(1)检查当前的登录的账户是否过期，如果为空时，则返回错误
 		if(BlankUtils.isBlank(operId)) {
 			render(RenderJson.error("修改失败，登录账号的Session已经过期!"));
 			return;
@@ -102,9 +104,17 @@ public class OperatorController extends Controller implements IController {
 		
 		String oldPasswordMd5 = Md5Utils.Md5(oldPassword);  //将上传的老密码先Md5 加密
 		
-		//如果两个密码不相同时，则返回提供原密码不对
+		//(2)如果两个密码不相同时，则返回提供原密码不对
 		if(!password.equalsIgnoreCase(oldPasswordMd5)) {    
 			render(RenderJson.error("修改失败，原密码不正确!"));
+			return;
+		}
+		
+		/**
+		 * （3）检查密码是否包含数字、字母、特殊字符的组合方式，且需要大于多少长度（具体根据系统配置）
+		 */
+		if(!PasswordCheckUtils.containNumberAndLetterAndSpecialChar(newPassword)) {
+			render(RenderJson.error("密码修改失败,新密码的必须是长度大于 " + Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_1_passwordLength")) + " 位的数字 + 字母 + 特殊字符的组合!"));
 			return;
 		}
 		
@@ -125,6 +135,11 @@ public class OperatorController extends Controller implements IController {
 		
 		String operId = getPara("operId");   				//获得传入的操作员ID
 		String newPassword = getPara("newPassword");		//获得传入的新密码
+		
+		if(!PasswordCheckUtils.containNumberAndLetterAndSpecialChar(newPassword)) {
+			render(RenderJson.error("重置密码错误,新密码的必须是长度大于 " + Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_1_passwordLength")) + " 位的数字 + 字母 + 特殊字符的组合!"));
+			return;
+		}
 		
 		boolean b = Operator.dao.changePassword(operId, Md5Utils.Md5(newPassword));
 		
@@ -179,9 +194,15 @@ public class OperatorController extends Controller implements IController {
 		String operId = oper.get("OPER_ID");
 		String sex = oper.get("SEX");
 		
-		//先检查一下唯一性
+		//（1）先检查一下唯一性
 		if(!BlankUtils.isBlank(Operator.dao.getOperatorByOperId(operId))) {
 			render(RenderJson.warn("存在相同的工号!"));
+			return;
+		}
+		
+		//（2）检查密码的规则
+		if(!PasswordCheckUtils.containNumberAndLetterAndSpecialChar(oper.get("PASSWORD").toString())) {
+			render(RenderJson.error("密码的必须是大于10位的数字 + 字母 + 特殊字符的组合!"));
 			return;
 		}
 		

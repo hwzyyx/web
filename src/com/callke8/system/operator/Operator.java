@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
+import com.callke8.utils.DateFormatUtils;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Page;
@@ -221,8 +222,8 @@ public class Operator extends Model<Operator> {
 		boolean b = false;
 		int count;
 		
-		String sql = "update sys_operator set PASSWORD=? where OPER_ID=?";
-		count = Db.update(sql, newPassword,operId);
+		String sql = "update sys_operator set PASSWORD=?,UPDATE_PASSWORD_TIME=? where OPER_ID=?";
+		count = Db.update(sql, newPassword,DateFormatUtils.getCurrentDate(),operId);
 		
 		if(count==1) {
 			b = true;
