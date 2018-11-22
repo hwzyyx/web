@@ -35,7 +35,8 @@ public class AutoCallTaskRealTimeDataController extends Controller {
 		
 		Record data = new Record();
 		data.set("name", currTime);
-		data.set("value1", getQueueCount());
+		//data.set("value1", getQueueCount());
+		data.set("value1", AutoCallQueueMachineManager.queueCount);
 		//data.set("value2", BSHLaunchDialService.activeChannelCount);
 		data.set("value2", AutoCallPredial.activeChannelCount);
 		
