@@ -1,5 +1,6 @@
 package com.callke8.predialqueueforautocallbyquartz;
 
+import java.io.File;
 import java.util.Date;
 
 import org.quartz.JobDetail;
@@ -15,9 +16,11 @@ import com.callke8.pridialqueueforbshbyquartz.BSHLaunchDialJob;
 import com.callke8.pridialqueueforbshbyquartz.BSHLoadOrderListJob;
 import com.callke8.pridialqueueforbshbyquartz.BSHLoadRetryJob;
 import com.callke8.system.param.ParamConfig;
+import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.QuartzUtils;
 import com.callke8.utils.StringUtil;
+import com.jfinal.kit.PathKit;
 
 /**
  * 自动外呼任务的调整主守护程序
@@ -61,10 +64,12 @@ public class AutoCallPredial {
 		scheduler1.start();
 		
 		//线程二:扫描排队机,若排队机中有数据,则执行外呼
-		Scheduler scheduler2 = QuartzUtils.createScheduler("AutoCallLaunchDialJob" + System.currentTimeMillis(),1);
-		//scheduler2.scheduleJob(QuartzUtils.createJobDetail(AutoCallLaunchDialJob.class),QuartzUtils.createTrigger(startTime, 1));    //每秒钟发起一次呼叫
+		/*Scheduler scheduler2 = QuartzUtils.createScheduler("AutoCallLaunchDialJob" + System.currentTimeMillis(),1);
 		scheduler2.scheduleJob(QuartzUtils.createJobDetail(AutoCallLaunchDialJob.class),QuartzUtils.createSimpleTrigger(startTime,-1,500));    //每500毫秒发起一次呼叫
-		scheduler2.start();
+		scheduler2.start();*/
+		//以线程循环的方式，代替直接在主程序执行 job,在线程中，每500毫秒，发起一次 job
+		Thread autoCallLaunchDialThread = new Thread(new AutoCallLaunchDialRunable());
+		autoCallLaunchDialThread.start();
 		
 		//线程三:扫描待重呼记录到排队机线程
 		Scheduler scheduler3 = QuartzUtils.createScheduler("AutoCallLoadRetryJob" + System.currentTimeMillis(),1);
@@ -85,13 +90,15 @@ public class AutoCallPredial {
 		
 		int retried  = actt.getInt("RETRIED");                       //已外呼次数
 		int retryTimes = autoCallTask.getInt("RETRY_TIMES");		 //任务设置的最大外呼次数
-		int retryInterval = autoCallTask.getInt("RETRY_INTERVAL");   //重试间隔，单位分钟
+		int retryInterval = autoCallTask.getInt("RETRY_INTERVAL");   //重试间隔
+		int intervalType = autoCallTask.getInt("INTERVAL_TYPE");     //间隔类型：1分钟；2小时；3天
 		int telId = actt.getInt("TEL_ID");                           //记录的号码ID
 		
 		if(retried < retryTimes) {      //如果已经外呼次数小于允许的最大外呼次数，则将记录状态修改为待重呼
-			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", retryInterval, lastCallResult);
+			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", retryInterval,intervalType,lastCallResult);
 		}else {                         //否则,修改为已失败
 			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(telId, null, "4", lastCallResult);
+			deleteVoiceFileByTelId(telId);    //删除该记录的录音文件
 		}
 		
 	}
@@ -106,6 +113,81 @@ public class AutoCallPredial {
 	public static void updateTelehponeStateForSuccess(String lastCallResult, AutoCallTaskTelephone actt) {
 		
 		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(actt.getInt("TEL_ID"),null,"2",lastCallResult);
+		
+	}
+	
+	/**
+	 * 根据传入的号码ID(telId),取出号码记录中，三个通过 TTS 转换为语音文件的字段
+	 * 
+	 * 这三个字段分别是：地址（ADDRESS）、车牌号码(PLATE_NUMBER)、车辆类型（VEHICLE_TYPE） 
+	 * 
+	 * 通过TTS后转换的语音文件名，将存在(ADDRESS_VOICE_NAME、PLATE_NUMBER_VOICE_NAME、VEHICLE_TYPE_VOICE_NAME) 三个字段里
+	 * 
+	 * 如果这两个文件号码字段不为空，则取出文件名（后缀默认为 wav）的文件是否存在，如果存在，则需要将文件删除，避免太多的临时文件占用系统空间
+	 * 
+	 * @param telId
+	 */
+	public static void deleteVoiceFileByTelId(int telId) {
+		
+		//从数据表中，取出号码的记录
+		AutoCallTaskTelephone actt = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneById(String.valueOf(telId));    
+		
+		if(!BlankUtils.isBlank(actt)) {   //只有不为空时，才执行语音文件删除的操作
+			
+			String addressVoiceName = actt.getStr("ADDRESS_VOICE_NAME");            	//地址通过TTS转换后的语音文件名
+			String plateNumberVoiceName = actt.getStr("PLATE_NUMBER_VOICE_NAME");		//车牌号码通过TTS转换后的语音文件名
+			String vehicleTypeVoiceName = actt.getStr("VEHICLE_TYPE_VOICE_NAME");		//车辆类型通过TTS转换后的语音文件名
+			
+			String voicePath = ParamConfig.paramConfigMap.get("paramType_4_voicePath");					//语音文件路径（立体声）
+			String voicePathSingle = ParamConfig.paramConfigMap.get("paramType_4_voicePathSingle");		//语音文件路径（单声道）
+			
+			if(!BlankUtils.isBlank(addressVoiceName)) {               //地址语音文件名不为空时，删除语音文件
+				String voicePathForAddress = PathKit.getWebRootPath() + File.separator + voicePath + File.separator + addressVoiceName + ".wav";
+				String voicePathForAddressSingle = PathKit.getWebRootPath() + File.separator + voicePathSingle + File.separator + addressVoiceName + ".wav";
+				
+				deleteVoiceFile(voicePathForAddress);    			//删除立体声语音文件
+				deleteVoiceFile(voicePathForAddressSingle);			//删除单声道语音文件
+				
+			}
+			
+			if(!BlankUtils.isBlank(plateNumberVoiceName)) {			  //车牌号码语音文件名不为空时，删除语音文件
+				String voicePathForPlateNumber = PathKit.getWebRootPath() + File.separator + voicePath + File.separator + plateNumberVoiceName + ".wav";
+				String voicePathForPlateNumberSingle = PathKit.getWebRootPath() + File.separator + voicePathSingle + File.separator + plateNumberVoiceName + ".wav";
+				
+				deleteVoiceFile(voicePathForPlateNumber);    			//删除立体声语音文件
+				deleteVoiceFile(voicePathForPlateNumberSingle);			//删除单声道语音文件
+			}
+			
+			if(!BlankUtils.isBlank(vehicleTypeVoiceName)) {           //车辆类型语音文件不粉空时，删除语音文件
+				String voicePathForVehicleType = PathKit.getWebRootPath() + File.separator + voicePath + File.separator + vehicleTypeVoiceName + ".wav";
+				String voicePathForVehicleTypeSingle = PathKit.getWebRootPath() + File.separator + voicePathSingle + File.separator + vehicleTypeVoiceName + ".wav";
+				
+				deleteVoiceFile(voicePathForVehicleType);    			//删除立体声语音文件
+				deleteVoiceFile(voicePathForVehicleTypeSingle);			//删除单声道语音文件
+			}
+			
+		}
+		
+	}
+	
+	/**
+	 * 删除语音文件
+	 * 
+	 * 如果文件存在，就执行删除操作，如果文件不存在，则不执行删除
+	 * 
+	 * @param path
+	 */
+	public static void deleteVoiceFile(String path) {
+		
+		if(BlankUtils.isBlank(path)) {
+			return;
+		}
+		
+		File f = new File(path);
+		
+		if(f.exists()) {     //如果存在，就删除
+			f.delete();
+		}
 		
 	}
 

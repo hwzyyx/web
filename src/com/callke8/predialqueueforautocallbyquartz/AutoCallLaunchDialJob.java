@@ -29,16 +29,27 @@ public class AutoCallLaunchDialJob implements Job {
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
-		
+	
 		int activeChannelCount = AutoCallPredial.activeChannelCount;                                                 //当前活跃的通道数量，即有几路通话正在进行
 		int trunkMaxCapacity = Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_4_trunkMaxCapacity"));      //中继的最大并发量
+		String scheduleName = null;
+		try {
+			scheduleName = context.getScheduler().getSchedulerName();
+		} catch (SchedulerException e2) {
+			e2.printStackTrace();
+			try {
+				context.getScheduler().shutdown();
+			} catch (SchedulerException e) {
+				e.printStackTrace();
+			}
+		}
 		
 		if(AutoCallQueueMachineManager.queueCount > 0) {                   //如果排队机中有示外呼任务时，将执行外呼操作
 			
 			//先判断中继最大的并发量与当前活动通话量对比，如果最大并发量大于当前活跃的通话量时，表示还有空闲的通道可用
 			if(trunkMaxCapacity > activeChannelCount) {
 				
-				StringUtil.log(this, "线程 AutoCallLaunchDialJob[22222222] : 排队机中有未外呼数据:" + AutoCallQueueMachineManager.queueCount + " 条,系统将取出一条数据执行外呼!");
+				StringUtil.log(this, "线程 AutoCallLaunchDialJob[" + scheduleName + "] : 排队机中有未外呼数据:" + AutoCallQueueMachineManager.queueCount + " 条,系统将取出一条数据执行外呼!");
 				
 				AutoCallTaskTelephone autoCallTaskTelephone = AutoCallQueueMachineManager.deQueue();   //从排队机中取出数据，准备外呼
 				
@@ -67,16 +78,32 @@ public class AutoCallLaunchDialJob implements Job {
 					
 				}catch (SchedulerException e) {
 					e.printStackTrace();
+				}finally {
+					try {
+						context.getScheduler().shutdown();
+					} catch (SchedulerException e) {
+						e.printStackTrace();
+					}
 				}
 				
 				
 			}else {
-				StringUtil.log(this, "线程 AutoCallLaunchDialJob[22222222] : 排队机中有未外呼数据:" + AutoCallQueueMachineManager.queueCount + " 条，但当前活跃通道已达到最大并发量：" + trunkMaxCapacity + "，系统暂不执行外呼!");
+				StringUtil.log(this, "线程 AutoCallLaunchDialJob[" + scheduleName + "] : 排队机中有未外呼数据:" + AutoCallQueueMachineManager.queueCount + " 条，但当前活跃通道已达到最大并发量：" + trunkMaxCapacity + "，系统暂不执行外呼!");
+				try {
+					context.getScheduler().shutdown();
+				} catch (SchedulerException e) {
+					e.printStackTrace();
+				}
 			}
 			
 			
 		}else {
-			StringUtil.log(this, "线程 AutoCallLaunchDialJob(22222): 当前排队机中没有未外呼数据，暂不执行外呼操作!");
+			StringUtil.log(this, "线程 AutoCallLaunchDialJob[" + scheduleName + "] :  当前排队机中没有未外呼数据，暂不执行外呼操作!");
+			try {
+				context.getScheduler().shutdown();
+			} catch (SchedulerException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		
@@ -126,7 +153,7 @@ public class AutoCallLaunchDialJob implements Job {
 					boolean voiceFileExist = checkVoiceExist(actt,"ADDRESS_VOICE_NAME",ParamConfig.paramConfigMap.get("paramType_4_voicePath"));
 					if(!voiceFileExist) {
 						Record r = new Record();
-						r.set("fileName", String.valueOf(DateFormatUtils.getTimeMillis() + Math.round(Math.random()*9000 + 1000)));    //定义一个文件名);
+						r.set("fileName", String.valueOf(DateFormatUtils.getTimeMillis()) + String.valueOf(Math.round(Math.random()*90000 + 10000)));    //定义一个文件名);
 						r.set("columnName","ADDRESS_VOICE_NAME");
 						r.set("ttsContent", AddressReplaceUtils.replaceAddressContent(address));    //调用地址替换工具类，将请求TTS的地址内容，去替换一些特殊字符，如数字、-
 						
@@ -258,7 +285,7 @@ public class AutoCallLaunchDialJob implements Job {
 				int count = AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneLocationAndCallOutTel(telId, provinceRs, cityRs, callOutTelRs);
 				if(count < 0) {    //如果更改号码归属地和外呼号码不成功，则将外呼记录的状态修改为 已失败（或待重呼），原因为：更改归属地异常
 					if(retried < retryTimes) {      //如果已经外呼次数小于允许的最大外呼次数，则将记录状态修改为待重呼
-						AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", autoCallTask.getInt("RETRY_INTERVAL"), "更改归属地异常");
+						AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", autoCallTask.getInt("RETRY_INTERVAL"),autoCallTask.getInt("INTERVAL_TYPE"),"更改归属地异常");
 					}else {                         //否则,修改为已失败
 						AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(telId, null, "4", "更改归属地异常");
 					}
@@ -270,7 +297,7 @@ public class AutoCallLaunchDialJob implements Job {
 			}else {			//如果客户的归属地无法定位，那么就直接将这条外呼号码的状态，修改为失败（或待重呼），原因定为定位归属地异常
 				
 				if(retried < retryTimes) {      //如果已经外呼次数小于允许的最大外呼次数，则将记录状态修改为待重呼
-					AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", autoCallTask.getInt("RETRY_INTERVAL"), "定位归属地异常");
+					AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", autoCallTask.getInt("RETRY_INTERVAL"),autoCallTask.getInt("INTERVAL_TYPE"),"定位归属地异常");
 				}else {                         //否则,修改为已失败
 					AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(telId, null, "4", "定位归属地异常");
 				}
