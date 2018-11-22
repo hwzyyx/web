@@ -87,7 +87,19 @@ public class TelephoneNumberLocationUtil {
 				}
 			}else {       //如果为非01开头手机号码，则表示应该是座机,然后调用API,查询座机的归属地
 				
-				Map<String,String> locationMap = TelephoneLocationUtils.getTelephoneLocation(tel,ParamConfig.paramConfigMap.get("paramType_1_juHeUrl"), ParamConfig.paramConfigMap.get("paramType_1_juHeAppKey"));
+				rs.set("province","座机");
+				rs.set("city","座机");
+				rs.set("isLandlineNumber", true);        //为固定号码
+				if(tel.startsWith(localCityAreaCode)) {            //如果以配置的当地区号开头
+					rs.set("isLocalCity", true);
+					rs.set("callOutTel", tel.substring(localCityAreaCode.length(),tel.length()));    //本地号码，需要将区号去掉。
+				}else {		//如果是其他的区号开头
+					rs.set("isLocalCity", false);
+					rs.set("callOutTel", tel);
+				}
+				return rs;
+				
+				/*Map<String,String> locationMap = TelephoneLocationUtils.getTelephoneLocation(tel,ParamConfig.paramConfigMap.get("paramType_1_juHeUrl"), ParamConfig.paramConfigMap.get("paramType_1_juHeAppKey"));
 				
 				if(!BlankUtils.isBlank(locationMap)) {
 					String province = locationMap.get("province");
@@ -108,7 +120,7 @@ public class TelephoneNumberLocationUtil {
 				}else {                 //即是无法定位号码归属地，有可能是一个假的号码
 					System.out.println("客户号码 " + tel + " 格式 正确，但无法定位归属地，号码异常!");
 					return null;     
-				}
+				}*/
 			}
 			
 		}else if(is1Prex) {				//以1开头时，以1开头，看长度是否为10
@@ -163,7 +175,13 @@ public class TelephoneNumberLocationUtil {
 		}else {       //如果非0，又非1开头，表示很有可能是直接给的本地号码，就要看长度，如果长度为7或8位，表示本地号码
 			
 			if(customerTelLen == 8 || customerTelLen == 7) {       //表示这个是本地号码，这时，加上系统设置的本地号码区号，调用 API 进行查询
-				System.out.println("localCityAreaCode 本地区号－－－－－＝＝＝＝＝＝＝＝＝:" + localCityAreaCode);
+				rs.set("province","座机");
+				rs.set("city","座机");
+				rs.set("isLandlineNumber", true);        //为固定号码
+				rs.set("isLocalCity", true);             //为本地号码
+				rs.set("callOutTel", tel);               //一般不带区号的本地号码，外呼时，无须加上区号，所以只需要将传入的号码即是呼出号码
+				return rs;
+				/*System.out.println("localCityAreaCode 本地区号－－－－－＝＝＝＝＝＝＝＝＝:" + localCityAreaCode);
 				Map<String,String> locationMap = TelephoneLocationUtils.getTelephoneLocation(localCityAreaCode + tel,ParamConfig.paramConfigMap.get("paramType_1_juHeUrl"),ParamConfig.paramConfigMap.get("paramType_1_juHeAppKey"));
 				if(!BlankUtils.isBlank(locationMap)) {
 					String province = locationMap.get("province");
@@ -178,7 +196,7 @@ public class TelephoneNumberLocationUtil {
 				}else {                						 //即是无法定位号码归属地
 					System.out.println("客户号码 " + tel + " 格式 正确，但无法定位归属地，号码异常!");
 					return null;
-				}
+				}*/
 			}else {  //如果长度不为7或8位，且长度大于8位时，该号码是带区号的没有给0的座机号
 				System.out.println("客户号码 " + tel + " 格式 正确，但无法定位归属地，号码异常!");
 				return null;
