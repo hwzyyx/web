@@ -62,6 +62,8 @@
 				}
 			});
 			
+			showSimpleColumns();     //任务列表，显示简单的列
+			
 			//tts创建语音时，对于内容的长度限制,最长限制200个字
 			ttsContentTextLengthLimit();
 			
@@ -151,8 +153,10 @@
 					$("#notSendMessageButton").linkbutton('select');
 					
 					//任务类型和催缴类型要置为可编辑
-					$("#TASK_TYPE").combobox('setValue','1').combobox('enable');
-					$("#REMINDER_TYPE").combobox('setValue','1').combobox('enable');
+					//$("#TASK_TYPE").combobox('setValue','1').combobox('enable');
+					//$("#REMINDER_TYPE").combobox('setValue','1').combobox('enable');
+					$("#TASK_TYPE").combobox('readonly',false);
+					$("#REMINDER_TYPE").combobox('readonly',false);
 				}
 			});
     		
@@ -207,7 +211,7 @@
 			
 			var state = $("#state").combobox('getValue');
 			var messageState = $("#messageState").combobox('getValue');
-			var customerTel = $("#customerTel").numberbox('getValue');
+			var customerTel = $("#customerTel").textbox('getValue');
 			var	customerName = $("#customerName").textbox('getValue');
 			var startTimeForTelephone = $("#startTimeForTelephone").datebox('getValue');
 			var endTimeForTelephone = $("#endTimeForTelephone").datebox('getValue');
@@ -260,7 +264,31 @@
         	});
     	}
 		
+		function showAllColumns() {
+			$("#allColumns").css("display","none");
+			$("#simpleColumns").css("display","inline");
+			
+			$("#autoCallTaskDg").datagrid("showColumn","SEND_MESSAGE");    			//是否下发信息
+			$("#autoCallTaskDg").datagrid("showColumn","CALLERID_DESC");   			//主叫号码
+			$("#autoCallTaskDg").datagrid("showColumn","scheduleDetail");  			//调度方案
+			$("#autoCallTaskDg").datagrid("showColumn","RETRY_TIMES");     			//重试次数
+			$("#autoCallTaskDg").datagrid("showColumn","RETRY_INTERVAL_DESC");  			//重试间隔
+			$("#autoCallTaskDg").datagrid("showColumn","CREATE_USERCODE_DESC");     //创建人
+			$("#autoCallTaskDg").datagrid("showColumn","CREATE_TIME");              //创建时间
+		}
 		
+		function showSimpleColumns() {
+			$("#allColumns").css("display","inline");
+			$("#simpleColumns").css("display","none");
+			
+			$("#autoCallTaskDg").datagrid("hideColumn","SEND_MESSAGE");
+			$("#autoCallTaskDg").datagrid("hideColumn","CALLERID_DESC");
+			$("#autoCallTaskDg").datagrid("hideColumn","scheduleDetail");
+			$("#autoCallTaskDg").datagrid("hideColumn","RETRY_TIMES");
+			$("#autoCallTaskDg").datagrid("hideColumn","RETRY_INTERVAL_DESC");
+			$("#autoCallTaskDg").datagrid("hideColumn","CREATE_USERCODE_DESC");
+			$("#autoCallTaskDg").datagrid("hideColumn","CREATE_TIME");
+		}
 		
 			
 	</script>
@@ -326,7 +354,7 @@
 					<th data-options="field:'validityDate',width:220,align:'center',formatter:validitydaterowformatter">有效期</th>
 					<th data-options="field:'scheduleDetail',width:50,align:'center',formatter:scheduledetailformatter">调度</th>
 					<th data-options="field:'RETRY_TIMES',width:80,align:'center'">呼叫总次数</th>
-					<th data-options="field:'RETRY_INTERVAL',width:100,align:'center'">重试间隔(分钟)</th>
+					<th data-options="field:'RETRY_INTERVAL_DESC',width:100,align:'center'">重试间隔</th>
 					
 					<th data-options="field:'CREATE_USERCODE_DESC',width:150,align:'center'">创建人</th>
 					<!-- th data-options="field:'ORG_CODE_DESC',width:150,align:'center'">部门(组织)名字</th -->
@@ -343,6 +371,8 @@
 <div id="searchtool" style="padding:5px;">
 	<div style="display:inline;">
 		<a href="#" id="easyui-add" onclick="autoCallTaskAdd()" class="easyui-linkbutton" iconCls='icon-add' plain="true">新建任务</a>
+		<a id="allColumns" href="#" id="easyui-add" onclick="showAllColumns()" class="easyui-linkbutton" iconCls='icon-add' plain="true" style="margin-left:100px;display:inline">全部显示</a>
+		<a id="simpleColumns" href="#" id="easyui-add" onclick="showSimpleColumns()" class="easyui-linkbutton" iconCls='icon-remove' plain="true" style="margin-left:100px;display: none;">精简显示</a>
 	</div>
 	<div style="display:inline;position:absolute;right:10px;">
 		<button id="applyActiveBtn" class="easyui-linkbutton" data-options="disabled:true" onclick="changeState('applyActive')">申请激活</button>

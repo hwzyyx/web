@@ -71,6 +71,8 @@ function autoCallTaskAdd() {
 	$("#RETRY_TIMES").combobox('setValue','3');                //默认的重试次数3次
 
 	$("#RETRY_INTERVAL").numberbox('setValue','10');           //默认重试间隔为10分钟
+	
+	$("#INTERVAL_TYPE").combobox("setValue","1");			   //间隔类型为 分钟
 
 	$("#PRIORITY").combobox('setValue','2');                   //默认优先级为中
 	
@@ -148,7 +150,7 @@ function autoCallTaskSaveAdd() {
 }
 
 //外呼任务编辑
-function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,scheduleId,scheduleName,taskType,commonVoiceId,commonVoiceDesc,questionnaireId,questionnaireDesc,reminderType,startVoiceId,startVoiceDesc,endVoiceId,endVoiceDesc,blackListId,blackListName,retryTimes,retryInterval,priority,sendMessage,messageContent) {
+function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,scheduleId,scheduleName,taskType,commonVoiceId,commonVoiceDesc,questionnaireId,questionnaireDesc,reminderType,startVoiceId,startVoiceDesc,endVoiceId,endVoiceDesc,blackListId,blackListName,retryTimes,retryInterval,intervalType,priority,sendMessage,messageContent) {
 	currTaskId = taskId;
 	
 	//设置任务类型
@@ -162,6 +164,7 @@ function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,sch
 		'autoCallTask.PLAN_END_TIME':planEndTime,
 		'autoCallTask.RETRY_TIMES':retryTimes,
 		'autoCallTask.RETRY_INTERVAL':retryInterval,
+		'autoCallTask.INTERVAL_TYPE':intervalType,
 		'autoCallTask.PRIORITY':priority,
 		'autoCallTask.TASK_TYPE':taskType,
 		'autoCallTask.REMINDER':reminderType,
@@ -832,7 +835,7 @@ function scheduledetailformatter(value,data,index) {
 }
 
 function rowformatter(value,data,index) {
-	return "<a href='#' onclick='javascript:autoCallTaskEdit(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\",\"" + data.CALLERID + "\",\"" + data.PLAN_START_TIME + "\",\"" + data.PLAN_END_TIME + "\",\"" + data.SCHEDULE_ID + "\",\"" + data.SCHEDULE_NAME + "\",\"" + data.TASK_TYPE + "\",\"" + data.COMMON_VOICE_ID + "\",\"" + data.COMMON_VOICE_DESC + "\",\"" + data.QUESTIONNAIRE_ID + "\",\"" + data.QUESTIONNAIRE_DESC + "\",\"" + data.REMINDER_TYPE + "\",\"" + data.START_VOICE_ID + "\",\"" + data.START_VOICE_DESC + "\",\"" + data.END_VOICE_ID + "\",\"" + data.END_VOICE_DESC + "\",\"" + data.BLACKLIST_ID + "\",\"" + data.BLACKLIST_NAME + "\",\"" + data.RETRY_TIMES + "\",\"" + data.RETRY_INTERVAL + "\",\"" + data.PRIORITY + "\",\"" + data.SEND_MESSAGE + "\",\"" + data.MESSAGE_CONTENT + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>" + 
+	return "<a href='#' onclick='javascript:autoCallTaskEdit(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\",\"" + data.CALLERID + "\",\"" + data.PLAN_START_TIME + "\",\"" + data.PLAN_END_TIME + "\",\"" + data.SCHEDULE_ID + "\",\"" + data.SCHEDULE_NAME + "\",\"" + data.TASK_TYPE + "\",\"" + data.COMMON_VOICE_ID + "\",\"" + data.COMMON_VOICE_DESC + "\",\"" + data.QUESTIONNAIRE_ID + "\",\"" + data.QUESTIONNAIRE_DESC + "\",\"" + data.REMINDER_TYPE + "\",\"" + data.START_VOICE_ID + "\",\"" + data.START_VOICE_DESC + "\",\"" + data.END_VOICE_ID + "\",\"" + data.END_VOICE_DESC + "\",\"" + data.BLACKLIST_ID + "\",\"" + data.BLACKLIST_NAME + "\",\"" + data.RETRY_TIMES + "\",\"" + data.RETRY_INTERVAL + "\",\""  + data.INTERVAL_TYPE + "\",\"" + data.PRIORITY + "\",\"" + data.SEND_MESSAGE + "\",\"" + data.MESSAGE_CONTENT + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>" + 
 	"<a href='#' onclick='javascript:autoCallTaskDel(\"" + data.TASK_ID +"\")'><img src='themes/icons/pencil.png' border='0'>删除</a>";
 }
 

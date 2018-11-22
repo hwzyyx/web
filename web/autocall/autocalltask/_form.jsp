@@ -212,7 +212,12 @@
 					</td>
 					<td>
 						<div style="padding-top:5px;">
-							<input id="RETRY_INTERVAL" name="autoCallTask.RETRY_INTERVAL" style="width:50px;" class="easyui-numberbox" type="text" required="true" missingMessage="重试间隔不能为空!"></input> 分钟
+							<input id="RETRY_INTERVAL" name="autoCallTask.RETRY_INTERVAL" style="width:50px;" class="easyui-numberbox" type="text" required="true" missingMessage="重试间隔不能为空!"></input> 
+							<select class="easyui-combobox" style="width:60px;margin-left:10px;" name="autoCallTask.INTERVAL_TYPE" id="INTERVAL_TYPE" data-options="editable:false,panelHeight:'auto'">
+					              <option value="1">分钟</option>
+					              <option value="2">小时</option>
+					              <option value="3">天</option>
+					        </select>
 						</div>
 					</td>
 				</tr>
