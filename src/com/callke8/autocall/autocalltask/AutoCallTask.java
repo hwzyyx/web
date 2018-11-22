@@ -226,6 +226,18 @@ public class AutoCallTask extends Model<AutoCallTask> {
 				r.set("TASK_TYPE_DESC", MemoryVariableUtil.getDictName("TASK_TYPE",taskTypeRs));
 			}
 			
+			//重试间隔
+			int retryInterval = r.getInt("RETRY_INTERVAL");    //重试间隔
+			int intervalType = r.getInt("INTERVAL_TYPE");      //间隔类型：1，分钟；2小时；3天
+			if(intervalType==1) {
+				r.set("RETRY_INTERVAL_DESC", retryInterval + "(分钟)");
+			}else if(intervalType==2) {
+				r.set("RETRY_INTERVAL_DESC", retryInterval + "(小时)");
+			}else if(intervalType==3) {
+				r.set("RETRY_INTERVAL_DESC", retryInterval + "(天)");
+			}else {
+				r.set("RETRY_INTERVAL_DESC", retryInterval + "(分钟)");
+			}
 			
 			//设置呼叫完成率（已呼数量/全部数量）,其中的已呼数量：是指状态为 不为 0(新建)、1(已载入),3(待重呼)
 			String taskId = r.get("TASK_ID");
@@ -293,7 +305,7 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * @param messageContent
 	 * @return
 	 */
-	public boolean update(String taskId,String taskName,String scheduleId,String planStartTime,String planEndTime,String taskType,Integer retryTimes,Integer retryInterval,String commonVoiceId,String questionnaireId,String reminderType,String startVoiceId,String endVoiceId,String blackListId,String callerId,Integer priority,Integer sendMessage,String messageContent) {
+	public boolean update(String taskId,String taskName,String scheduleId,String planStartTime,String planEndTime,String taskType,Integer retryTimes,Integer retryInterval,Integer intervalType,String commonVoiceId,String questionnaireId,String reminderType,String startVoiceId,String endVoiceId,String blackListId,String callerId,Integer priority,Integer sendMessage,String messageContent) {
 	
 		boolean b = false;
 		
@@ -342,6 +354,12 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		if(retryInterval>0) {
 			sb.append(",RETRY_INTERVAL=?");
 			pars[index] = retryInterval;
+			index++;
+		}
+		
+		if(intervalType>0) {
+			sb.append(",INTERVAL_TYPE=?");
+			pars[index] = intervalType;
 			index++;
 		}
 		
@@ -811,6 +829,7 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		autoCallTask.set("REMINDER_TYPE",reminderType);
 		autoCallTask.set("RETRY_TIMES","3");
 		autoCallTask.set("RETRY_INTERVAL","10");
+		autoCallTask.set("INTERVAL_TYPE","1");
 		autoCallTask.set("PRIORITY","2");                       //优先级
 		autoCallTask.set("SEND_MESSAGE","0");
 		

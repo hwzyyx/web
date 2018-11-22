@@ -318,6 +318,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		String planEndTime = autoCallTask.get("PLAN_END_TIME").toString();
 		Integer retryTimes = Integer.valueOf(autoCallTask.get("RETRY_TIMES").toString());
 		Integer retryInterval = Integer.valueOf(autoCallTask.get("RETRY_INTERVAL").toString());
+		Integer intervalType = Integer.valueOf(autoCallTask.get("INTERVAL_TYPE").toString());
 		String commonVoiceId = autoCallTask.get("COMMON_VOICE_ID");
 		String questionniareId = autoCallTask.get("QUESTIONNAIRE_ID");
 		String reminderType = autoCallTask.get("REMINDER_TYPE");
@@ -329,7 +330,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		int sendMessage = autoCallTask.getInt("SEND_MESSAGE");
 		String messageContent = autoCallTask.getStr("MESSAGE_CONTENT");
 		
-		boolean b = AutoCallTask.dao.update(taskId,taskName,scheduleId,planStartTime,planEndTime,taskType,retryTimes,retryInterval,commonVoiceId,questionniareId,reminderType,startVoiceId,endVoiceId,blackListId,callerId,priority,sendMessage,messageContent);
+		boolean b = AutoCallTask.dao.update(taskId,taskName,scheduleId,planStartTime,planEndTime,taskType,retryTimes,retryInterval,intervalType,commonVoiceId,questionniareId,reminderType,startVoiceId,endVoiceId,blackListId,callerId,priority,sendMessage,messageContent);
 		
 		if(b) {
 			render(RenderJson.success("修改外呼任务成功!"));
