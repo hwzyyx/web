@@ -330,26 +330,36 @@
 	</div>	
 	
 	<!-- 将修改密码的窗口包含进来，在点击修改密码时，可以显示该窗口 -->
-	<div id="changepasswordpanel" class="easyui-dialog" title="修改密码" data-options="width:300,height:200" modal="true" closed="true" buttons="#changePasswordBtn">
+	<div id="changepasswordpanel" class="easyui-dialog" title="修改密码" style="height:300px;width:550px;" modal="true" closed="true" buttons="#changePasswordBtn">
 		<form id="changepasswordform">
 				<!-- %@ include file="/_changepasswordform.jsp"% -->
 				<table>
 				<tr>
-					<td>原密码</td>
 					<td>
-						<input name="operator.OLD_PASSWORD" id="OLD_PASSWORD" class="easyui-validatebox" type="text" required="true" missingMessage="原密码不能为空!"></input>
+						<div style="padding-left:80px;padding-top:30px;">
+							原&nbsp;&nbsp;&nbsp;密&nbsp;&nbsp;&nbsp;码：<input name="operator.OLD_PASSWORD" id="OLD_PASSWORD" style="width:250px;" class="easyui-textbox" type="password" required="true" missingMessage="原密码不能为空!"></input>
+						</div>
 					</td>
 				</tr>
 				<tr>
-					<td>新密码</td>
 					<td>
-						<input name="operator.NEW_PASSWORD" id="NEW_PASSWORD" type="password" class="easyui-validatebox" type="text" required="true" missingMessage="新密码不能为空!"></input>
+						<div style="padding-left:80px;padding-top:20px;">
+							新&nbsp;&nbsp;&nbsp;密&nbsp;&nbsp;&nbsp;码：<input name="operator.NEW_PASSWORD" id="NEW_PASSWORD" style="width:250px;" class="easyui-textbox" type="password" required="true" missingMessage="新密码不能为空!"></input>
+						</div>
 					</td>
 				</tr>
 				<tr>
-					<td>确认新密码</td>
 					<td>
-						<input name="operator.RE_NEW_PASSWORD" id="RE_NEW_PASSWORD" type="password" class="easyui-validatebox" type="text" required="true" missingMessage="确认新密码不能为空!"></input>
+						<div style="padding-left:80px;padding-top:20px;">
+							确认新密码：<input name="operator.RE_NEW_PASSWORD" id="RE_NEW_PASSWORD" style="width:250px;" class="easyui-textbox" type="password" required="true" missingMessage="确认新密码不能为空!"></input>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<div style="padding-left:20px;padding-top:30px;color: red;font-size: 12px;">
+							* 提示：密码长度大于或等于 10 个字符，密码必须包含字母 + 数字 + 特殊字符的组合。
+						</div>
 					</td>
 				</tr>
 			</table>

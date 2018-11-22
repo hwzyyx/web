@@ -48,7 +48,14 @@
 					success:function(rs) {
 						var statusCode = rs.statusCode; //返回的结果类型
 						var message = rs.message;       //返回执行的信息
+						var extraMessage = rs.extraMessage;     //是否需要重新更改密码提示
+						//alert("message:" + message + ",extraMessage:" + extraMessage);
 						if(statusCode == 'success') {         //返回的数据不为空时，才进行勾选当前操作员的角色
+							if(extraMessage==null || extraMessage=='' || extraMessage  == 'null') {
+								
+							}else {
+								alert("登录成功," + extraMessage);
+							}
 							document.location = "index";						
 						}else {
 							$.messager.alert("提示","登录失败:" + message,"error");

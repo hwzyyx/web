@@ -1284,7 +1284,7 @@
 	</div>	
 	
 	<!-- 将修改密码的窗口包含进来，在点击修改密码时，可以显示该窗口 -->
-	<div id="changepasswordpanel" class="easyui-dialog" title="修改密码" data-options="width:300,height:200" modal="true" closed="true" buttons="#changePasswordBtn">
+	<div id="changepasswordpanel" class="easyui-dialog" title="修改密码aaa" style="width:500px;height:400px;" modal="true" closed="true" buttons="#changePasswordBtn">
 		<form id="changepasswordform">
 				<!-- %@ include file="/_changepasswordform.jsp"% -->
 				<table>
