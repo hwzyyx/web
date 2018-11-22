@@ -6,6 +6,7 @@ import java.util.List;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.SchedulerException;
 
 import com.alibaba.druid.util.StringUtils;
 import com.callke8.autocall.autocalltask.AutoCallTask;
@@ -14,6 +15,7 @@ import com.callke8.pridialqueueforbshbyquartz.BSHQueueMachineManager;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.NumberUtils;
+import com.callke8.utils.QuartzUtils;
 import com.callke8.utils.StringUtil;
 
 public class AutoCallLoadTaskJob implements Job {
@@ -49,6 +51,13 @@ public class AutoCallLoadTaskJob implements Job {
 			}
 			validCallTaskCount = validCallTaskList.size();   //有效的任务列表的数量
 		}
+		
+		try {
+			System.out.println("当前 Schedule 的数量为：" + QuartzUtils.factory.getAllSchedulers().size());
+		} catch (SchedulerException e) {
+			e.printStackTrace();
+		}
+		
 		StringUtil.log(this, "==排队机中未外呼的数据量为:" + AutoCallQueueMachineManager.queueCount + "，当前活跃通道数量为:" + AutoCallPredial.activeChannelCount + ",中继并发量为:" + Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_4_trunkMaxCapacity")));
 		logSb.append("线程:AutoCallLoadTaskJob(111111111): 扫描外呼任务，已激活可外呼任务共有: " + activeCallTaskList.size() + " 个;有效任务(除去无外呼号码的任务)，已激活的可外呼任务共有: " + validCallTaskList.size() + " 个。");
 		
