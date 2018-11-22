@@ -22,7 +22,8 @@ function getSummaryData() {
 	
 	var summaryData = '{"total":2,"rows":[';
 	summaryData += '{"category":"数量","totalData":' + totalCount + ',"state1Data":' + state1Count + ',"state2Data":' + state2Count + ',"state3Data":' + state3Count + ',"state4Data":' + state4Count + '},';
-	summaryData += '{"category":"占比","totalData":"' + totalRate + '%' + '","state1Data":"' + state1Rate  + '%' + '","state2Data":"' + state2Rate  + '%' + '","state3Data":"' + state3Rate  + '%' + '","state4Data":"' + state4Rate  + '%' + '"}';
+	summaryData += '{"category":"占比","totalData":"' + totalRate + '%' + '","state1Data":"' + state1Rate  + '%' + '","state2Data":"' + state2Rate  + '%' + '","state3Data":"' + state3Rate  + '%' + '","state4Data":"' + state4Rate  + '%' + '"},';
+	summaryData += '{"category":"","totalData":"' + "" + '","state1Data":"' + '导出' + '","state2Data":"' + '导出' + '","state3Data":"' + '导出' + '","state4Data":"' + '导出' + '"}';
 	summaryData += "]}";
 	
 	return JSON.parse(summaryData);
@@ -126,18 +127,47 @@ function summaryExport() {
 	});
 }
 
-function tota1DataFormatter(value,data,index){ return "<span style='font-weight:bolder'>" + value + "</span>"; }
-function state1DataFormatter(value,data,index){ return "<span style='color:#f8d013;font-weight:bolder'>" + value + "</span>"; }
-function state2DataFormatter(value,data,index){ return "<span style='color:#00ff00;font-weight:bolder'>" + value + "</span>"; }
-function state3DataFormatter(value,data,index){ return "<span style='color:#fc00ff;font-weight:bolder'>" + value + "</span>"; }
-function state4DataFormatter(value,data,index){ return "<span style='color:#ff0000;font-weight:bolder'>" + value + "</span>"; }
+function tota1DataFormatter(value,data,index){
+	if(value=="导出") {
+			return "<a href='autoCallTaskTelephone/exportExcel?taskId=" + currTaskId + "&state=-1'>导出" + "</a>";
+	}else {
+		return "<span style='font-weight:bolder'>" + value + "</span>"; 
+	}
+}
+function state1DataFormatter(value,data,index){
+	if(value=="导出") {
+		return "<a href='autoCallTaskTelephone/exportExcel?taskId=" + currTaskId + "&state=1'>导出" + "</a>";
+	}else {
+		return "<span style='color:#f8d013;font-weight:bolder'>" + value + "</span>"; 
+	}
+}
+function state2DataFormatter(value,data,index){
+	if(value=="导出") {
+		return "<a href='autoCallTaskTelephone/exportExcel?taskId=" + currTaskId + "&state=2'>导出" + "</a>";
+	}else {
+		return "<span style='color:#00ff00;font-weight:bolder'>" + value + "</span>"; 
+	}
+}
+function state3DataFormatter(value,data,index){
+	if(value=="导出") {
+		return "<a href='autoCallTaskTelephone/exportExcel?taskId=" + currTaskId + "&state=3'>导出" + "</a>";
+	}else {
+		return "<span style='color:#fc00ff;font-weight:bolder'>" + value + "</span>"; }
+	}
+function state4DataFormatter(value,data,index){ 
+	if(value=="导出") {
+		return "<a href='autoCallTaskTelephone/exportExcel?taskId=" + currTaskId + "&state=4'>导出" + "</a>";
+	}else {
+		return "<span style='color:#ff0000;font-weight:bolder'>" + value + "</span>"; 
+	}
+}
 	
 </script>
 
 <div id="container" style="height:450px;width:1000px;"></div>
 
 <!-- 数据汇总区 -->
-<div class="easyui-tabs" style="width:1000px;height:180px;margin-left:10px;">
+<div class="easyui-tabs" style="width:1000px;height:210px;margin-left:10px;">
 	<div title="数据统计汇总" style="padding:10px">
 		
 	<table id="summaryDg" data-options="fit:true,singleSelect:true,rownumbers:false">
