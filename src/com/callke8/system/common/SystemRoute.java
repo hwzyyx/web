@@ -10,9 +10,11 @@ import com.callke8.system.operationlog.OperationLogController;
 import com.callke8.system.operator.OperatorController;
 import com.callke8.system.org.OrgController;
 import com.callke8.system.param.ParamController;
+import com.callke8.system.remindertype.SysReminderTypeController;
 import com.callke8.system.role.RoleController;
 import com.callke8.system.rolegroup.RoleGroupController;
 import com.callke8.system.rolemodule.RoleModuleController;
+import com.callke8.system.tasktype.SysTaskTypeController;
 import com.jfinal.config.Routes;
 
 public class SystemRoute extends Routes {
@@ -32,6 +34,9 @@ public class SystemRoute extends Routes {
 		add("/param",ParamController.class,"system/param");
 		add("/sysCallerId",SysCallerIdController.class,"system/callerid");
 		add("/sysCallerIdAssign",SysCallerIdAssignController.class,"system/callerid");
+		add("/sysTaskType",SysTaskTypeController.class,"system/tasktype");
+		add("/sysReminderType",SysReminderTypeController.class,"system/remindertype");
+		
 		
 	}
 
