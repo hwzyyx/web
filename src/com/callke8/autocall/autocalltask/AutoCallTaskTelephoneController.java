@@ -1187,20 +1187,29 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		}else if(taskType.equalsIgnoreCase("3")) {          //如果为催缴外呼
 			
 			if(reminderType.equalsIgnoreCase("6")) {        //催缴类型为车辆违章
-				
-				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码","违章城市","处罚单位","违章事由","违章日期"};            
-				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE","ILLEGAL_CITY","PUNISHMENT_UNIT","ILLEGAL_REASON","PERIOD"};
+				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码","日期","车牌号码","违法城市","处罚单位","违法理由"};            
+				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE","PERIOD","PLATE_NUMBER","ILLEGAL_CITY","PUNISHMENT_UNIT","ILLEGAL_REASON"};
 				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
-			}else if(reminderType.equalsIgnoreCase("7")) {  //催缴类型为社保催缴
-				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码","日期","代缴单位"};            
-				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE","PERIOD","COMPANY"};
+			}else if(reminderType.equalsIgnoreCase("7")) {  //交警移车
+				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码","报警人电话","车辆类型","车牌号码"};            
+				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE","CALL_POLICE_TEL","VEHICLE_TYPE","PLATE_NUMBER"};
 				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
-			}else{        //如果为电话、水、电、气及物业催缴
-				
+			}else if(reminderType.equalsIgnoreCase("8")) {  //社保催缴
 				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码","日期","费用"};            
 				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE","PERIOD","CHARGE"};
 				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
-				
+			}else if(reminderType.equalsIgnoreCase("1")){   //电费催缴
+				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码","日期","户号","地址","费用"};            
+				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE","PERIOD","ACCOUNT_NUMBER","ADDRESS","CHARGE"};
+				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
+			}else if(reminderType.equalsIgnoreCase("2")){   //水费催缴
+				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码","日期","地址","表显数量","使用量","费用","户号"};            
+				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE","PERIOD","ADDRESS","DISPLAY_NUMBER","DOSAGE","CHARGE","ACCOUNT_NUMBER"};
+				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
+			}else{        				//如果为电话、气及物业催缴
+				String[] headers = {"客户姓名","电话号码","省份","城市","外呼号码","创建时间","外呼结果","失败原因","呼叫次数","外呼时间","通话时长","下次外呼时间","短信状态","短信错误代码","日期","费用"};            
+				String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","CALLOUT_TEL","CREATE_TIME","STATE_DESC","LAST_CALL_RESULT","RETRIED_DESC","LOAD_TIME","BILLSEC","NEXT_CALLOUT_TIME","MESSAGE_STATE_DESC","MESSAGE_FAILURE_CODE","PERIOD","CHARGE"};
+				export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
 			}
 			
 		}

@@ -621,7 +621,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 			最后一次外呼的结果：NOANSWER(未接);FAILURE(失败);BUSY(线忙);SUCCESS(成功)
 	 * @return
 	 */
-	public boolean updateAutoCallTaskTelephoneStateToRetry(int telId,String newState,int retryInterval,String lastCallResult) {
+	public boolean updateAutoCallTaskTelephoneStateToRetry(int telId,String newState,int retryInterval,int intervalType,String lastCallResult) {
 		
 		boolean b = false;
 		
@@ -630,7 +630,16 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		}
 		
 		long currTimeMillis = DateFormatUtils.getTimeMillis();   			 //当前时间的毫秒数
-		long retryTimeMillis = currTimeMillis + retryInterval * 60 * 1000;   //重试时的毫秒数
+		long retryTimeMillis = 0;
+		if(intervalType==1) {   		//分钟
+			retryTimeMillis = currTimeMillis + retryInterval * 60 * 1000;   			//重试时的毫秒数
+		}else if(intervalType==2) {		//小时
+			retryTimeMillis = currTimeMillis + retryInterval * 60 * 60 * 1000;   		//重试时的毫秒数
+		}else if(intervalType==3) {     //天
+			retryTimeMillis = currTimeMillis + retryInterval * 24 * 60 * 60 * 1000;   	//重试时的毫秒数
+		}else {                         //否则，默认为分钟
+			retryTimeMillis = currTimeMillis + retryInterval * 60 * 1000;   			//重试时的毫秒数
+		}
 		
 		String nextCallOutTime = DateFormatUtils.formatDateTime(new Date(retryTimeMillis),"yyyy-MM-dd HH:mm:ss");
 		

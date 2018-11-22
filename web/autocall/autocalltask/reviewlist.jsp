@@ -38,7 +38,6 @@
 		$(function(){
 			$('#endTime').datebox('setValue',getCurrDate());
 
-
 			//任务类型加载
 			$("#taskType").combobox({
 				valueField:'id',
@@ -98,6 +97,7 @@
 				}
 			});
 
+			showSimpleColumns();     //任务列表，显示简单的列
 
 			$("#TASK_TYPE").combobox({
 				valueField:'id',
@@ -269,11 +269,11 @@
 		}
 
 		function rowformatter(value,data,index) {
-			return "<a href='#' onclick='javascript:autoCallTaskReview(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\",\"" + data.CALLERID + "\",\"" + data.PLAN_START_TIME + "\",\"" + data.PLAN_END_TIME + "\",\"" + data.SCHEDULE_ID + "\",\"" + data.SCHEDULE_NAME + "\",\"" + data.TASK_TYPE + "\",\"" + data.COMMON_VOICE_ID + "\",\"" + data.COMMON_VOICE_DESC + "\",\"" + data.QUESTIONNAIRE_ID + "\",\"" + data.QUESTIONNAIRE_DESC + "\",\"" + data.REMINDER_TYPE + "\",\"" + data.START_VOICE_ID + "\",\"" + data.START_VOICE_DESC + "\",\"" + data.END_VOICE_ID + "\",\"" + data.END_VOICE_DESC + "\",\"" + data.BLACKLIST_ID + "\",\"" + data.BLACKLIST_NAME + "\",\"" + data.RETRY_TIMES + "\",\"" + data.RETRY_INTERVAL + "\",\"" + data.PRIORITY + "\")'><img src='themes/icons/ok.png' border='0'>审核</a>";
+			return "<a href='#' onclick='javascript:autoCallTaskReview(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\",\"" + data.CALLERID + "\",\"" + data.PLAN_START_TIME + "\",\"" + data.PLAN_END_TIME + "\",\"" + data.SCHEDULE_ID + "\",\"" + data.SCHEDULE_NAME + "\",\"" + data.TASK_TYPE + "\",\"" + data.COMMON_VOICE_ID + "\",\"" + data.COMMON_VOICE_DESC + "\",\"" + data.QUESTIONNAIRE_ID + "\",\"" + data.QUESTIONNAIRE_DESC + "\",\"" + data.REMINDER_TYPE + "\",\"" + data.START_VOICE_ID + "\",\"" + data.START_VOICE_DESC + "\",\"" + data.END_VOICE_ID + "\",\"" + data.END_VOICE_DESC + "\",\"" + data.BLACKLIST_ID + "\",\"" + data.BLACKLIST_NAME + "\",\"" + data.RETRY_TIMES + "\",\"" + data.RETRY_INTERVAL + "\",\"" + data.INTERVAL_TYPE + "\",\"" + data.PRIORITY + "\")'><img src='themes/icons/ok.png' border='0'>审核</a>";
 		}
 
 		//任务审核
-		function autoCallTaskReview(taskId,taskName,callerId,planStartTime,planEndTime,scheduleId,scheduleName,taskType,commonVoiceId,commonVoiceDesc,questionnaireId,questionnaireDesc,reminderType,startVoiceId,startVoiceDesc,endVoiceId,endVoiceDesc,blackListId,blackListName,retryTimes,retryInterval,priority) {
+		function autoCallTaskReview(taskId,taskName,callerId,planStartTime,planEndTime,scheduleId,scheduleName,taskType,commonVoiceId,commonVoiceDesc,questionnaireId,questionnaireDesc,reminderType,startVoiceId,startVoiceDesc,endVoiceId,endVoiceDesc,blackListId,blackListName,retryTimes,retryInterval,intervalType,priority) {
 
 			currTaskId = taskId;
 
@@ -288,6 +288,7 @@
 				'autoCallTask.PLAN_END_TIME':planEndTime,
 				'autoCallTask.RETRY_TIMES':retryTimes,
 				'autoCallTask.RETRY_INTERVAL':retryInterval,
+				'autoCallTask.INTERVAL_TYPE':intervalType,
 				'autoCallTask.PRIORITY':priority
 			});
 
@@ -794,6 +795,32 @@
 			}
 			
 		}
+		
+		function showAllColumns() {
+			$("#allColumns").css("display","none");
+			$("#simpleColumns").css("display","inline");
+			
+			$("#autoCallTaskDg").datagrid("showColumn","CALLERID_DESC");   			//主叫号码
+			$("#autoCallTaskDg").datagrid("showColumn","scheduleDetail");  			//调度方案
+			$("#autoCallTaskDg").datagrid("showColumn","RETRY_TIMES");     			//重试次数
+			$("#autoCallTaskDg").datagrid("showColumn","RETRY_INTERVAL_DESC");  			//重试间隔
+			$("#autoCallTaskDg").datagrid("showColumn","CREATE_USERCODE_DESC");     //创建人
+			$("#autoCallTaskDg").datagrid("showColumn","ORG_CODE_DESC");     		//部门组织名字
+			$("#autoCallTaskDg").datagrid("showColumn","CREATE_TIME");              //创建时间
+		}
+		
+		function showSimpleColumns() {
+			$("#allColumns").css("display","inline");
+			$("#simpleColumns").css("display","none");
+			
+			$("#autoCallTaskDg").datagrid("hideColumn","CALLERID_DESC");
+			$("#autoCallTaskDg").datagrid("hideColumn","scheduleDetail");
+			$("#autoCallTaskDg").datagrid("hideColumn","RETRY_TIMES");
+			$("#autoCallTaskDg").datagrid("hideColumn","RETRY_INTERVAL_DESC");
+			$("#autoCallTaskDg").datagrid("hideColumn","CREATE_USERCODE_DESC");
+			$("#autoCallTaskDg").datagrid("hideColumn","ORG_CODE_DESC");
+			$("#autoCallTaskDg").datagrid("hideColumn","CREATE_TIME");
+		}
 			
 	</script>
 </head>
@@ -843,23 +870,30 @@
 			<thead>
 				<tr style="height:12px;">
 					<th data-options="field:'ck',checkbox:true"></th>		
-					<th data-options="field:'TASK_NAME',width:200,align:'center'">任务名称</th>
-					<th data-options="field:'TASK_TYPE_DESC',width:100,align:'center'">任务类型</th>
-					<th data-options="field:'CALLERID_DESC',width:100,align:'center'">主叫号码</th>
-					<th data-options="field:'taskStateField',width:100,align:'center',formatter:taskstaterowformatter">状态</th>
-					<th data-options="field:'validityDate',width:180,align:'center',formatter:validitydaterowformatter">有效期</th>
-					<th data-options="field:'scheduleDetail',width:40,align:'center',formatter:scheduledetailformatter">调度</th>
+					<th data-options="field:'TASK_NAME',width:250,align:'center'">任务名称</th>
+					<th data-options="field:'TASK_TYPE_DESC',width:150,align:'center'">任务类型</th>
+					<th data-options="field:'CALLERID_DESC',width:150,align:'center'">主叫号码</th>
+					<th data-options="field:'taskStateField',width:120,align:'center',formatter:taskstaterowformatter">状态</th>
+					<th data-options="field:'validityDate',width:220,align:'center',formatter:validitydaterowformatter">有效期</th>
+					<th data-options="field:'scheduleDetail',width:50,align:'center',formatter:scheduledetailformatter">调度</th>
 					<th data-options="field:'RETRY_TIMES',width:80,align:'center'">重试次数</th>
-					<th data-options="field:'RETRY_INTERVAL',width:100,align:'center'">重试间隔(分钟)</th>
+					<th data-options="field:'RETRY_INTERVAL_DESC',width:100,align:'center'">重试间隔</th>
 					
-					<th data-options="field:'CREATE_USERCODE_DESC',width:100,align:'center'">创建人</th>
+					<th data-options="field:'CREATE_USERCODE_DESC',width:150,align:'center'">创建人</th>
 					<th data-options="field:'ORG_CODE_DESC',width:150,align:'center'">部门(组织)名字</th>
-					<th data-options="field:'CREATE_TIME',width:150,align:'center'">创建时间</th>
+					<th data-options="field:'CREATE_TIME',width:180,align:'center'">创建时间</th>
 					<th data-options="field:'id',width:100,align:'center',formatter:rowformatter">操作</th>
 				</tr>
 				
 			</thead>
 		</table>	
+	</div>
+</div>
+
+<div id="searchtool" style="padding:5px;">
+	<div style="display:inline;">
+		<a id="allColumns" href="#" id="easyui-add" onclick="showAllColumns()" class="easyui-linkbutton" iconCls='icon-add' plain="true" style="margin-left:10px;display:inline">全部显示</a>
+		<a id="simpleColumns" href="#" id="easyui-add" onclick="showSimpleColumns()" class="easyui-linkbutton" iconCls='icon-remove' plain="true" style="margin-left:10px;display: none;">精简显示</a>
 	</div>
 </div>
 
