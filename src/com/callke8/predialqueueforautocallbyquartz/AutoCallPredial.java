@@ -71,11 +71,15 @@ public class AutoCallPredial {
 		Thread autoCallLaunchDialThread = new Thread(new AutoCallLaunchDialRunable());
 		autoCallLaunchDialThread.start();
 		
-		//线程三:扫描待重呼记录到排队机线程
+		//线程三:扫描待重呼记录到排队机线程，因为重呼的优先及应该高于非重呼，所以将扫描频率设置为2秒。
 		Scheduler scheduler3 = QuartzUtils.createScheduler("AutoCallLoadRetryJob" + System.currentTimeMillis(),1);
-		scheduler3.scheduleJob(QuartzUtils.createJobDetail(AutoCallLoadRetryJob.class),QuartzUtils.createTrigger(startTime,scanInterval));
+		scheduler3.scheduleJob(QuartzUtils.createJobDetail(AutoCallLoadRetryJob.class),QuartzUtils.createTrigger(startTime,2));   //每两秒扫描一次
 		scheduler3.start();
 		
+		//线程四：超时记录检查，如果某条外呼记录的状态为1（已载入），载入8分钟后，仍没有得到执行，系统将强制处理掉，将其转为待重呼或已失败。
+		Scheduler scheduler4 = QuartzUtils.createScheduler("AutoCallHandleTimeOutRecordJob" + System.currentTimeMillis(), 1);
+		scheduler4.scheduleJob(QuartzUtils.createJobDetail(AutoCallHandleTimeOutRecordJob.class),QuartzUtils.createTrigger(startTime, 30));     //由于该流程的要处理的数据不大，每30秒扫描一次即可
+		scheduler4.start();
 	}
 	
 	/**
