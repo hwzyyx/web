@@ -70,7 +70,8 @@ public class AutoCallLaunchDialJob implements Job {
 					AutoCallPredial.activeChannelCount++;               //活跃通道增加1
 					
 					// 调用执行外呼的 Job 进行外呼
-					Scheduler schedulerForCallOut = QuartzUtils.createScheduler("AutoCallLaunchDialJob" + System.currentTimeMillis(),1);
+					String scheduleNameForCallOut = "AutoCallDoCallOutJob" + String.valueOf(System.currentTimeMillis()) + String.valueOf(Math.round(Math.random()*900000 + 100000));
+					Scheduler schedulerForCallOut = QuartzUtils.createScheduler(scheduleNameForCallOut,1);
 					JobDetail jobDetail = QuartzUtils.createJobDetail(AutoCallDoCallOutJob.class);
 					jobDetail.getJobDataMap().put("autoCallTaskTelephoneId", String.valueOf(autoCallTaskTelephone.getInt("TEL_ID")));    //将ID以参数传入到quartz的执行区
 					schedulerForCallOut.scheduleJob(jobDetail, QuartzUtils.createSimpleTrigger(new Date((System.currentTimeMillis() + 1000)), 0, 1));   //执行一次
