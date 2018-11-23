@@ -475,7 +475,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		}
 		
 		sb.append(" ORDER BY TEL_ID DESC");
-		
+		//System.out.println("处理超时记录的 sql 语句++++++++++++：" + sb.toString() + "------------" +  ArrayUtils.copyArray(index, pars).toString());
 		List<Record> list = Db.find(sb.toString(),ArrayUtils.copyArray(index, pars));
 		List<Record> newList = new ArrayList<Record>();
 		
@@ -748,7 +748,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 如果外呼任务ID为空时,取出所有任务的状态的数量
 	 * 
 	 * @param state
-	 * 			0:新建;1:已载入(即载入号码到未外呼);2:呼叫成功;3:呼叫失败;
+	 * 			0:新建;1:已载入(即载入号码到未外呼);2:已成功;3:待重呼;4已失败
 	 * @param taskId
 	 * 
 	 * @return
