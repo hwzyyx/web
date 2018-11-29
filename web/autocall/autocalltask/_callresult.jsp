@@ -188,6 +188,7 @@ function state4DataFormatter(value,data,index){
 
 <div id="summaryDgTool" style="padding:5px;">
 	<a href="#" id="easyui-export" onclick="summaryExport()" class="easyui-linkbutton" iconCls='icon-redo' plain="true">导出汇总数据</a>
+	<a href="#" id="easyui-reload-data" style="margin-left:700px;" onclick="reloadStatistics()" class="easyui-linkbutton" iconCls='icon-reload' plain="true">重载数据</a>
 </div>
 <div id="telephoneopertool2" style="padding:5px;">
 	<div>
@@ -202,7 +203,7 @@ function state4DataFormatter(value,data,index){
 	<span style="padding-left:10px;color:#00ff00;font-size: 16px;font-weight:bolder;">成功率：<span id="state2RateSpan">%</span></span>
 </div>
 
-<<script type="text/javascript">
+<script type="text/javascript">
 	var dom = document.getElementById("container");
 	myChart = echarts.init(dom);
 	
