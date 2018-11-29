@@ -90,7 +90,9 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneBillsec(Integer.valueOf(telId), Integer.valueOf(channel.getVariable("CDR(billsec)")));
 		
 		//退出之后，需要清理一下，当前的活跃通道，释放资源
-		AutoCallPredial.activeChannelCount--;
+		if(AutoCallPredial.activeChannelCount > 0){
+			AutoCallPredial.activeChannelCount--;     //释放资源
+		} 
 		
 		exec("hangup");
 		

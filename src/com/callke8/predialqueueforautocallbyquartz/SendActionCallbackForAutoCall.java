@@ -52,7 +52,9 @@ public class SendActionCallbackForAutoCall implements SendActionCallback {
 			}*/
 			
 			//如果外呼失败，则应该马上释放外呼资源
-			AutoCallPredial.activeChannelCount--;
+			if(AutoCallPredial.activeChannelCount > 0){
+				AutoCallPredial.activeChannelCount--;     //释放资源
+			} 
 		}
 		
 	}
