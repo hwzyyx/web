@@ -39,13 +39,27 @@ public class AutoCallDoCallOutJob implements Job {
 		String autoCallTaskTelephoneId = map.getString("autoCallTaskTelephoneId");     //取出号码的 id
 		
 		AutoCallTaskTelephone actt = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneById(autoCallTaskTelephoneId);
-		if(BlankUtils.isBlank(actt)) { 		AutoCallPredial.activeChannelCount--;   return; }			//如果查询出来的记录为空，则表示该记录已经被删除
+		if(BlankUtils.isBlank(actt)) { 		 //如果查询出来的记录为空，则表示该记录已经被删除
+			if(AutoCallPredial.activeChannelCount > 0){
+				AutoCallPredial.activeChannelCount--;     //释放资源
+			}  
+			return; 
+		}			
 		
 		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(actt.getStr("TASK_ID"));    //取出任务信息
-		if(BlankUtils.isBlank(autoCallTask)) { 		AutoCallPredial.activeChannelCount--;   return; }    //如果任务不存在了，也直接返回，不执行外呼
+		if(BlankUtils.isBlank(autoCallTask)) { 	//如果任务不存在了，也直接返回，不执行外呼	
+			if(AutoCallPredial.activeChannelCount > 0){
+				AutoCallPredial.activeChannelCount--;     //释放资源
+			}  
+			return;  
+		}    
 		
 		
-		StringUtil.log(this, "线程 AutoCallDoCallOutJob[333333]: 外呼 Job 接到并准备一个外呼任务, ID 值：" + autoCallTaskTelephoneId + ",任务详情:" + actt);
+		try {
+			StringUtil.log(this, "线程 AutoCallDoCallOutJob[" + context.getScheduler().getSchedulerName() + "]: 外呼 Job 接到并准备一个外呼任务, ID 值：" + autoCallTaskTelephoneId + ",任务详情:" + actt);
+		} catch (SchedulerException e2) {
+			e2.printStackTrace();
+		}
 		
 		// 第一步：检查外呼任务状态,先判断当前外呼数据所在的外呼任务的状态,是否处于暂停状态,取出外呼任务的状态
 		String taskState = autoCallTask.get("TASK_STATE");
@@ -54,7 +68,10 @@ public class AutoCallDoCallOutJob implements Job {
 			StringUtil.log(this, "由于外呼任务：" + autoCallTask.get("TASK_NAME") + " 非激活状态,外呼数据 :" + actt.get("TELEPHONE") + "将放弃外呼,并将回滚数据!");
 			//回滚数据
 			int count = AutoCallTaskTelephone.dao.rollBackAutoCallTaskTelephoneWhenTaskNoActive(Integer.valueOf(autoCallTaskTelephoneId));
-			AutoCallPredial.activeChannelCount--;     //释放资源
+			
+			if(AutoCallPredial.activeChannelCount > 0){
+				AutoCallPredial.activeChannelCount--;     //释放资源
+			}
 			return;
 		}
 		
@@ -97,7 +114,21 @@ public class AutoCallDoCallOutJob implements Job {
 			//如果失败，将再一次连接，如果连接，然后再去判断是否连接成功
 			try {
 				au.doLogin();
-			} catch (IllegalStateException e) {
+			} catch(Exception e) {
+				e.printStackTrace();
+				try {
+					if(AutoCallPredial.activeChannelCount > 0){
+						AutoCallPredial.activeChannelCount--;     //释放资源
+					}
+					context.getScheduler().shutdown();
+					//return;
+				} catch (SchedulerException e1) {
+					e1.printStackTrace();
+				}
+			}
+		
+			/*catch (IllegalStateException e) {
+				context.getScheduler().shutdown();
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -105,7 +136,7 @@ public class AutoCallDoCallOutJob implements Job {
 				e.printStackTrace();
 			} catch (TimeoutException e) {
 				e.printStackTrace();
-			}
+			}*/
 			
 			connState = au.isAstConnSuccess();    //再检查一次
 			if(!connState) {    //如果还是连接失败，将直接保存其为失败状态
@@ -114,7 +145,9 @@ public class AutoCallDoCallOutJob implements Job {
 				StringUtil.log(this, "再次重连接Asterisk后，PBX系统连接状态仍旧有异常,系统将直接更改状态为失败或是重试!");
 				
 				try {
-					AutoCallPredial.activeChannelCount--;     //释放资源
+				  	if(AutoCallPredial.activeChannelCount > 0){
+						AutoCallPredial.activeChannelCount--;     //释放资源
+					}
 					context.getScheduler().shutdown(); 
 					return;
 				} catch (SchedulerException e) {
