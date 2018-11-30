@@ -475,7 +475,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		}
 		
 		sb.append(" ORDER BY TEL_ID DESC");
-		//System.out.println("处理超时记录的 sql 语句++++++++++++：" + sb.toString() + "------------" +  ArrayUtils.copyArray(index, pars).toString());
+		System.out.println("处理超时记录的 sql 语句++++++++++++：" + sb.toString() + "------------" +  ArrayUtils.copyArray(index, pars).toString());
 		List<Record> list = Db.find(sb.toString(),ArrayUtils.copyArray(index, pars));
 		List<Record> newList = new ArrayList<Record>();
 		
