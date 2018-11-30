@@ -4,6 +4,7 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.SchedulerException;
 
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
@@ -38,13 +39,25 @@ public class AutoCallSendMessageJob implements Job {
 			if(b2) {  customerTel = customerTel.substring(1, customerTel.length()); }    //有前缀0时，去掉前缀0 
 		}else {         //非手机号码时，直接返回   
 			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneMessageState(3,"101", Integer.valueOf(telId));   //放弃下发短信
-			return;   
+			try {
+				context.getScheduler().shutdown();
+				return;   
+			} catch (SchedulerException e) {
+				e.printStackTrace();
+			}  
 		}  
 		
 		//(2)取出任务信息
 		String taskId = actt.getStr("TASK_ID");     				//取出任务 ID
 		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);    //取得任务
-		if(BlankUtils.isBlank(autoCallTask)) {  return; }           //如果任务也为空，则直接返回退出
+		if(BlankUtils.isBlank(autoCallTask)) {    //如果任务也为空，则直接返回退出
+			try {
+				context.getScheduler().shutdown();
+				return;   
+			} catch (SchedulerException e) {
+				e.printStackTrace();
+			}  
+		}          
 		
 		String taskType = autoCallTask.getStr("TASK_TYPE");                  //取出任务类型，  1：普通外呼（通知类），2：调查问卷， 3：催缴类外呼
 		String reminderType = autoCallTask.getStr("REMINDER_TYPE");          //催缴类型：1  电话费、 2 电费、3 水费、4 燃气费、5 物业费、6 车辆违章、 7社保催缴
@@ -56,7 +69,12 @@ public class AutoCallSendMessageJob implements Job {
 		//如果任务配置不下发短信、配置的短信内容为空、或是任务类型为调查问卷时，系统将不下发短信
 		if(sendMessage != 1  || BlankUtils.isBlank(messageContent) || taskType.equals("2")) {
 			StringUtil.log(this, "客户号码：" + customerTel + " 在下发短信中，因为 sendMessage != 1  || BlankUtils.isBlank(messageContent) || taskType.equals(2) 的原因将不下发短信!");
-			return;
+			try {
+				context.getScheduler().shutdown();
+				return;   
+			} catch (SchedulerException e) {
+				e.printStackTrace();
+			}  
 		}
 		
 		//(3)组织短信内容
@@ -82,9 +100,12 @@ public class AutoCallSendMessageJob implements Job {
 			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneMessageState(2, "102", Integer.valueOf(telId));      //请求错误
 		}
 			
-		
-		
-		
+		try {
+			context.getScheduler().shutdown();
+			return;   
+		} catch (SchedulerException e) {
+			e.printStackTrace();
+		}  
 	}
 	
 	/**
