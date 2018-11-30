@@ -221,7 +221,11 @@ public class AutoCallTask extends Model<AutoCallTask> {
 			String taskTypeRs = r.get("TASK_TYPE");             //任务类型
 			String reminderTypeRs = r.get("REMINDER_TYPE");     //催缴类型
 			if(taskTypeRs.equalsIgnoreCase("3")) {              //如果是催缴型任务
-				r.set("TASK_TYPE_DESC", MemoryVariableUtil.getDictName("TASK_TYPE",taskTypeRs) + "(" + MemoryVariableUtil.getDictName("REMINDER_TYPE", reminderTypeRs) + ")");
+				if(reminderTypeRs.equalsIgnoreCase("7")) {      //如果是交警移车
+					r.set("TASK_TYPE_DESC", "个性定制(" + MemoryVariableUtil.getDictName("REMINDER_TYPE", reminderTypeRs) + ")");
+				}else {
+					r.set("TASK_TYPE_DESC", MemoryVariableUtil.getDictName("TASK_TYPE",taskTypeRs) + "(" + MemoryVariableUtil.getDictName("REMINDER_TYPE", reminderTypeRs) + ")");
+				}
 			}else {
 				r.set("TASK_TYPE_DESC", MemoryVariableUtil.getDictName("TASK_TYPE",taskTypeRs));
 			}
