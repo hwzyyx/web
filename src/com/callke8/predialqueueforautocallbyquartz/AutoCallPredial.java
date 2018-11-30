@@ -64,12 +64,9 @@ public class AutoCallPredial {
 		scheduler1.start();
 		
 		//线程二:扫描排队机,若排队机中有数据,则执行外呼
-		/*Scheduler scheduler2 = QuartzUtils.createScheduler("AutoCallLaunchDialJob" + System.currentTimeMillis(),1);
-		scheduler2.scheduleJob(QuartzUtils.createJobDetail(AutoCallLaunchDialJob.class),QuartzUtils.createSimpleTrigger(startTime,-1,500));    //每500毫秒发起一次呼叫
-		scheduler2.start();*/
-		//以线程循环的方式，代替直接在主程序执行 job,在线程中，每500毫秒，发起一次 job
-		Thread autoCallLaunchDialThread = new Thread(new AutoCallLaunchDialRunable());
-		autoCallLaunchDialThread.start();
+		Scheduler scheduler2 = QuartzUtils.createScheduler("AutoCallLaunchDialJob" + System.currentTimeMillis(),1);
+		scheduler2.scheduleJob(QuartzUtils.createJobDetail(AutoCallLaunchDialJob.class),QuartzUtils.createSimpleTrigger(startTime,-1,400));    //每500毫秒发起一次呼叫
+		scheduler2.start();
 		
 		//线程三:扫描待重呼记录到排队机线程，因为重呼的优先及应该高于非重呼，所以将扫描频率设置为2秒。
 		Scheduler scheduler3 = QuartzUtils.createScheduler("AutoCallLoadRetryJob" + System.currentTimeMillis(),1);
