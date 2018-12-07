@@ -122,6 +122,13 @@ public class AutoCallTaskController extends Controller implements IController {
 		String taskId = DateFormatUtils.formatDateTime(new Date(), "yyyyMMddHHmm") + Math.round(Math.random()*9000 + 1000);
 		autoCallTask.set("TASK_ID", taskId);
 		
+		//检查主叫号码是否为空
+		String callerId = autoCallTask.get("CALLERID");
+		if(BlankUtils.isBlank(callerId) || callerId.equalsIgnoreCase("empty")) {
+			render(RenderJson.error("新增外呼任务失败,主叫号码为空!"));
+			return;
+		}
+		
 		//先检查是否存在相同名字的外呼任务
 		String taskName = autoCallTask.get("TASK_NAME");
 		if(!BlankUtils.isBlank(AutoCallTask.dao.getAutoCallTaskByTaskName(taskName))) {
@@ -746,28 +753,32 @@ public class AutoCallTaskController extends Controller implements IController {
 		
 		//获取到上述参数后，做进一步判断和处理
 		//(1) 判断上传的数据是否为空
-		if(BlankUtils.isBlank(serialNumber)) {
-			renderJson(returnGetResultMap("FAILURE","失败,失败原因：为空!",null));
+		if(BlankUtils.isBlank(serialNumber) || serialNumber.equalsIgnoreCase("null")) {
+			renderJson(returnGetResultMap("FAILURE","失败,失败原因：serialNumber为空!",null));
+			System.out.println("getResult():失败,失败原因：serialNumber为空!");
 			return;
 		}else if(BlankUtils.isBlank(userCode)) {  
 			renderJson(returnGetResultMap("FAILURE","失败,失败原因:账号为空!",null));
+			System.out.println("getResult():失败,失败原因:账号为空!");
 			return;
 		}else if(BlankUtils.isBlank(pwd)) {  
 			renderJson(returnGetResultMap("FAILURE","失败,失败原因:密码为空!",null));
+			System.out.println("getResult():失败,失败原因:密码为空!");
 			return;
 		}
-		
 		
 		//（2）判断用户名和密码
 		Operator operator = Operator.dao.getOperatorByOperId(userCode);
 		if(BlankUtils.isBlank(operator)) {         //找不到用户时
 			renderJson(returnGetResultMap("FAILURE","失败,失败原因:用户账号或密码错误!",null));
+			System.out.println("getResult():失败,失败原因:用户账号或密码错误!");
 			return;
 		}else {									   //帐户存在时，再检查密码
 			String password = operator.getStr("PASSWORD");     //取出密码
 			
 			if(!password.equals(Md5Utils.Md5(pwd))) {           //加密传上来的密码后再比较
 				renderJson(returnGetResultMap("FAILURE","失败,失败原因:账号或密码错误!",null));
+				System.out.println("getResult():失败,失败原因:账号或密码错误!");
 				return;
 			}
 		}
@@ -775,7 +786,8 @@ public class AutoCallTaskController extends Controller implements IController {
 		//（3）取得结果，并返回结果
 		AutoCallTaskTelephone actt = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneBySerialNumber(serialNumber);
 		if(BlankUtils.isBlank(actt)) {    //如果取回的记录为空，表示数据已经被删除或是其他的原因无法查询到记录
-			renderJson(returnGetResultMap("FAILURE","失败,失败原因：该流水号对应的外呼任务不存在",null));
+			renderJson(returnGetResultMap("FAILURE","失败,失败原因：该流水号对应的外呼任务不存在!",null));
+			System.out.println("getResult():失败,失败原因：该流水号对应的外呼任务不存在!");
 			return;
 		}else {                           //如果取回的记录不为空时，则返回外呼的结果
 			
@@ -784,10 +796,12 @@ public class AutoCallTaskController extends Controller implements IController {
 			
 			
 			if(state==0) {                //未外呼
-				renderJson(returnGetResultMap("FAILURE", "呼叫不成功，状态：呼叫暂未外呼", null));
+				renderJson(returnGetResultMap("FAILURE", "呼叫不成功，状态：呼叫暂未外呼!", null));
+				System.out.println("getResult():呼叫不成功，状态：呼叫暂未外呼!");
 				return;
 			}else if(state==1) {          //执行外呼过程中
-				renderJson(returnGetResultMap("FAILURE", "呼叫不成功，状态：正在外呼", null));
+				renderJson(returnGetResultMap("FAILURE", "呼叫不成功，状态：正在外呼!", null));
+				System.out.println("getResult():呼叫不成功，状态：正在外呼!");
 			}else if(state==2) {          //外呼成功
 				
 				String taskId = actt.getStr("TASK_ID");
@@ -804,12 +818,16 @@ public class AutoCallTaskController extends Controller implements IController {
 				m.put("duration",actt.getInt("BILLSEC").toString());           //通话时长
 				
 				renderJson(returnGetResultMap("SUCCESS","呼叫成功",m));
+				System.out.println("getResult():呼叫成功!");
 			}else if(state==3) {
 				renderJson(returnGetResultMap("FAILURE", "呼叫不成功，状态：待重外呼，失败原因：" + lastCallResult, null));
+				System.out.println("getResult():呼叫不成功，状态：待重外呼!");
 			}else if(state==4) {
 				renderJson(returnGetResultMap("FAILURE", "呼叫失败，失败原因：" +lastCallResult, null));
+				System.out.println("getResult():呼叫失败!");
 			}else {
 				renderJson(returnGetResultMap("FAILURE", "呼叫失败，失败原因：未知状态", null));
+				System.out.println("getResult():呼叫失败!");
 			}
 			
 		}

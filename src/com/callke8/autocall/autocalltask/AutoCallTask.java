@@ -130,9 +130,14 @@ public class AutoCallTask extends Model<AutoCallTask> {
 			
 			//设置主叫号码（由于是从数据字典选择的，要从字典中取出真实号码）
 			//String callerIdDesc = MemoryVariableUtil.getDictName("CALLERID", r.getStr("CALLERID"));
-			SysCallerId sysCallerId = SysCallerId.dao.getSysCallerIdById(Integer.valueOf(r.getStr("CALLERID")));
-			if(!BlankUtils.isBlank(sysCallerId)) {
-				r.set("CALLERID_DESC", sysCallerId.getStr("CALLERID"));
+			String callerIdRs = r.getStr("CALLERID");
+			if(!BlankUtils.isBlank(callerIdRs)) {
+				SysCallerId sysCallerId = SysCallerId.dao.getSysCallerIdById(Integer.valueOf(callerIdRs));
+				if(!BlankUtils.isBlank(sysCallerId)) {
+					r.set("CALLERID_DESC", sysCallerId.getStr("CALLERID"));
+				}
+			}else {
+				r.set("CALLERID_DESC", "NO SET");
 			}
 			
 			//设置调度计划名称
