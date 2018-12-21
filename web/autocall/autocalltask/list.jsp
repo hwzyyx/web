@@ -271,6 +271,7 @@
 		function autoCallTaskTelephoneExport2() {
 
 			var state = conditionState;
+			var lastCallResult = conditionLastCallResult;
 
 			$("#exportForm").form('submit',{
 
@@ -278,6 +279,7 @@
 				onSubmit:function(param) {
 					param.taskId = currTaskId;
 					param.state = state;
+					param.lastCallResult = lastCallResult;
 				},
 				success:function(data) {
 					
