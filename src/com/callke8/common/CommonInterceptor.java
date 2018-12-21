@@ -3,6 +3,7 @@ package com.callke8.common;
 import java.util.Enumeration;
 import java.util.List;
 
+import com.callke8.system.ipaddress.SysIpAddressConfig;
 import com.callke8.system.operationlog.OperationLog;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
@@ -23,7 +24,7 @@ public class CommonInterceptor implements Interceptor {
 	@Override
 	public void intercept(ActionInvocation ai) {
 		Controller controller = ai.getController();
- 		
+		
 		//登录用户的检查
 		String currOperId = controller.getSessionAttr("currOperId");
 		if(!BlankUtils.isBlank(currOperId)) {     //登录信息有效...

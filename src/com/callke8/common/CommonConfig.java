@@ -46,6 +46,7 @@ import com.callke8.system.calleridassign.SysCallerIdAssign;
 import com.callke8.system.common.SystemRoute;
 import com.callke8.system.dict.DictGroup;
 import com.callke8.system.dict.DictItem;
+import com.callke8.system.ipaddress.SysIpAddress;
 import com.callke8.system.loginlog.LoginLog;
 import com.callke8.system.module.Module;
 import com.callke8.system.operationlog.OperationLog;
@@ -54,10 +55,14 @@ import com.callke8.system.operator.Operator;
 import com.callke8.system.org.Org;
 import com.callke8.system.param.Param;
 import com.callke8.system.remindertype.SysReminderType;
+import com.callke8.system.remindertypeassign.SysReminderTypeAssign;
 import com.callke8.system.role.Role;
 import com.callke8.system.rolegroup.RoleGroup;
 import com.callke8.system.rolemodule.RoleModule;
+import com.callke8.system.schedule.SysSchedule;
+import com.callke8.system.scheduleassign.SysScheduleAssign;
 import com.callke8.system.tasktype.SysTaskType;
+import com.callke8.system.tasktypeassign.SysTaskTypeAssign;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.MemoryVariableUtil;
 import com.jfinal.config.Constants;
@@ -139,7 +144,14 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("sys_callerid", SysCallerId.class);
 		arp.addMapping("sys_callerid_assign", SysCallerIdAssign.class);
 		arp.addMapping("sys_task_type", SysTaskType.class);
+		arp.addMapping("sys_task_type_assign", SysTaskTypeAssign.class);
 		arp.addMapping("sys_reminder_type", SysReminderType.class);
+		arp.addMapping("sys_reminder_type_assign", SysReminderTypeAssign.class);
+		arp.addMapping("sys_schedule", SysSchedule.class);
+		arp.addMapping("sys_schedule_assign", SysScheduleAssign.class);
+		arp.addMapping("sys_ip_address", SysIpAddress.class);
+		
+		
 		
 		//外呼管理表映射
 		arp.addMapping("call_task", CallTask.class);
@@ -151,7 +163,7 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("ac_call_task_history", AutoCallTaskHistory.class);
 		arp.addMapping("ac_call_task_telephone", AutoCallTaskTelephone.class);
 		arp.addMapping("ac_call_task_telephone_history", AutoCallTaskTelephoneHistory.class);
-		arp.addMapping("ac_schedule", Schedule.class);
+		//arp.addMapping("ac_schedule", Schedule.class);
 		arp.addMapping("ac_voice",Voice.class);
 		arp.addMapping("ac_questionnaire",Questionnaire.class);
 		arp.addMapping("ac_questionnaire_respond",QuestionnaireRespond.class);
@@ -213,7 +225,14 @@ public class CommonConfig extends JFinalConfig {
 		//(4)准备加载系统配置参数到内存!
 		System.out.println("(4)准备加载系统配置参数到内存!");
 		Param.dao.loadParamDataToMemory();
-	
+		
+		//(5)准备加载系统的主叫号码到内存
+		System.out.println("(5)准备加载系统主叫号码参数到内存!");
+		SysCallerId.dao.loadSysCallerIdToMemory();
+		
+		//(6)准备加载系统配置的IP地址到内存
+		System.out.println("(5)准备加载IP地址访问控制参数到内存!");
+		SysIpAddress.dao.loadSysIpAddressToMemory();
 	}
 	
 	/**
@@ -241,8 +260,8 @@ public class CommonConfig extends JFinalConfig {
 		
 		//四、用于启动自动外呼任务扫描,并执行自动外呼操作
 		
-		AutoCallPredial autoCallPredial = new AutoCallPredial();
-		try {  autoCallPredial.exec();   } catch (SchedulerException e) { e.printStackTrace();}
+		//AutoCallPredial autoCallPredial = new AutoCallPredial();
+		//try {  autoCallPredial.exec();   } catch (SchedulerException e) { e.printStackTrace();}
 		
 		//五、启动博世电器的自动外呼扫描，并执行自动外呼操作
 		/*System.out.println("启动博世电器守护程序前，先加载博世电器的语音数据到内存!");
