@@ -36,7 +36,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param state
 	 * @return
 	 */
-	public Page<Record> getAutoCallTaskTelephoneByPaginate(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
+	public Page<Record> getAutoCallTaskTelephoneByPaginate(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String lastCallResult,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[12];
@@ -63,9 +63,22 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			index++;
 		}
 		
+		/**
+		 * 传入的 state 有可能是包括种状态，以逗号分隔，
+		 */
 		if(!BlankUtils.isBlank(state) && !state.equals("5")) {
-			sb.append(" and STATE=?");
-			pars[index] = state;
+			if(state.contains(",")) {   //如果状态有逗号分隔
+				sb.append(" and STATE in(" + state + ")");
+			}else {
+				sb.append(" and STATE=?");
+				pars[index] = state;
+				index++;
+			}
+		}
+		
+		if(!BlankUtils.isBlank(lastCallResult) && !lastCallResult.equals("empty")) {
+			sb.append(" and LAST_CALL_RESULT=?");
+			pars[index] = lastCallResult;
 			index++;
 		}
 		
@@ -120,7 +133,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param state
 	 * @return
 	 */
-	public Map<String,Object> getAutoCallTaskTelephoneByPaginateToMap(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
+	public Map<String,Object> getAutoCallTaskTelephoneByPaginateToMap(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String lastCallResult,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
 		
 		Map<String,Object> m = new HashMap<String,Object>();
 		AutoCallTask autoCallTask = null;
@@ -136,13 +149,17 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			retryTimes = autoCallTask.getInt("RETRY_TIMES");
 		}
 		
-		Page<Record> page = getAutoCallTaskTelephoneByPaginate(pageNumber, pageSize, taskId, customerTel, customerName,state,messageState,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
+		Page<Record> page = getAutoCallTaskTelephoneByPaginate(pageNumber, pageSize, taskId, customerTel, customerName,state,lastCallResult,messageState,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
 		
 		List<Record> newList = new ArrayList<Record>();
 		
 		for(Record r:page.getList()) {
 			int retried = r.getInt("RETRIED");
 			r.set("RETRIED_DESC",retried + "/" + retryTimes);
+			
+			String lastCallResultRs = r.getStr("LAST_CALL_RESULT");
+			String lastCallResultDesc = MemoryVariableUtil.getDictName("LAST_CALL_RESULT",lastCallResultRs);
+			r.set("LAST_CALL_RESULT_DESC", lastCallResultDesc);
 			
 			String messageStateRs = String.valueOf(r.getInt("MESSAGE_STATE"));
 			String messageStateDesc = MemoryVariableUtil.getDictName("COMMON_MESSAGE_STATE", messageStateRs);
@@ -408,7 +425,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 				外呼任务设定的重试次数
 	 * @return
 	 */
-	public List<Record> getAutoCallTaskTelephonesByTaskIdAndState(String taskId,String state,String messageState,String customerTel,String customerName,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime,int retryTimes) {
+	public List<Record> getAutoCallTaskTelephonesByTaskIdAndState(String taskId,String state,String lastCallResult,String messageState,String customerTel,String customerName,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime,int retryTimes) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
@@ -422,9 +439,22 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			index++;
 		}
 		
+		/**
+		 * 传入的 state 有可能是包括种状态，以逗号分隔，
+		 */
 		if(!BlankUtils.isBlank(state)) {
-			sb.append(" and STATE=?");
-			pars[index] = state;
+			if(state.contains(",")) {   //如果状态有逗号分隔
+				sb.append(" and STATE in(" + state + ")");
+			}else {
+				sb.append(" and STATE=?");
+				pars[index] = state;
+				index++;
+			}
+		}
+		
+		if(!BlankUtils.isBlank(lastCallResult)) {
+			sb.append(" and LAST_CALL_RESULT=?");
+			pars[index] = lastCallResult;
 			index++;
 		}
 		
@@ -475,7 +505,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		}
 		
 		sb.append(" ORDER BY TEL_ID DESC");
-		System.out.println("处理超时记录的 sql 语句++++++++++++：" + sb.toString() + "------------" +  ArrayUtils.copyArray(index, pars).toString());
+		System.out.println("getAutoCallTaskTelephonesByTaskIdAndState的 sql 语句++++++++++++：" + sb.toString() + "------------" +  ArrayUtils.copyArray(index, pars).toString());
 		List<Record> list = Db.find(sb.toString(),ArrayUtils.copyArray(index, pars));
 		List<Record> newList = new ArrayList<Record>();
 		
@@ -486,6 +516,10 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			String callState = String.valueOf(r.getInt("STATE"));   //取出状态
 			int retried = r.getInt("RETRIED");
 			r.set("RETRIED_DESC",retried + "/" + retryTimes);
+			
+			String lastCallResultRs = r.getStr("LAST_CALL_RESULT");
+			String lastCallResultDesc = MemoryVariableUtil.getDictName("LAST_CALL_RESULT", lastCallResultRs);
+			r.set("LAST_CALL_RESULT_DESC", lastCallResultDesc);
 			
 			if(!BlankUtils.isBlank(callState)) {
 				
@@ -609,6 +643,70 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
+	 * telId
+	 * 			telId 号码ID，如果为空时修改所有的号码状态
+	 * @param oldState
+	 * 			oldState 旧状态,如果为空时,即不用判断原状态
+	 * @param newState
+	 * 			newState 新状态,不能为空
+	 * @param lastCallResult
+	 * 			外呼状态：1（onSuccess）;2(onNoAnswer);3(onBusy);4(onFailure)
+	 * @param hangupCause
+	 * 			挂机原因：根据通道返回chnanel.getHangupCause 或是其他的错误原因
+	 * @return
+	 */
+	public int updateAutoCallTaskTelephoneState(int telId,String oldState,String newState,String lastCallResult,String hangupCause) {
+		
+		int count = 0;
+		if(BlankUtils.isBlank(newState)) {
+			return count;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		Object[] pars = new Object[10];
+		int index = 0;
+		
+		sb.append("update ac_call_task_telephone set ");
+		
+		if(!BlankUtils.isBlank(newState)) {
+			sb.append("STATE=?");
+			pars[index] = newState;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(lastCallResult)) {
+			sb.append(",LAST_CALL_RESULT=?");
+			pars[index] = lastCallResult;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(hangupCause)) {
+			sb.append(",HANGUP_CAUSE=?");
+			pars[index] = lastCallResult;
+			index++;
+		}
+		
+		sb.append(" where ");
+		
+		if(telId>0) {
+			sb.append("TEL_ID=?");
+			pars[index] = telId;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(oldState)) {
+			sb.append(" and STATE=?");
+			pars[index] = oldState;
+			index++;
+		}
+		
+		count = Db.update(sb.toString(),ArrayUtils.copyArray(index, pars));
+		
+		return count;
+		
+	}
+	
+	/**
 	 * 更改外呼号码为重试
 	 * 
 	 * @param telId
@@ -656,6 +754,75 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
+	 * 更改外呼号码为重试
+	 * 
+	 * @param telId
+	 * 			号码ID
+	 * @param newState
+	 * 			新的状态（重试状态为3）
+	 * @param retryInterval   
+	 * 			重试间隔，单位分钟
+	* @param lastCallResult
+	 * 			外呼状态：1（onSuccess）;2(onNoAnswer);3(onBusy);4(onFailure)
+	 * @param hangupCause
+	 * 			挂机原因：根据通道返回chnanel.getHangupCause 或是其他的错误原因
+	 * @return
+	 */
+	public boolean updateAutoCallTaskTelephoneStateToRetry(int telId,String newState,int retryInterval,int intervalType,String lastCallResult,String hangupCause) {
+		
+		boolean b = false;
+		
+		if(telId <= 0 && BlankUtils.isBlank(newState) && retryInterval<=0) {
+			return false;
+		}
+		
+		long currTimeMillis = DateFormatUtils.getTimeMillis();   			 //当前时间的毫秒数
+		long retryTimeMillis = 0;
+		if(intervalType==1) {   		//分钟
+			retryTimeMillis = currTimeMillis + retryInterval * 60 * 1000;   			//重试时的毫秒数
+		}else if(intervalType==2) {		//小时
+			retryTimeMillis = currTimeMillis + retryInterval * 60 * 60 * 1000;   		//重试时的毫秒数
+		}else if(intervalType==3) {     //天
+			retryTimeMillis = currTimeMillis + retryInterval * 24 * 60 * 60 * 1000;   	//重试时的毫秒数
+		}else {                         //否则，默认为分钟
+			retryTimeMillis = currTimeMillis + retryInterval * 60 * 1000;   			//重试时的毫秒数
+		}
+		
+		String nextCallOutTime = DateFormatUtils.formatDateTime(new Date(retryTimeMillis),"yyyy-MM-dd HH:mm:ss");
+		
+		String sql = "update ac_call_task_telephone set STATE=?,NEXT_CALLOUT_TIME=?,LAST_CALL_RESULT=?,HANGUP_CAUSE=? where TEL_ID=?";
+		
+		int count = Db.update(sql,newState,nextCallOutTime,lastCallResult,hangupCause,telId);
+		
+		if(count>0) {
+			b = true;
+		}
+		
+		return b;
+		
+	}
+	
+	/**
+	 * 更改客户号码的归属地和外呼号码
+	 * 
+	 * @param telId
+	 * @param province
+	 * @param city
+	 * @param callOutTel
+	 * @return
+	 */
+	public int updateAutoCallTaskTelephoneLocationAndCallOutTel(int telId,String province,String city,String callOutTel,String callerId) {
+		
+		int count = 0;
+		
+		String sql = "update ac_call_task_telephone set PROVINCE=?,CITY=?,CALLOUT_TEL=?,CALLERID=? where TEL_ID=?";
+		
+		count = Db.update(sql,province,city,callOutTel,callerId,telId);     
+		
+		return count;
+	}
+	
+	/**
 	 * 更改客户号码的归属地和外呼号码
 	 * 
 	 * @param telId
@@ -668,7 +835,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		
 		int count = 0;
 		
-		String sql = "update ac_call_task_telephone set PROVINCE=?,CITY=?,CALLOUT_TEL=? where TEL_ID=?";
+		String sql = "update ac_call_task_telephone set PROVINCE=?,CITY=?,CALLOUT_TEL=?,where TEL_ID=?";
 		
 		count = Db.update(sql,province,city,callOutTel,telId);     
 		
@@ -1119,7 +1286,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
-	 * 取得统计数据（呼叫状态）
+	 * 取得统计数据（呼叫结果）
 	 * 
 	 * 主要返回: 已载入、已成功、待重呼、已失败、未处理  五种状态的数量
 	 * 
@@ -1137,6 +1304,132 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		sb.append(" GROUP BY STATE");
 		
 		List<Record> stateList = Db.find(sb.toString(),taskId);
+		
+		if(!BlankUtils.isBlank(stateList) && stateList.size() > 0) {
+			for(Record stateR:stateList) {
+				int stateValue = stateR.getInt("STATE");
+				int stateCount = Integer.valueOf(stateR.get("count").toString());
+				if(stateValue == 0) {
+					data.set("state0Data", stateCount);
+				}else if(stateValue == 1) {
+					data.set("state1Data", stateCount);
+				}else if(stateValue == 2) {
+					data.set("state2Data", stateCount);
+				}else if(stateValue == 3) {
+					data.set("state3Data", stateCount);
+				}else if(stateValue == 4) {
+					data.set("state4Data", stateCount);
+				}
+			}
+			
+		}
+		
+	}
+	
+	/**
+	 * 取得统计数据（呼叫状态）
+	 * 
+	 * 主要返回: 
+		1：呼叫成功; 2：无应答; 3：客户忙; 4：请求错误
+	 * 
+	 * @param data
+	 * @param startTime
+	 * @param endTime
+	 * @param channelSource
+	 */
+	public void getStatisticsDataForLastCallResult(Record data,String taskId) {
+		
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("select LAST_CALL_RESULT,COUNT(*) as count from ac_call_task_telephone where TASK_ID=? and STATE in(3,4)");
+		
+		sb.append(" GROUP BY LAST_CALL_RESULT");
+		
+		List<Record> lastCallResultList = Db.find(sb.toString(),taskId);
+		
+		if(!BlankUtils.isBlank(lastCallResultList) && lastCallResultList.size() > 0) {
+			for(Record lastCallResultR:lastCallResultList) {
+				String lastCallResultValue = lastCallResultR.getStr("LAST_CALL_RESULT");
+				int lastCallResultCount = Integer.valueOf(lastCallResultR.get("count").toString());
+				//如果该记录为空，则跳过循环
+				if(BlankUtils.isBlank(lastCallResultValue)) { 
+					continue;
+				}
+				
+				if(lastCallResultValue.equalsIgnoreCase("1")) {
+					data.set("lastCallResult1Data", lastCallResultCount);
+				}else if(lastCallResultValue.equalsIgnoreCase("2")) {
+					data.set("lastCallResult2Data", lastCallResultCount);
+				}else if(lastCallResultValue.equalsIgnoreCase("3")) {
+					data.set("lastCallResult3Data", lastCallResultCount);
+				}else if(lastCallResultValue.equalsIgnoreCase("4")) {
+					data.set("lastCallResult4Data", lastCallResultCount);
+				}
+			}
+			
+		}
+		
+	}
+	
+	
+	/**
+	 * 取得统计数据（呼叫状态）
+	 * 
+	 * 主要返回: 已载入、已成功、待重呼、已失败、未处理  五种状态的数量
+	 * 
+	 * @param data
+	 * @param startTime
+	 * @param endTime
+	 * @param channelSource
+	 */
+	public void getStatisticsDataForState_bak(Record data,String taskId) {
+		
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("select STATE,COUNT(*) as count from ac_call_task_telephone where TASK_ID=?");
+		
+		sb.append(" GROUP BY STATE");
+		
+		List<Record> stateList = Db.find(sb.toString(),taskId);
+		
+		if(!BlankUtils.isBlank(stateList) && stateList.size() > 0) {
+			for(Record stateR:stateList) {
+				int stateValue = stateR.getInt("STATE");
+				int stateCount = Integer.valueOf(stateR.get("count").toString());
+				if(stateValue == 0) {
+					data.set("state0Data", stateCount);
+				}else if(stateValue == 1) {
+					data.set("state1Data", stateCount);
+				}else if(stateValue == 2) {
+					data.set("state2Data", stateCount);
+				}else if(stateValue == 3) {
+					data.set("state3Data", stateCount);
+				}else if(stateValue == 4) {
+					data.set("state4Data", stateCount);
+				}
+			}
+			
+		}
+		
+	}
+	
+	
+	/**
+	 * 取得统计数据（呼叫状态）
+	 * 
+	 * 主要返回: 已载入、已成功、待重呼、已失败、未处理  五种状态的数量
+	 * 
+	 * @param data
+	 */
+	public void getStatisticsDataForStateMultiTask(Record data,String ids) {
+		
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("select STATE,COUNT(*) as count from ac_call_task_telephone where TASK_ID in(" + ids + ")");
+		
+		sb.append(" GROUP BY STATE");
+		
+		List<Record> stateList = Db.find(sb.toString());
 		
 		if(!BlankUtils.isBlank(stateList) && stateList.size() > 0) {
 			for(Record stateR:stateList) {
