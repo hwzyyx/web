@@ -4,6 +4,7 @@ import com.callke8.system.callerid.SysCallerIdController;
 import com.callke8.system.calleridassign.SysCallerIdAssignController;
 import com.callke8.system.dict.DictGroupController;
 import com.callke8.system.dict.DictItemController;
+import com.callke8.system.ipaddress.SysIpAddressController;
 import com.callke8.system.loginlog.LoginLogController;
 import com.callke8.system.module.ModuleController;
 import com.callke8.system.operationlog.OperationLogController;
@@ -11,10 +12,14 @@ import com.callke8.system.operator.OperatorController;
 import com.callke8.system.org.OrgController;
 import com.callke8.system.param.ParamController;
 import com.callke8.system.remindertype.SysReminderTypeController;
+import com.callke8.system.remindertypeassign.SysReminderTypeAssignController;
 import com.callke8.system.role.RoleController;
 import com.callke8.system.rolegroup.RoleGroupController;
 import com.callke8.system.rolemodule.RoleModuleController;
+import com.callke8.system.schedule.SysScheduleController;
+import com.callke8.system.scheduleassign.SysScheduleAssignController;
 import com.callke8.system.tasktype.SysTaskTypeController;
+import com.callke8.system.tasktypeassign.SysTaskTypeAssignController;
 import com.jfinal.config.Routes;
 
 public class SystemRoute extends Routes {
@@ -35,7 +40,12 @@ public class SystemRoute extends Routes {
 		add("/sysCallerId",SysCallerIdController.class,"system/callerid");
 		add("/sysCallerIdAssign",SysCallerIdAssignController.class,"system/callerid");
 		add("/sysTaskType",SysTaskTypeController.class,"system/tasktype");
+		add("/sysTaskTypeAssign",SysTaskTypeAssignController.class,"system/tasktype");
 		add("/sysReminderType",SysReminderTypeController.class,"system/remindertype");
+		add("/sysReminderTypeAssign",SysReminderTypeAssignController.class,"system/remindertype");
+		add("/sysSchedule",SysScheduleController.class,"system/schedule");
+		add("/sysScheduleAssign",SysScheduleAssignController.class,"system/schedule");
+		add("/sysIpAddress",SysIpAddressController.class,"system/ipaddress");
 		
 		
 	}
