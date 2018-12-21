@@ -659,7 +659,7 @@ function initOrgCodeForAutoCallTaskSearch() {
 			var taskState = $("#taskState").combobox('getValue');
 
 			$("#autoCallTaskDg").datagrid({
-				pageSize:15,
+				pageSize:30,
 				pagination:true,
 				fit:true,
 				toolbar:'#searchtool',
@@ -668,7 +668,7 @@ function initOrgCodeForAutoCallTaskSearch() {
 				rowrap:true,
 				striped:true,
 				checkbox:true,
-				pageList:[10,15,20],
+				pageList:[20,30,50],
 				url:'autoCallTask/datagrid',
 				queryParams:{
 					taskName:$("#taskName").val(),

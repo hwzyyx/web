@@ -213,6 +213,14 @@ function lastCallResult4DataFormatter(value,data,index) {
 		return "<span style='color:#ff0000;font-weight:bolder'>" + value + "</span>"; 
 	}
 }
+
+function lastCallResultStyler(value,data,index) {
+	return 'background-color:#fef4ef;';
+}
+
+function stateStyler(value,data,index) {
+	return 'background-color:#fdfc8c;';
+}
 	
 </script>
 
@@ -227,13 +235,13 @@ function lastCallResult4DataFormatter(value,data,index) {
 			<tr style="font-weight: bold;">
 				<th data-options="field:'category',width:100,align:'center'"></th>
 				<th data-options="field:'totalData',width:100,align:'center',formatter:tota1DataFormatter">已呼数量</th>
-				<th data-options="field:'state1Data',width:100,align:'center',formatter:state1DataFormatter">已载入</th>
-				<th data-options="field:'state2Data',width:100,align:'center',formatter:state2DataFormatter">已成功</th>
-				<th data-options="field:'state3Data',width:100,align:'center',formatter:state3DataFormatter">待重呼</th>
-				<th data-options="field:'state4Data',width:100,align:'center',formatter:state4DataFormatter">已失败</th>
-				<th data-options="field:'lastCallResult2Data',width:100,align:'center',formatter:lastCallResult2DataFormatter">无应答</th>
-				<th data-options="field:'lastCallResult3Data',width:100,align:'center',formatter:lastCallResult3DataFormatter">客户忙</th>
-				<th data-options="field:'lastCallResult4Data',width:100,align:'center',formatter:lastCallResult4DataFormatter">请求错误</th>
+				<th data-options="field:'state1Data',width:100,align:'center',formatter:state1DataFormatter,styler:stateStyler">已载入</th>
+				<th data-options="field:'state2Data',width:100,align:'center',formatter:state2DataFormatter,styler:stateStyler">已成功</th>
+				<th data-options="field:'state3Data',width:100,align:'center',formatter:state3DataFormatter,styler:stateStyler">待重呼</th>
+				<th data-options="field:'state4Data',width:100,align:'center',formatter:state4DataFormatter,styler:stateStyler">已失败</th>
+				<th data-options="field:'lastCallResult2Data',width:100,align:'center',formatter:lastCallResult2DataFormatter,styler:lastCallResultStyler">无应答</th>
+				<th data-options="field:'lastCallResult3Data',width:100,align:'center',formatter:lastCallResult3DataFormatter,styler:lastCallResultStyler">客户忙</th>
+				<th data-options="field:'lastCallResult4Data',width:100,align:'center',formatter:lastCallResult4DataFormatter,styler:lastCallResultStyler">请求错误</th>
 			</tr>
 		</thead>
 	</table>
