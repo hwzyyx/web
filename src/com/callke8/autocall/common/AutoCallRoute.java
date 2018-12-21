@@ -9,6 +9,7 @@ import com.callke8.autocall.autocalltask.AutoCallTaskReviewController;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephoneController;
 import com.callke8.autocall.autocalltask.history.AutoCallTaskHistoryController;
 import com.callke8.autocall.autocalltask.history.AutoCallTaskTelephoneHistoryController;
+import com.callke8.autocall.autocalltaskreport.AutoCallTaskReportController;
 import com.callke8.autocall.autonumber.AutoNumberController;
 import com.callke8.autocall.autonumber.AutoNumberTelephoneController;
 import com.callke8.autocall.questionnaire.QuestionController;
@@ -40,6 +41,7 @@ public class AutoCallRoute extends Routes {
 		add("/autoBlackListTelephone",AutoBlackListTelephoneController.class,"/autocall/blacklist");
 		add("/autoNumber",AutoNumberController.class,"/autocall/number");
 		add("/autoNumberTelephone",AutoNumberTelephoneController.class,"/autocall/number");
+		add("/autoCallTaskReport",AutoCallTaskReportController.class,"/autocall/autocalltaskreport");
 	}
 
 }

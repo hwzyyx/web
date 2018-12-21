@@ -27,8 +27,9 @@
 					</td>
 					<td>
 						<div style="padding-top:5px;">
-							<select class="easyui-combobox" style="width: 400px;" name="autoCallTask.CALLERID" id="CALLERID" data-options="panelHeight:'auto'">
+							<select class="easyui-combobox" style="width: 400px;" name="autoCallTask.CALLERID" id="CALLERID" data-options="multiple:true,panelHeight:'auto'" required="true">
 					        </select>
+					        <input type="checkbox" id="selectAllCallerIdCheckBox" value="1"><label for="selectAllCallerIdCheckBox">全选/取消全选</label>
 				        </div>
 					</td>
 				</tr>
@@ -392,13 +393,17 @@
 								电话号码：<input id="customerTel" type="text" class="easyui-textbox" style="width:100px;"/>
 							</span>
 							<span style="padding-left:20px;">
-								外呼状态：<select id="state" class="easyui-combobox" name="state" style="width:100px;">
+								外呼结果：<select id="state" class="easyui-combobox" name="state" style="width:100px;">
 												<option value="5">请选择</option>
 												<option value="0">未处理</option>
 												<option value="1">已载入</option>
 												<option value="2">已成功</option>
 												<option value="3">待重呼</option>
 												<option value="4">已失败</option>
+										</select>
+							</span>
+							<span style="padding-left:20px;">
+								外呼状态：<select id="lastCallResult" class="easyui-combobox" name="state" style="width:100px;">
 										</select>
 							</span>
 							<span style="padding-left:20px;">
@@ -448,9 +453,11 @@
 							<th data-options="field:'PROVINCE',width:120,align:'center'">省份</th>
 							<th data-options="field:'CITY',width:120,align:'center'">城市</th>
 							<th data-options="field:'CALLOUT_TEL',width:120,align:'center'">外呼号码</th>
+							<th data-options="field:'CALLERID',width:120,align:'center'">主叫号码</th>
 							<th data-options="field:'CREATE_TIME',width:200,align:'center'">创建时间</th>
 							<th data-options="field:'state_result',width:100,align:'center',formatter:telephonestateformatter">外呼结果</th>
-							<th data-options="field:'LAST_CALL_RESULT',width:200,align:'center'">失败原因</th>
+							<th data-options="field:'LAST_CALL_RESULT_DESC',width:100,align:'center'">呼叫状态</th>
+							<th data-options="field:'HANGUP_CAUSE',width:200,align:'center'">失败原因</th>
 							<th data-options="field:'RETRIED_DESC',width:150,align:'center'">呼叫次数</th>
 							<th data-options="field:'LOAD_TIME',width:200,align:'center'">外呼时间</th>
 							<th data-options="field:'BILLSEC',width:150,align:'center'">通话时长</th>

@@ -35,14 +35,22 @@
 		var taskTypeComboboxDataFor0 = eval('${taskTypeComboboxDataFor0}');
 		var taskTypeComboboxDataFor1 = eval('${taskTypeComboboxDataFor1}');
 		
+		var allTaskTypeComboboxDataFor0 = eval('${allTaskTypeComboboxDataFor0}');
+		var allTaskTypeComboboxDataFor1 = eval('${allTaskTypeComboboxDataFor1}');
+		
 		var reminderTypeComboboxDataFor0 = eval('${reminderTypeComboboxDataFor0}');
 		var reminderTypeComboboxDataFor1 = eval('${reminderTypeComboboxDataFor1}');
+		var allReminderTypeComboboxDataFor0 = eval('${allReminderTypeComboboxDataFor0}');
+		var allReminderTypeComboboxDataFor1 = eval('${allReminderTypeComboboxDataFor1}');
 		
 		var taskStateComboboxDataFor0 = eval('${taskStateComboboxDataFor0}');
 		var taskStateComboboxDataFor1 = eval('${taskStateComboboxDataFor1}');
 		
 		var messageStateComboboxDataFor1 = eval('${messageStateComboboxDataFor1}');
+		
+		var lastCallResultComboboxDataFor1 = eval('${lastCallResultComboboxDataFor1}');
 	
+		var callerIdComboboxDataFor0 = eval('${callerIdComboboxDataFor0}');
 		var callerIdComboboxDataFor1 = eval('${callerIdComboboxDataFor1}');
 		
 		//时间类型,0:创建时间;1:外呼时间, 默认为0。
@@ -61,6 +69,23 @@
 					$('#messageContentTr').css("display","none");
 				}
 			});
+			
+			$("#selectAllCallerIdCheckBox").change(function(){
+				if($("#selectAllCallerIdCheckBox").prop('checked')) {
+					//alart("被选中了");     //需要选中所有的选项
+					var data = $("#CALLERID").combobox('getData');
+					for(var i=0;i<data.length;i++) {
+						$("#CALLERID").combobox('select',data[i].id);
+					}
+				}else {
+					//alert("没有被选中");   //去除所有已选中
+					var data = $("#CALLERID").combobox('getData');
+					for(var i=0;i<data.length;i++) {
+						$("#CALLERID").combobox('unselect',data[i].id);
+					}
+				}
+			});
+			
 			
 			showSimpleColumns();     //任务列表，显示简单的列
 			
@@ -160,8 +185,9 @@
 				}
 			});
     		
-    		$('#summaryDg').datagrid('loadData','');
-			
+    		//$('#summaryDg').datagrid('loadData','');
+    		//填充汇总数据
+    		$('#summaryDg').datagrid({toolbar:'#summaryDgTool'}).datagrid('loadData','');
 		});
     	
     	
@@ -199,6 +225,7 @@
         		customerTel:$('#customerTel').textbox('getValue'),
     			customerName:$('#customerName').textbox('getValue'),
     			state:$("#state").combobox('getValue'),
+    			lastCallResult:$("#lastCallResult").combobox('getValue'),
     			messageState:$("#messageState").combobox('getValue'),
     			startTimeForTelephone:$("#startTimeForTelephone").datebox('getValue'),
 				endTimeForTelephone:$("#endTimeForTelephone").datebox('getValue'),
@@ -210,6 +237,7 @@
 		function autoCallTaskTelephoneExport() {
 			
 			var state = $("#state").combobox('getValue');
+			var lastCallResult = $("#lastCallResult").combobox('getValue');
 			var messageState = $("#messageState").combobox('getValue');
 			var customerTel = $("#customerTel").textbox('getValue');
 			var	customerName = $("#customerName").textbox('getValue');
@@ -222,6 +250,7 @@
 				onSubmit:function(param) {
 					param.taskId = currTaskId;
 					param.state = state;
+					param.lastCallResult = lastCallResult;
 					param.messageState = messageState;
 					param.customerTel = customerTel;
 					param.customerName = customerName;
@@ -349,7 +378,7 @@
 					<th data-options="field:'CALL_RESULT',width:80,align:'center',formatter:callresultformatter">呼叫结果</th>
 					<th data-options="field:'TASK_TYPE_DESC',width:150,align:'center'">任务类型</th>
 					<th data-options="field:'SEND_MESSAGE',width:80,align:'center',formatter:sendmessageformatter">下发短信</th>
-					<th data-options="field:'CALLERID_DESC',width:150,align:'center'">主叫号码</th>
+					<th data-options="field:'CALLERID_DESC',width:150,align:'center',formatter:calleridformatter">主叫号码</th>
 					<th data-options="field:'taskStateField',width:120,align:'center',formatter:taskstaterowformatter">状态</th>
 					<th data-options="field:'validityDate',width:220,align:'center',formatter:validitydaterowformatter">有效期</th>
 					<th data-options="field:'scheduleDetail',width:50,align:'center',formatter:scheduledetailformatter">调度</th>
@@ -392,7 +421,7 @@
 
 <!-- 调度计划选择窗 -->
 <div id="scheduleDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
-	 <%@ include file="/autocall/schedule/selectlist.jsp"%>
+	 <%@ include file="/system/schedule/_selectlist.jsp"%>
 </div>
 
 <!-- 语音选择弹窗 -->
@@ -450,9 +479,11 @@
 						<th data-options="field:'PROVINCE',width:120,align:'center'">省份</th>
 						<th data-options="field:'CITY',width:120,align:'center'">城市</th>
 						<th data-options="field:'CALLOUT_TEL',width:120,align:'center'">外呼号码</th>
+						<th data-options="field:'CALLERID',width:120,align:'center'">主叫号码</th>
 						<th data-options="field:'CREATE_TIME',width:200,align:'center'">创建时间</th>
 						<th data-options="field:'state_result',width:100,align:'center',formatter:telephonestateformatter">外呼结果</th>
-						<th data-options="field:'LAST_CALL_RESULT',width:200,align:'center'">失败原因</th>
+						<th data-options="field:'LAST_CALL_RESULT_DESC',width:100,align:'center'">呼叫状态</th>
+						<th data-options="field:'HANGUP_CAUSE',width:200,align:'center'">失败原因</th>
 						<th data-options="field:'RETRIED_DESC',width:150,align:'center'">呼叫次数</th>
 						<th data-options="field:'LOAD_TIME',width:200,align:'center'">外呼时间</th>
 						<th data-options="field:'BILLSEC',width:150,align:'center'">通话时长</th>

@@ -65,9 +65,9 @@ function ttsContentTextLengthLimit() {
 
 //点击新增任务按钮,打开添加任务的弹窗
 function autoCallTaskAdd() {
-	$("#CALLERID").combobox('setValue','empty');                   //默认第一个号码
-	$("#REMINDER_TYPE").combobox('setValue','1');              //催缴类型为1，即是电话费
-	$("#TASK_TYPE").combobox('setValue','1');                  //默认任务类型为普通任务
+	//$("#CALLERID").combobox('setValue','empty');                   //默认第一个号码
+	$("#REMINDER_TYPE").combobox('setValue','empty');              //催缴类型为1，即是电话费
+	$("#TASK_TYPE").combobox('setValue','empty');                  //默认任务类型为普通任务
 	$("#RETRY_TIMES").combobox('setValue','3');                //默认的重试次数3次
 
 	$("#RETRY_INTERVAL").numberbox('setValue','10');           //默认重试间隔为10分钟
@@ -95,16 +95,19 @@ function autoCallTaskSaveAdd() {
 		return;
 	}
 	
-	var callerId = $("#CALLERID").combobox('getValue');
-	if(callerId=='empty') {
-		alert("主叫号码不能为空 ,请重新选择!");
-		return;
-	}
+	//var callerId = $("#CALLERID").combobox('getValue');
+	//alert($("#CALLERID").combobox('getValue')); 
+	//alert($("#CALLERID").combobox('getValues')); 
+	//if(callerId=='empty' || callerId=='' || callerId==null) {
+	//	alert("主叫号码不能为空 ,请重新选择!");
+	//	return;
+	//}
 	
 	$('#autoCallTaskForm').form('submit',{
 			
 		url:'autoCallTask/add',
-		onSubmit:function() {
+		onSubmit:function(param) {
+			param.cids = $("#CALLERID").combobox("getValues");
 			var v = $(this).form('validate');
 			if(v) {
 				$.messager.progress({
@@ -247,7 +250,7 @@ function autoCallTaskSaveEdit() {
 	}
 	
 	var callerId = $("#CALLERID").combobox('getValue');
-	if(callerId=='empty') {
+	if(callerId=='empty' || callerId == null || callerId == '') {
 		alert("主叫号码不能为空 ,请重新选择!");
 		return;
 	}
@@ -257,6 +260,7 @@ function autoCallTaskSaveEdit() {
 
 		url:'autoCallTask/update',
 		onSubmit:function(param){
+			param.cids = $("#CALLERID").combobox("getValues");
 			var v = $(this).form('validate');
 			if(v) {
 				$.messager.progress({
@@ -286,6 +290,13 @@ function autoCallTaskSaveEdit() {
 }
 
 function checkOutInput() {
+	
+	//var callerIdValue = $("#CALLERID").combobox("getValue");
+	//var callerIdValues = $("#CALLERID").combobox("getValues");
+	
+	//alert("callerIdValue:" + callerIdValue + ",callerIdValues:" + callerIdValues);
+	//return;
+	
 	//判断调度计划是否为空
 	var scheduleName = $("#SCHEDULE_NAME").textbox('getValue');
 	if(scheduleName==null || scheduleName=='') {
@@ -307,6 +318,10 @@ function checkOutInput() {
 		//普通任务：普通语音文件是否为空
 		//调查问卷：调查问卷是否为空
 	var taskType = $("#TASK_TYPE").combobox('getValue');
+	if(taskType=='empty') {
+		alert("任务类型不能为空!");
+		return false;
+	}
 	if(taskType=='1'){          //普通任务
 		var commonVoiceDesc = $("#COMMON_VOICE_DESC").textbox('getValue');
 		if(commonVoiceDesc==null || commonVoiceDesc =='') {
@@ -319,7 +334,14 @@ function checkOutInput() {
 			alert("问卷调查任务问卷不能为空!");
 			return false;
 		}
+	}else if(taskType=='3') {   //如果任务类型为催缴类型时，查看催缴类型是否为空
+		var reminderType = $("#REMINDER_TYPE").combobox('getValue');
+		if(reminderType=='empty') {
+			alert("催缴类型不能为空!");
+			return false;
+		}
 	}
+	
 
 	return true;
 }
@@ -402,14 +424,14 @@ function loadComboboxForAutoCallTaskSearch() {
 		valueField:'id',
 		textField:'text',
 		panelHeight:'auto'
-	}).combobox('loadData',taskTypeComboboxDataFor1).combobox('setValue','empty');
+	}).combobox('loadData',allTaskTypeComboboxDataFor1).combobox('setValue','empty');
 	
 	//催缴类型加载
 	$("#reminderType").combobox({
 		valueField:'id',
 		textField:'text',
 		panelHeight:'auto'
-	}).combobox('loadData',reminderTypeComboboxDataFor1).combobox('setValue','empty');
+	}).combobox('loadData',allReminderTypeComboboxDataFor1).combobox('setValue','empty');
 	
 	//任务状态加载
 	$("#taskState").combobox({
@@ -426,7 +448,11 @@ function loadComboboxForAutoCallTaskSearch() {
 		panelHeight:'auto'
     }).combobox('loadData',messageStateComboboxDataFor1).combobox('setValue','empty');
 	
-	
+	$("#lastCallResult").combobox({
+		valueField:'id',
+		textField:'text',
+		panelHeight:'auto'
+	}).combobox('loadData',lastCallResultComboboxDataFor1).combobox('setValue','empty');
 }
 
 //加载创建外呼任务时，初始化操作, 如 任务类型、主叫号码、任务开始及结束日期
@@ -442,7 +468,7 @@ function loadDataForCreateAutoCallTaskSearch() {
 				setMessageContentValue();
 			}
 		}
-	}).combobox('loadData',reminderTypeComboboxDataFor0).combobox('setValue','1');
+	}).combobox('loadData',reminderTypeComboboxDataFor1).combobox('setValue','empty');
 	
 	$("#TASK_TYPE").combobox({
 		valueField:'id',
@@ -466,14 +492,14 @@ function loadDataForCreateAutoCallTaskSearch() {
 				setMessageContentValue();
 			}
 		}
-	}).combobox('loadData',taskTypeComboboxDataFor0).combobox('setValue','1');
+	}).combobox('loadData',taskTypeComboboxDataFor1).combobox('setValue','empty');
 	
 	
 	$("#CALLERID").combobox({
 		valueField:'id',
 		textField:'text',
 		panelHeight:'auto'
-	}).combobox('loadData',callerIdComboboxDataFor1).combobox('setValue','empty');
+	}).combobox('loadData',callerIdComboboxDataFor0);
 	
 	$("#START_DATE").datebox('setValue',getCurrDate());   	//任务开始时间
 	$("#END_DATE").datebox('setValue',getDateAfter(3));     //任务结束时间
@@ -702,6 +728,14 @@ function initOrgCodeForAutoCallTaskSearch() {
 								}
 							});
 						}
+						
+						//主叫号码列表显示
+						var callerIdDescRs = data.rows[i].CALLERID_DESC;
+						callerIdDescRs = callerIdDescRs.replace(/\|/gm,'<br>');
+						$("#calleriddesc_" + i).tooltip({
+							position:'top',
+							content:callerIdDescRs
+						});
 					}
 					
 				}
@@ -791,6 +825,10 @@ function taskstaterowformatter(value,data,index) {
 		return "<span style='color:#000000'>已停止</span>";      //黑色
 	}
 	
+}
+
+function calleridformatter(value,data,index) {
+	return "<div id='calleriddesc_" + index + "' style='width:auto;' class='easyui-panel easyui-tooltip'>主叫号码</div>";
 }
 
 function sendmessageformatter(value,data,index) {

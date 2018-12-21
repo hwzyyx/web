@@ -55,7 +55,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		StringUtil.log(this, "自动外呼流程AGI流程,任务名称:" + autoCallTask.getStr("TASK_NAME") + ",客户号码：" + actt.getStr("CUSTOMER_TEL") + " 开始执行 AGI 流程!");
 		
 		//执行到这里，表示呼叫已经成功，需要修改状态为2，即是成功
-		AutoCallPredial.updateTelehponeStateForSuccess("SUCCESS", actt);
+		AutoCallPredial.updateTelehponeStateForSuccess("1", actt);
 		
 		String taskType = autoCallTask.get("TASK_TYPE");            		//取出任务类型
 		String reminderType = autoCallTask.get("REMINDER_TYPE");        	//催缴类型

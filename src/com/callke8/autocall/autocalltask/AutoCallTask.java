@@ -18,6 +18,9 @@ import com.callke8.system.operator.Operator;
 import com.callke8.system.org.Org;
 import com.callke8.system.param.Param;
 import com.callke8.system.param.ParamConfig;
+import com.callke8.system.remindertype.SysReminderType;
+import com.callke8.system.schedule.SysSchedule;
+import com.callke8.system.tasktype.SysTaskType;
 import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
@@ -128,21 +131,23 @@ public class AutoCallTask extends Model<AutoCallTask> {
 				r.set("CREATE_USERCODE_DESC", oper.get("OPER_NAME") + "(" + uc + ")");
 			}
 			
-			//设置主叫号码（由于是从数据字典选择的，要从字典中取出真实号码）
-			//String callerIdDesc = MemoryVariableUtil.getDictName("CALLERID", r.getStr("CALLERID"));
-			String callerIdRs = r.getStr("CALLERID");
+			//设置主叫号码（要从sys_callerid 表中取出）
+			String callerIdRs = r.getStr("CALLERID");   //这里取出的主叫号码值，可能是多个ID值以逗号分隔拼接在一起的
+			String callerIdDesc = "";
 			if(!BlankUtils.isBlank(callerIdRs)) {
-				SysCallerId sysCallerId = SysCallerId.dao.getSysCallerIdById(Integer.valueOf(callerIdRs));
-				if(!BlankUtils.isBlank(sysCallerId)) {
-					r.set("CALLERID_DESC", sysCallerId.getStr("CALLERID"));
+				String[] ids = callerIdRs.split(",");
+				for(String id:ids) {
+					SysCallerId sysCallerId = SysCallerId.dao.getSysCallerIdById(Integer.valueOf(id));
+					callerIdDesc += sysCallerId.getStr("CALLERID") + "(" + sysCallerId.getStr("PURPOSE") + ")" + "|";
 				}
+				r.set("CALLERID_DESC", callerIdDesc);
 			}else {
 				r.set("CALLERID_DESC", "NO SET");
 			}
 			
 			//设置调度计划名称
 			String scheduleId = r.get("SCHEDULE_ID");   //取出调度计划ID
-			Schedule schedule = Schedule.dao.getScheduleById(scheduleId);   //从数据库中根据ID，取出调度计划信息
+			SysSchedule schedule = SysSchedule.dao.getScheduleById(scheduleId);   //从数据库中根据ID，取出调度计划信息
 			if(!BlankUtils.isBlank(schedule)) {
 				r.set("SCHEDULE_NAME", schedule.get("SCHEDULE_NAME"));
 			}
@@ -185,7 +190,7 @@ public class AutoCallTask extends Model<AutoCallTask> {
 					r.set("runningNotice", "<span style='color:#FF7F00'>未开始</span>");
 				}else {            //否则，则表示已经到了开始期限
 					
-					boolean isScheduleActive = Schedule.dao.checkScheduleIsActive(scheduleId);
+					boolean isScheduleActive = SysSchedule.dao.checkScheduleIsActive(scheduleId);
 					if(isScheduleActive) {      //如果当前任务的调度方案处于活跃中时
 						//即使当前时间处理活跃中
 						r.set("runningNotice","<span style='color:#009900'>执行中</span>");
@@ -228,11 +233,12 @@ public class AutoCallTask extends Model<AutoCallTask> {
 			if(taskTypeRs.equalsIgnoreCase("3")) {              //如果是催缴型任务
 				if(reminderTypeRs.equalsIgnoreCase("7")) {      //如果是交警移车
 					r.set("TASK_TYPE_DESC", "个性定制(" + MemoryVariableUtil.getDictName("REMINDER_TYPE", reminderTypeRs) + ")");
+					r.set("TASK_TYPE_DESC", "个性定制(" + SysTaskType.dao.getTaskTypeDescByNumberOrder(taskTypeRs) + ")");
 				}else {
-					r.set("TASK_TYPE_DESC", MemoryVariableUtil.getDictName("TASK_TYPE",taskTypeRs) + "(" + MemoryVariableUtil.getDictName("REMINDER_TYPE", reminderTypeRs) + ")");
+					r.set("TASK_TYPE_DESC", SysTaskType.dao.getTaskTypeDescByNumberOrder(taskTypeRs) + "(" + SysReminderType.dao.getReminderTypeDescByNumberOrder(reminderTypeRs) + ")");
 				}
 			}else {
-				r.set("TASK_TYPE_DESC", MemoryVariableUtil.getDictName("TASK_TYPE",taskTypeRs));
+				r.set("TASK_TYPE_DESC", SysTaskType.dao.getTaskTypeDescByNumberOrder(taskTypeRs));
 			}
 			
 			//重试间隔
@@ -745,7 +751,7 @@ public class AutoCallTask extends Model<AutoCallTask> {
 				String scheduleId = autoCallTask.get("SCHEDULE_ID");
 				
 				//查看当前的调度方案是否处理活跃期
-				boolean isScheduleActive = Schedule.dao.checkScheduleIsActive(scheduleId); 
+				boolean isScheduleActive = SysSchedule.dao.checkScheduleIsActive(scheduleId); 
 				
 				if(isScheduleActive) {    //如果当前任务的调度方案处于激活期
 					activeList.add(autoCallTask);   //将任务加入激活列表
@@ -775,7 +781,64 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		data.set("state3Data",0);
 		data.set("state4Data",0);
 		
+		data.set("lastCallResult1Data",0);
+		data.set("lastCallResult2Data",0);
+		data.set("lastCallResult3Data",0);
+		data.set("lastCallResult4Data",0);
+		
+		/**
+		 * (1)取出统计结果（呼叫结果），0：未处理;1：已载入;2：已成功;3：待重呼;4：已失败;
+		 */
 		AutoCallTaskTelephone.dao.getStatisticsDataForState(data,taskId);
+		
+		/**
+		 * (2)取出统计结果(呼叫状态)，1：呼叫成功; 2：无应答; 3：客户忙; 4：请求错误
+		 */
+		AutoCallTaskTelephone.dao.getStatisticsDataForLastCallResult(data, taskId);
+		
+		return data;
+	}
+	
+	/**
+	 * 根据传入的任务，取得其统计数据：
+	 * 
+	 * 主要返回: 已载入、已成功、待重呼、已失败  四种状态的数量
+	 * 
+	 * @return
+	 */
+	public Record getStatisticsData_bak(String taskId) {
+		
+		Record data = new Record();
+		data.set("state0Data",0);
+		data.set("state1Data",0);
+		data.set("state2Data",0);
+		data.set("state3Data",0);
+		data.set("state4Data",0);
+		
+		AutoCallTaskTelephone.dao.getStatisticsDataForState(data,taskId);
+		
+		return data;
+	}
+	
+	
+	
+	/**
+	 * 根据传入的多个任务ID，取得其统计数据：
+	 * 
+	 * 主要返回: 已载入、已成功、待重呼、已失败  四种状态的数量
+	 * 
+	 * @return
+	 */
+	public Record getStatisticsDataForMultiTask(String ids) {
+		
+		Record data = new Record();
+		data.set("state0Data",0);
+		data.set("state1Data",0);
+		data.set("state2Data",0);
+		data.set("state3Data",0);
+		data.set("state4Data",0);
+		
+		AutoCallTaskTelephone.dao.getStatisticsDataForStateMultiTask(data, ids);
 		
 		return data;
 	}

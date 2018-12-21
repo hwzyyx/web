@@ -19,6 +19,8 @@ import com.callke8.system.callerid.SysCallerIdController;
 import com.callke8.system.calleridassign.SysCallerIdAssign;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.param.ParamConfig;
+import com.callke8.system.remindertype.SysReminderTypeController;
+import com.callke8.system.tasktype.SysTaskTypeController;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.ExcelExportUtil;
@@ -43,6 +45,7 @@ public class AutoCallTaskController extends Controller implements IController {
 	public void index() {
 		
 		String currOrgCode = getSession().getAttribute("currOrgCode").toString();
+		String currOperId = String.valueOf(getSession().getAttribute("currOperId"));     //取出当前登录的用户
 		System.out.println(currOrgCode);
 		
 		//获取并返回组织代码
@@ -57,11 +60,19 @@ public class AutoCallTaskController extends Controller implements IController {
 		setAttr("dateTypeComboboxDataFor1", CommonController.getComboboxToString("DATETYPE","1"));
 		
 		//任务类型、催缴类型任务状态
-		setAttr("taskTypeComboboxDataFor0", CommonController.getComboboxToString("TASK_TYPE","0"));
-		setAttr("taskTypeComboboxDataFor1", CommonController.getComboboxToString("TASK_TYPE","1"));
+		//setAttr("taskTypeComboboxDataFor0", CommonController.getComboboxToString("TASK_TYPE","0"));
+		//setAttr("taskTypeComboboxDataFor1", CommonController.getComboboxToString("TASK_TYPE","1"));
+		setAttr("taskTypeComboboxDataFor0",SysTaskTypeController.getSysTaskTypeToComboboxByOperId(currOperId, "0"));
+		setAttr("taskTypeComboboxDataFor1",SysTaskTypeController.getSysTaskTypeToComboboxByOperId(currOperId, "1"));
+		setAttr("allTaskTypeComboboxDataFor0",SysTaskTypeController.getAllSysTaskTypeToCombobox("0"));
+		setAttr("allTaskTypeComboboxDataFor1",SysTaskTypeController.getAllSysTaskTypeToCombobox("1"));
 		
-		setAttr("reminderTypeComboboxDataFor0", CommonController.getComboboxToString("REMINDER_TYPE","0"));
-		setAttr("reminderTypeComboboxDataFor1", CommonController.getComboboxToString("REMINDER_TYPE","1"));
+		//setAttr("reminderTypeComboboxDataFor0", CommonController.getComboboxToString("REMINDER_TYPE","0"));
+		//setAttr("reminderTypeComboboxDataFor1", CommonController.getComboboxToString("REMINDER_TYPE","1"));
+		setAttr("reminderTypeComboboxDataFor0",SysReminderTypeController.getSysReminderTypeToComboboxByOperId(currOperId, "0"));
+		setAttr("reminderTypeComboboxDataFor1",SysReminderTypeController.getSysReminderTypeToComboboxByOperId(currOperId, "1"));
+		setAttr("allReminderTypeComboboxDataFor0",SysReminderTypeController.getAllSysReminderTypeToCombobox("0"));
+		setAttr("allReminderTypeComboboxDataFor1",SysReminderTypeController.getAllSysReminderTypeToCombobox("1"));
 		
 		setAttr("taskStateComboboxDataFor0", CommonController.getComboboxToString("AC_TASK_STATE","0"));
 		setAttr("taskStateComboboxDataFor1", CommonController.getComboboxToString("AC_TASK_STATE","1"));
@@ -69,9 +80,13 @@ public class AutoCallTaskController extends Controller implements IController {
 		//短信状态 combobox , 用于客户号码的页面搜索用
 		setAttr("messageStateComboboxDataFor1", CommonController.getComboboxToString("COMMON_MESSAGE_STATE","1"));
 		
+		//外呼状态combobox, 用于显示当前记录的外呼状态
+		setAttr("lastCallResultComboboxDataFor1", CommonController.getComboboxToString("LAST_CALL_RESULT","1"));
+		
+		
 		//主叫号码
-		String currOperId = String.valueOf(getSession().getAttribute("currOperId"));     //取出当前登录的用户
 		setAttr("callerIdComboboxDataFor1",SysCallerIdController.getSysCallerIdToComboboxByOperId(currOperId, "1"));
+		setAttr("callerIdComboboxDataFor0",SysCallerIdController.getSysCallerIdToComboboxByOperId(currOperId, "0"));
 		//setAttr("callerIdComboboxDataFor0", CommonController.getComboboxToString("CALLERID","0"));
 		
 		render("list.jsp");
@@ -122,12 +137,13 @@ public class AutoCallTaskController extends Controller implements IController {
 		String taskId = DateFormatUtils.formatDateTime(new Date(), "yyyyMMddHHmm") + Math.round(Math.random()*9000 + 1000);
 		autoCallTask.set("TASK_ID", taskId);
 		
-		//检查主叫号码是否为空
-		String callerId = autoCallTask.get("CALLERID");
-		if(BlankUtils.isBlank(callerId) || callerId.equalsIgnoreCase("empty")) {
+		//主叫号码
+		String callerId = getPara("cids");  
+		if(BlankUtils.isBlank(callerId)) {
 			render(RenderJson.error("新增外呼任务失败,主叫号码为空!"));
 			return;
 		}
+		autoCallTask.set("CALLERID",callerId);
 		
 		//先检查是否存在相同名字的外呼任务
 		String taskName = autoCallTask.get("TASK_NAME");
@@ -332,7 +348,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		String startVoiceId = autoCallTask.get("START_VOICE_ID");
 		String endVoiceId = autoCallTask.get("END_VOICE_ID");
 		String blackListId = autoCallTask.get("BLACKLIST_ID");
-		String callerId = autoCallTask.get("CALLERID");
+		String callerId = getPara("cids");
 		Integer priority = Integer.valueOf(autoCallTask.get("PRIORITY").toString());
 		int sendMessage = autoCallTask.getInt("SEND_MESSAGE");
 		String messageContent = autoCallTask.getStr("MESSAGE_CONTENT");
@@ -482,6 +498,123 @@ public class AutoCallTaskController extends Controller implements IController {
 		state0Data.set("value",data.get("state0Data"));
 		list.add(state0Data);
 		
+		//呼叫成功
+		Record lastCallResult1Data = new Record();
+		lastCallResult1Data.set("name", "呼叫成功");
+		lastCallResult1Data.set("value", data.get("lastCallResult1Data"));
+		list.add(lastCallResult1Data);
+		
+		//无应答
+		Record lastCallResult2Data = new Record();
+		lastCallResult2Data.set("name", "无应答");
+		lastCallResult2Data.set("value", data.get("lastCallResult2Data"));
+		list.add(lastCallResult2Data);
+		
+		//客户忙
+		Record lastCallResult3Data = new Record();
+		lastCallResult3Data.set("name", "客户忙");
+		lastCallResult3Data.set("value", data.get("lastCallResult3Data"));
+		list.add(lastCallResult3Data);
+		
+		//请求错误
+		Record lastCallResult4Data = new Record();
+		lastCallResult4Data.set("name", "请求错误");
+		lastCallResult4Data.set("value", data.get("lastCallResult4Data"));
+		list.add(lastCallResult4Data);
+		
+		renderJson(list);
+		
+	}
+	
+	
+	/**
+	 * 重新加载统计数据
+	 */
+	public void reloadStatistics_bak() {
+		
+		String taskId = getPara("taskId");
+		
+		Record data = AutoCallTask.dao.getStatisticsData(taskId);
+		
+		List<Record> list = new ArrayList<Record>();
+		
+		//已载入
+		Record state1Data = new Record();
+		state1Data.set("name", "已载入");
+		state1Data.set("value", data.get("state1Data"));
+		list.add(state1Data);
+		
+		//已成功
+		Record state2Data = new Record();
+		state2Data.set("name", "已成功");
+		state2Data.set("value", data.get("state2Data"));
+		list.add(state2Data);
+		
+		//待重呼
+		Record state3Data = new Record();
+		state3Data.set("name", "待重呼");
+		state3Data.set("value", data.get("state3Data"));
+		list.add(state3Data);
+		
+		//已失败
+		Record state4Data = new Record();
+		state4Data.set("name", "已失败");
+		state4Data.set("value", data.get("state4Data"));
+		list.add(state4Data);
+		
+		//未处理
+		Record state0Data = new Record();
+		state0Data.set("name","未处理");
+		state0Data.set("value",data.get("state0Data"));
+		list.add(state0Data);
+		
+		renderJson(list);
+		
+	}
+	
+	/**
+	 * 重新加载统计数据->为多任务进行统计
+	 */
+	public void reloadStatisticsForMultiTask() {
+		
+		String ids = getPara("ids");
+		
+		System.out.println("要查询的所有的任务ID:" + ids);
+		
+		Record data = AutoCallTask.dao.getStatisticsDataForMultiTask(ids);
+		
+		List<Record> list = new ArrayList<Record>();
+		
+		//已载入
+		Record state1Data = new Record();
+		state1Data.set("name", "已载入");
+		state1Data.set("value", data.get("state1Data"));
+		list.add(state1Data);
+		
+		//已成功
+		Record state2Data = new Record();
+		state2Data.set("name", "已成功");
+		state2Data.set("value", data.get("state2Data"));
+		list.add(state2Data);
+		
+		//待重呼
+		Record state3Data = new Record();
+		state3Data.set("name", "待重呼");
+		state3Data.set("value", data.get("state3Data"));
+		list.add(state3Data);
+		
+		//已失败
+		Record state4Data = new Record();
+		state4Data.set("name", "已失败");
+		state4Data.set("value", data.get("state4Data"));
+		list.add(state4Data);
+		
+		//未处理
+		Record state0Data = new Record();
+		state0Data.set("name","未处理");
+		state0Data.set("value",data.get("state0Data"));
+		list.add(state0Data);
+		
 		renderJson(list);
 		
 	}
@@ -501,7 +634,10 @@ public class AutoCallTaskController extends Controller implements IController {
 		String state1Count = getPara("state1Count");    rc.set("state1Data", state1Count);
 		String state2Count = getPara("state2Count");	rc.set("state2Data", state2Count);
 		String state3Count = getPara("state3Count");    rc.set("state3Data", state3Count);
-		String state4Count = getPara("state4Count");	rc.set("state4Data", state4Count);	
+		String state4Count = getPara("state4Count");	rc.set("state4Data", state4Count);
+		String lastCallResult2Count = getPara("lastCallResult2Count"); rc.set("lastCallResult2Data", lastCallResult2Count);
+		String lastCallResult3Count = getPara("lastCallResult3Count"); rc.set("lastCallResult3Data", lastCallResult3Count);
+		String lastCallResult4Count = getPara("lastCallResult4Count"); rc.set("lastCallResult4Data", lastCallResult4Count);
 		list.add(rc);
 		
 		String totalRate = getPara("totalRate");		rr.set("totalData", totalRate + "%");
@@ -509,14 +645,17 @@ public class AutoCallTaskController extends Controller implements IController {
 		String state2Rate = getPara("state2Rate");		rr.set("state2Data", state2Rate + "%");
 		String state3Rate = getPara("state3Rate");		rr.set("state3Data", state3Rate + "%");
 		String state4Rate = getPara("state4Rate");		rr.set("state4Data", state4Rate + "%");
+		String lastCallResult2Rate = getPara("lastCallResult2Rate");   rr.set("lastCallResult2Data", lastCallResult2Rate + "%");
+		String lastCallResult3Rate = getPara("lastCallResult3Rate");   rr.set("lastCallResult3Data", lastCallResult3Rate + "%");
+		String lastCallResult4Rate = getPara("lastCallResult4Rate");   rr.set("lastCallResult4Data", lastCallResult4Rate + "%");
 		
 		list.add(rr);
 		
 		String taskName = getPara("taskName");
 
 		//得到数据列表，准备以 Excel 方式导出
-		String[] headers = {"","已呼数量","已载入","已成功","待重呼","已失败",};
-		String[] columns = {"category","totalData","state1Data","state2Data","state3Data","state4Data"};
+		String[] headers = {"","已呼数量","已载入","已成功","待重呼","已失败","无应答","客户忙","请求错误"};
+		String[] columns = {"category","totalData","state1Data","state2Data","state3Data","state4Data","lastCallResult2Data","lastCallResult3Data","lastCallResult4Data"};
 		String fileName = "任务：" + taskName + "的统计汇总情况.xls";
 		String sheetName = "数据汇总信息";
 		
