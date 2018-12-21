@@ -9,6 +9,7 @@ import com.callke8.autocall.questionnaire.Question;
 import com.callke8.autocall.schedule.Schedule;
 import com.callke8.autocall.voice.Voice;
 import com.callke8.common.CommonController;
+import com.callke8.system.schedule.SysSchedule;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
 import com.callke8.utils.JplayerUtils;
@@ -84,7 +85,8 @@ public class AutoCallTaskReviewController extends Controller {
 		
 		//取出任务信息
 		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
-		Schedule schedule = Schedule.dao.getScheduleById(autoCallTask.get("SCHEDULE_ID").toString());   //取出调度任务
+		//Schedule schedule = Schedule.dao.getScheduleById(autoCallTask.get("SCHEDULE_ID").toString());   //取出调度任务
+		SysSchedule schedule = SysSchedule.dao.getScheduleById(autoCallTask.get("SCHEDULE_ID").toString());    //取出调度任务
 		int dateType = schedule.getInt("DATETYPE");     //日期类型 1:每天; 2：星期
 		String dateTypeDetail = schedule.get("DATETYPE_DETAIL");   //得到生效的星期天数,数据以逗分隔,如 1,2,3,4,7(即周一，周二，周3，周四，周日)
 		
