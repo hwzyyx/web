@@ -91,6 +91,17 @@
 							endTime:endTime,
 							taskType:taskType,
 							taskState:taskState
+						},
+						onLoadSuccess:function(data) {         
+							for(var i=0;i<data.rows.length;i++) {
+								//主叫号码列表显示
+								var callerIdDescRs = data.rows[i].CALLERID_DESC;
+								callerIdDescRs = callerIdDescRs.replace(/\|/gm,'<br>');
+								$("#calleriddesc_" + i).tooltip({
+									position:'top',
+									content:callerIdDescRs
+								});
+							}
 						}
 					});
 				
@@ -821,6 +832,10 @@
 			$("#autoCallTaskDg").datagrid("hideColumn","ORG_CODE_DESC");
 			$("#autoCallTaskDg").datagrid("hideColumn","CREATE_TIME");
 		}
+		
+		function calleridformatter(value,data,index) {
+			return "<div id='calleriddesc_" + index + "' style='width:auto;' class='easyui-panel easyui-tooltip'>主叫号码</div>";
+		}
 			
 	</script>
 </head>
@@ -872,7 +887,7 @@
 					<th data-options="field:'ck',checkbox:true"></th>		
 					<th data-options="field:'TASK_NAME',width:250,align:'center'">任务名称</th>
 					<th data-options="field:'TASK_TYPE_DESC',width:150,align:'center'">任务类型</th>
-					<th data-options="field:'CALLERID_DESC',width:150,align:'center'">主叫号码</th>
+					<th data-options="field:'CALLERID_DESC',width:150,align:'center',formatter:calleridformatter">主叫号码</th>
 					<th data-options="field:'taskStateField',width:120,align:'center',formatter:taskstaterowformatter">状态</th>
 					<th data-options="field:'validityDate',width:220,align:'center',formatter:validitydaterowformatter">有效期</th>
 					<th data-options="field:'scheduleDetail',width:50,align:'center',formatter:scheduledetailformatter">调度</th>
