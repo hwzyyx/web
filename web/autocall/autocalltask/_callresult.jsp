@@ -269,8 +269,8 @@ function lastCallResult4DataFormatter(value,data,index) {
 		//color: ['#f8d013','#00ff00', '#fc00ff', '#ff0000','#07b3fa','#55cafa','#8cdcfc','#666666', '#001100'],
 		color: ['#f8d013','#00ff00', '#fc00ff', '#ff0000','#ea9595','#ec5a5a','#f10303','#666666', '#001100'],
 		title:{
-			text:'BSH外呼系统时间区间内的外呼情况展示',
-			subtext:'时间区间:2018-05-01 00:00:00 至 2018-05-02 00:00:00',
+			text:'任务名称:NULL',
+			subtext:"任务号码总量：0,已呼数量：0,未呼数量：0",
 			show:true,
 			x:'center',
 			align:'center',
