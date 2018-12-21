@@ -2,10 +2,12 @@ package com.callke8.system.callerid;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import com.callke8.system.operator.Operator;
+import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
@@ -23,6 +25,12 @@ import com.jfinal.plugin.activerecord.Record;
 public class SysCallerId extends Model<SysCallerId> {
 	
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * 增加一个静态的  Map,用于存储轮循主叫号码时，任务ID对应的上次取主叫号码的 index ，
+	 * 通过该Map,就可以看到上次这个任务获取主叫号码使用的index是什么，要取下一个，直接加一个即可，如果超过下标，则从0重新开始
+	 */
+	private static Map<String,Integer> taskIdAndIndexMap = new HashMap<String,Integer>();
 	
 	public static SysCallerId dao = new SysCallerId();
 	
@@ -84,7 +92,7 @@ public class SysCallerId extends Model<SysCallerId> {
 	//取出所有主叫号码的列表
 	public List<Record> getAllSysCallerId() {
 		
-		String sql = "select * from sys_callerid";
+		String sql = "select * from sys_callerid order by ID asc";
 		
 		List<Record> list  = Db.find(sql);
 		
@@ -106,7 +114,9 @@ public class SysCallerId extends Model<SysCallerId> {
 	
 	public boolean add(Record sysCallerId) {
 		boolean b = Db.save("sys_callerid", "ID", sysCallerId);
-		
+		if(b) {
+			loadSysCallerIdToMemory();
+		}
 		return b;
 	}
 	
@@ -120,6 +130,7 @@ public class SysCallerId extends Model<SysCallerId> {
 		
 		if(count > 0) {
 			b = true;
+			loadSysCallerIdToMemory();
 		}
 		
 		return b;
@@ -170,9 +181,76 @@ public class SysCallerId extends Model<SysCallerId> {
 		
 		if(count > 0) {
 			b = true;
+			loadSysCallerIdToMemory();
 		}
 		
 		return b;
+	}
+	
+	/**
+	 * 加载系统的主叫号码的参数到内存
+	 */
+	public void loadSysCallerIdToMemory() {
+		
+		List<Record> sysCallerIdList = getAllSysCallerId();
+		
+		if(BlankUtils.isBlank(sysCallerIdList)) {
+			System.out.println("错误：=======-加载系统主叫号码数据到内存失败,sys_callerid 表数据为空,请添加数据后,再重新启动进行加载!");
+			return;
+		}
+		
+		for(Record sysCallerId:sysCallerIdList) {
+			String id = String.valueOf(sysCallerId.getInt("ID"));     //ID值
+			String callerId = sysCallerId.getStr("CALLERID");         //主叫号码
+			
+			SysCallerIdConfig.sysCallerIdMap.put(id, callerId);
+		}
+		
+		//遍历配置参数的Map
+		Iterator<Map.Entry<String,String>> it = SysCallerIdConfig.sysCallerIdMap.entrySet().iterator();
+		System.out.println("系统主叫号码加载至内存的情况(键值对):");
+		while(it.hasNext()) {
+			Map.Entry<String, String> entry = it.next();
+			System.out.println(entry.getKey() + "=" + entry.getValue());
+		}
+		
+	}
+	
+	/**
+	 * 选择主叫号码，轮循主叫号码时，通过该方法，传入任务ID和任务管理时选择的主叫号码
+	 * 
+	 * @param taskId
+	 * 			任务的ID
+	 * @param taskName	
+	 * 			任务的名称
+	 * @param id
+	 * 			任务的主叫的ID列表以逗号分隔，如  22,33,66
+	 */
+	public String selectCallerId(String taskId,String id) {
+		
+		String[] ids = id.split(",");
+		if(ids.length==1) {    //如果传入的id只有一个时，直接根据传入的 id 取主叫即可
+			return SysCallerIdConfig.sysCallerIdMap.get(id);
+		}
+		
+		if(taskIdAndIndexMap.containsKey(taskId)) {      //如果当前的Map中已经存在当前任务ID的记录
+			//查看上一次，该任务对应的 index 值 是多少
+			int prevIndex = taskIdAndIndexMap.get(taskId);    //上一个index的值
+			int nextIndex = prevIndex + 1;                    //下一个index的值
+			if(nextIndex>=ids.length) {      //如果上一个index+1大于了 ids的个数，表示已经超过下标了
+				taskIdAndIndexMap.put(taskId, 0);
+				String idRs = ids[0];
+				return SysCallerIdConfig.sysCallerIdMap.get(idRs);
+			}else {
+				taskIdAndIndexMap.put(taskId,nextIndex);
+				String idRs = ids[nextIndex];
+				return SysCallerIdConfig.sysCallerIdMap.get(idRs);
+			}
+		}else {                                //如果当前 Map 中不存在当前的任务的记录
+			taskIdAndIndexMap.put(taskId, 0);
+			String idRs = ids[0];
+			return SysCallerIdConfig.sysCallerIdMap.get(idRs);
+		}
 	}
 	
 }

@@ -69,6 +69,7 @@ public class SysCallerIdAssignController extends Controller implements IControll
 		
 		if(BlankUtils.isBlank(targetOperId)) {             //如果目标用户不为空时
 			render(RenderJson.error("传入的目标操作员为空!无法分配主叫号码"));
+			return;
 		}
 		
 		//在保存主叫号码分配之前，先删除之前的分配

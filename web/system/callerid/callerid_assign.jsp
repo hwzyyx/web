@@ -285,7 +285,7 @@
 								<thead>  
 									<tr style="height:12px;">                
 										<th data-options="field:'OPER_ID',width:100,align:'center'">工号</th>                
-										<th data-options="field:'ORG_CODE',width:100,align:'center'">所属组织</th>                
+										<th data-options="field:'ORG_CODE_DESC',width:100,align:'center'">所属组织</th>                
 										<th data-options="field:'OPER_NAME',width:100,align:'center'">操作员名称</th>                
 										<th data-options="field:'STATE',width:80,align:'center',formatter:stateFormat">状态</th>
 										<th data-options="field:'SEX',width:60,align:'center',formatter:sexFormat">性别</th>
