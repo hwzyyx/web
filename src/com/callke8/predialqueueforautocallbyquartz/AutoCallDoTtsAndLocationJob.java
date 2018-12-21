@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.quartz.Job;
+import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -14,6 +15,7 @@ import org.quartz.SchedulerException;
 
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
+import com.callke8.system.callerid.SysCallerId;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.AddressReplaceUtils;
 import com.callke8.utils.BlankUtils;
@@ -38,16 +40,13 @@ import com.jfinal.plugin.activerecord.Record;
  */
 public class AutoCallDoTtsAndLocationJob implements Job {
 
-	private String autoCallTaskTelephoneId;
-	
-	public void setAutoCallTaskTelephoneId(String autoCallTaskTelephoneId) {
-		this.autoCallTaskTelephoneId = autoCallTaskTelephoneId;
-	}
-
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		
 		try {
+			
+			JobDataMap map = context.getJobDetail().getJobDataMap();
+			String autoCallTaskTelephoneId = map.getString("autoCallTaskTelephoneId");     //取出号码的 id
 			
 			StringUtil.log(this, "线程 AutoCallDoTtsAndLocationJob[" + context.getScheduler().getSchedulerName() + "]:自动外呼TTS和归属地定位守护线程收到执行请求，传入的autoCallTaskTelephoneId：" + autoCallTaskTelephoneId);
 			
@@ -281,8 +280,11 @@ public class AutoCallDoTtsAndLocationJob implements Job {
 				boolean isLandlineNumber = customerTelLocation.getBoolean("isLandlineNumber");	//是否为固定电话号码
 				
 				StringUtil.log(this, "客户号码：" + customerTel + " 的归属地定位信息为:" + customerTelLocation);
+				//再根据任务的信息，取一个主叫号码出来
+				String callOutCallerIdRs = SysCallerId.dao.selectCallerId(taskId, autoCallTask.getStr("CALLERID"));    //取出一个主叫号码,对于轮循主叫号码，或是单个号码，都适用
 				
-				int count = AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneLocationAndCallOutTel(telId, provinceRs, cityRs, callOutTelRs);
+				int count = AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneLocationAndCallOutTel(telId, provinceRs, cityRs, callOutTelRs,callOutCallerIdRs);
+				//int count = AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneLocationAndCallOutTel(telId, provinceRs, cityRs, callOutTelRs);
 				if(count < 0) {    //如果更改号码归属地和外呼号码不成功，则将外呼记录的状态修改为 已失败（或待重呼），原因为：更改归属地异常
 					if(retried < retryTimes) {      //如果已经外呼次数小于允许的最大外呼次数，则将记录状态修改为待重呼
 						AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", autoCallTask.getInt("RETRY_INTERVAL"),autoCallTask.getInt("INTERVAL_TYPE"),"更改归属地异常");

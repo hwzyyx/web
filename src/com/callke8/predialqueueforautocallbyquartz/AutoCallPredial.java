@@ -65,7 +65,7 @@ public class AutoCallPredial {
 		
 		//线程二:扫描排队机,若排队机中有数据,则执行外呼
 		Scheduler scheduler2 = QuartzUtils.createScheduler("AutoCallLaunchDialJob" + System.currentTimeMillis(),1);
-		scheduler2.scheduleJob(QuartzUtils.createJobDetail(AutoCallLaunchDialJob.class),QuartzUtils.createSimpleTrigger(startTime,-1,400));    //每500毫秒发起一次呼叫
+		scheduler2.scheduleJob(QuartzUtils.createJobDetail(AutoCallLaunchDialJob.class),QuartzUtils.createSimpleTrigger(startTime,-1,250));    //每500毫秒发起一次呼叫
 		scheduler2.start();
 		
 		//线程三:扫描待重呼记录到排队机线程，因为重呼的优先及应该高于非重呼，所以将扫描频率设置为2秒。
@@ -84,10 +84,12 @@ public class AutoCallPredial {
 	 * 失败的原因有三：1 pbx的连接不成功;2呼叫失败;3 无人接听
 	 * 
 	 * @param lastCallResult
-	 * 			最后一次外呼的结果：NOANSWER(未接);FAILURE(失败);BUSY(线忙);SUCCESS(成功)
+	 * 			外呼状态：1（onSuccess）;2(onNoAnswer);3(onBusy);4(onFailure)
+	 * @param hangupCause
+	 * 			挂机原因：根据通道返回chnanel.getHangupCause 或是其他的错误原因
 	 * 
 	 */
-	public static void updateTelehponeStateForFailure(String lastCallResult,AutoCallTaskTelephone actt,AutoCallTask autoCallTask) {
+	public static void updateTelehponeStateForFailure(String lastCallResult,String hangupCause,AutoCallTaskTelephone actt,AutoCallTask autoCallTask) {
 		
 		int retried  = actt.getInt("RETRIED");                       //已外呼次数
 		int retryTimes = autoCallTask.getInt("RETRY_TIMES");		 //任务设置的最大外呼次数
@@ -96,9 +98,9 @@ public class AutoCallPredial {
 		int telId = actt.getInt("TEL_ID");                           //记录的号码ID
 		
 		if(retried < retryTimes) {      //如果已经外呼次数小于允许的最大外呼次数，则将记录状态修改为待重呼
-			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", retryInterval,intervalType,lastCallResult);
+			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", retryInterval,intervalType,lastCallResult,hangupCause);
 		}else {                         //否则,修改为已失败
-			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(telId, null, "4", lastCallResult);
+			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(telId, null, "4", lastCallResult,hangupCause);
 			deleteVoiceFileByTelId(telId);    //删除该记录的录音文件
 		}
 		
@@ -109,11 +111,12 @@ public class AutoCallPredial {
 	 * 通话成功时,通话并没有结束,所以活动通道不能减除,而是需要将通道加入内存
 	 * 加一个事件监控线程,在挂机事件时，再将其解除
 	 * 
-	 * @param lastCallResult
+	  * @param lastCallResult
+	 * 			外呼状态：1（onSuccess）;2(onNoAnswer);3(onBusy);4(onFailure)
 	 */
-	public static void updateTelehponeStateForSuccess(String lastCallResult, AutoCallTaskTelephone actt) {
+	public static void updateTelehponeStateForSuccess(String lastCallResult,AutoCallTaskTelephone actt) {
 		
-		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(actt.getInt("TEL_ID"),null,"2",lastCallResult);
+		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(actt.getInt("TEL_ID"),null,"2",lastCallResult,null);
 		
 	}
 	

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.asteriskjava.live.CallerId;
 import org.asteriskjava.manager.AuthenticationFailedException;
 import org.asteriskjava.manager.ManagerConnection;
 import org.asteriskjava.manager.TimeoutException;
@@ -141,7 +142,7 @@ public class AutoCallDoCallOutJob implements Job {
 			connState = au.isAstConnSuccess();    //再检查一次
 			if(!connState) {    //如果还是连接失败，将直接保存其为失败状态
 				au.close();
-				AutoCallPredial.updateTelehponeStateForFailure("DISCONNECTION", actt, autoCallTask);    //更改状态为失败或是重试，并指定最后失败原因为 未连接
+				AutoCallPredial.updateTelehponeStateForFailure("4","DISCONNECTION", actt, autoCallTask);    //更改状态为失败或是重试，并指定最后失败原因为 未连接
 				StringUtil.log(this, "再次重连接Asterisk后，PBX系统连接状态仍旧有异常,系统将直接更改状态为失败或是重试!");
 				
 				try {
@@ -165,24 +166,26 @@ public class AutoCallDoCallOutJob implements Job {
 		callOutTel = numberPrefix + callOutTel;                                             //将前缀增加到这个号码
 		
 		//获取主叫号码
-		String callerIdNumber = null;
-		String callerIdInfo = autoCallTask.get("CALLERID");   								//主叫的ID信息
-		SysCallerId sysCallerId = SysCallerId.dao.getSysCallerIdById(Integer.valueOf(callerIdInfo));
-		if(!BlankUtils.isBlank(sysCallerId)) {
-			callerIdNumber = sysCallerId.getStr("CALLERID");
-		}
+		String callerIdNumber = actt.getStr("CALLERID");             //在从排队机扫描数据外呼的归属地时，已经通过轮循的方式将主叫号码设置到了记录中，直接取出即可
+		//String callerIdInfo = autoCallTask.get("CALLERID");   								//主叫的ID信息
+		//SysCallerId sysCallerId = SysCallerId.dao.getSysCallerIdById(Integer.valueOf(callerIdInfo));
+		//if(!BlankUtils.isBlank(sysCallerId)) {
+		//	callerIdNumber = sysCallerId.getStr("CALLERID");
+		//}
 		
 		//准备拼接外呼参数
 		String channel = trunkInfo + "/" + callOutTel;
 		String application = "AGI";
 		String applicationData = agiUrl;
-		long timeout = 30 * 1000L;
-		String callerId = callerIdNumber;
+		long timeout = 60 * 1000L;
+		//String callerId = callerIdNumber;
+		CallerId callerId = new CallerId(callerIdNumber, callerIdNumber);
 		Map<String,String> virablesMap = new HashMap<String,String>();   //设置通道变量
 		virablesMap.put("autoCallTaskTelephoneId", String.valueOf(autoCallTaskTelephoneId));
 				
+		//不经过发送 Action 下发外呼命令，而是通过 Originate 发送外呼请求
 		//创建外呼 Action
-		OriginateAction action = new OriginateAction();
+		/*OriginateAction action = new OriginateAction();
 		action.setChannel(channel);
 		action.setApplication(application);
 		action.setData(applicationData);
@@ -209,8 +212,10 @@ public class AutoCallDoCallOutJob implements Job {
 			} catch (SchedulerException e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
 		
+		//通过 Originate 方式执行外呼
+		au.doCallOutToApplication(channel, application, applicationData, timeout, callerId, virablesMap,new MyOriginateCallback(actt, au));
 	}
 	
 
