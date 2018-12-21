@@ -24,6 +24,7 @@
 		var currReminderType = null;
 		var isShowMore = 0;
 		var conditionState = null;
+		var conditionLastCallResult = null;
 		
 		var currCreateType = 'voiceFile';
 		
@@ -289,7 +290,8 @@
 		function findDataForTelephoneFor2() {
     		$("#autoCallTaskTelephoneDg2").datagrid('load',{
         		taskId:currTaskId,
-    			state:conditionState
+    			state:conditionState,
+    			lastCallResult:conditionLastCallResult
         	});
     	}
 		

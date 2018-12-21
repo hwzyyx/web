@@ -517,5 +517,59 @@ function lastCallResult4DataFormatter(value,data,index) {
 	    myChart.setOption(option, true);
 	}
 	
+	myChart.on('dblclick',function(params){
+		var name = params.name;
+		var value = params.value;
+		
+		//为了减少系统的开支,对于数据值为0时,不查询数据列表
+		if(value == 0) {
+			window.parent.showMessage("温馨提示：当前选择的 " + name + " 数据量为0,号码列表暂不显示!","ERROR");
+			return;
+		}
+		
+		var title = "任务：" + currTaskName;
+		
+		if(name=='已载入') {
+			title += ",呼叫结果：已载入";
+			conditionState = 1;
+			conditionLastCallResult = null;
+		}else if(name=='已成功') {
+			title += ",呼叫结果：已成功";
+			conditionState = 2;
+			conditionLastCallResult = null;
+		}else if(name=='待重呼') {
+			title += ",呼叫结果：待重呼";
+			conditionState = 3;
+			conditionLastCallResult = null;
+		}else if(name=='已失败') {
+			title += ",呼叫结果：已失败";
+			conditionState = 4;
+			conditionLastCallResult = null;
+		}else if(name=='无应答') {
+			title += ",呼叫状态：无应答";
+			conditionState = "3,4";
+			conditionLastCallResult = 2;
+		}else if(name=='客户忙') {
+			title += ",呼叫状态：客户忙";
+			conditionState = "3,4";
+			conditionLastCallResult = 3;
+		}else if(name=='请求错误') {
+			title += ",呼叫状态：请求错误";
+			conditionState = "3,4";
+			conditionLastCallResult = 4;
+		}
+		
+		//alert("name=" + name + ",value=" + value + ",conditionState=" + conditionState);
+		
+		title += " 的号码列表";		
+		findDataForTelephoneFor2();
+		
+		//在打开之前，先做些显示和隐藏的操作
+		showExtraTabsFor2();
+		
+		$("#autoCallTelephoneDlg").dialog('setTitle',title).dialog('open');		
+		
+	});
+	
 </script>
 
