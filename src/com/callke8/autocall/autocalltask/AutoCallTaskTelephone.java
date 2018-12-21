@@ -1371,6 +1371,51 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		
 	}
 	
+	/**
+	 * 取得统计数据（呼叫状态）
+	 * 
+	 * 主要返回: 
+		1：呼叫成功; 2：无应答; 3：客户忙; 4：请求错误
+	 * 
+	 * @param data
+	 * @param startTime
+	 * @param endTime
+	 * @param channelSource
+	 */
+	public void getStatisticsDataForLastCallResultMultiTask(Record data,String taskId) {
+		
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("select LAST_CALL_RESULT,COUNT(*) as count from ac_call_task_telephone where TASK_ID in(" + taskId + ") and STATE in(3,4)");
+		
+		sb.append(" GROUP BY LAST_CALL_RESULT");
+		
+		List<Record> lastCallResultList = Db.find(sb.toString());
+		
+		if(!BlankUtils.isBlank(lastCallResultList) && lastCallResultList.size() > 0) {
+			for(Record lastCallResultR:lastCallResultList) {
+				String lastCallResultValue = lastCallResultR.getStr("LAST_CALL_RESULT");
+				int lastCallResultCount = Integer.valueOf(lastCallResultR.get("count").toString());
+				//如果该记录为空，则跳过循环
+				if(BlankUtils.isBlank(lastCallResultValue)) { 
+					continue;
+				}
+				
+				if(lastCallResultValue.equalsIgnoreCase("1")) {
+					data.set("lastCallResult1Data", lastCallResultCount);
+				}else if(lastCallResultValue.equalsIgnoreCase("2")) {
+					data.set("lastCallResult2Data", lastCallResultCount);
+				}else if(lastCallResultValue.equalsIgnoreCase("3")) {
+					data.set("lastCallResult3Data", lastCallResultCount);
+				}else if(lastCallResultValue.equalsIgnoreCase("4")) {
+					data.set("lastCallResult4Data", lastCallResultCount);
+				}
+			}
+			
+		}
+		
+	}
+	
 	
 	/**
 	 * 取得统计数据（呼叫状态）

@@ -615,6 +615,30 @@ public class AutoCallTaskController extends Controller implements IController {
 		state0Data.set("value",data.get("state0Data"));
 		list.add(state0Data);
 		
+		//呼叫成功
+		Record lastCallResult1Data = new Record();
+		lastCallResult1Data.set("name", "呼叫成功");
+		lastCallResult1Data.set("value", data.get("lastCallResult1Data"));
+		list.add(lastCallResult1Data);
+		
+		//无应答
+		Record lastCallResult2Data = new Record();
+		lastCallResult2Data.set("name", "无应答");
+		lastCallResult2Data.set("value", data.get("lastCallResult2Data"));
+		list.add(lastCallResult2Data);
+		
+		//客户忙
+		Record lastCallResult3Data = new Record();
+		lastCallResult3Data.set("name", "客户忙");
+		lastCallResult3Data.set("value", data.get("lastCallResult3Data"));
+		list.add(lastCallResult3Data);
+		
+		//请求错误
+		Record lastCallResult4Data = new Record();
+		lastCallResult4Data.set("name", "请求错误");
+		lastCallResult4Data.set("value", data.get("lastCallResult4Data"));
+		list.add(lastCallResult4Data);
+		
 		renderJson(list);
 		
 	}

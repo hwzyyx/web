@@ -838,7 +838,20 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		data.set("state3Data",0);
 		data.set("state4Data",0);
 		
+		data.set("lastCallResult1Data",0);
+		data.set("lastCallResult2Data",0);
+		data.set("lastCallResult3Data",0);
+		data.set("lastCallResult4Data",0);
+		
+		/**
+		 * (1)取出统计结果（呼叫结果），0：未处理;1：已载入;2：已成功;3：待重呼;4：已失败;
+		 */
 		AutoCallTaskTelephone.dao.getStatisticsDataForStateMultiTask(data, ids);
+		
+		/**
+		 * (2)取出统计结果(呼叫状态)，1：呼叫成功; 2：无应答; 3：客户忙; 4：请求错误
+		 */
+		AutoCallTaskTelephone.dao.getStatisticsDataForLastCallResultMultiTask(data, ids);
 		
 		return data;
 	}

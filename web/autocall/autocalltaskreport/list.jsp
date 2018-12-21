@@ -39,6 +39,8 @@
 			loadSearchData();
 			
 			showSimpleColumns();     //任务列表，显示简单的列
+			
+			$('#summaryDg').datagrid({toolbar:'#summaryDgTool'}).datagrid('loadData','');
 		});
 		
 		//加载搜索栏的数据，主要是一些 combobox 数据的加载
@@ -110,38 +112,9 @@
 						onSelect:function(index,data) {
 							var taskId = data.TASK_ID;         //取出任务ID
 							var taskState = data.TASK_STATE;   //得到任务状态
-
-							if(taskState==0) {                 //状态为0,即是未激活可申请激活
-								disabledAllStateBtn();
-								$("#applyActiveBtn").linkbutton("enable");
-								$("#historyBtn").linkbutton("enable");
-							}else if(taskState==1) {           //状态为1，即是审核中，可以取消激活
-								disabledAllStateBtn();
-								$("#cancelApplyActiveBtn").linkbutton("enable");
-								$("#historyBtn").linkbutton("enable");
-							}else if(taskState==2) {           //状态为2，即是审核通过，可以暂停、可以停止
-								disabledAllStateBtn();
-								$("#pauseBtn").linkbutton("enable");
-								$("#stopBtn").linkbutton("enable");
-								$("#historyBtn").linkbutton("enable");
-							}else if(taskState==3) {           //状态为3，即是审核不通过，可以申请激活
-								disabledAllStateBtn();
-								$("#applyActiveBtn").linkbutton("enable");
-								$("#historyBtn").linkbutton("enable");
-							}else if(taskState==4) {           //状态为4，即是暂停中，可以重新开始、可以停止
-								disabledAllStateBtn();
-								$("#cancelPauseBtn").linkbutton("enable");
-								$("#stopBtn").linkbutton("enable");
-								$("#historyBtn").linkbutton("enable");
-							}else if(taskState==5) {           //状态为5，即是任务停止，可以重新申请激活
-								disabledAllStateBtn();
-								$("#applyActiveBtn").linkbutton("enable");
-								$("#historyBtn").linkbutton("enable");
-							}
 							
 						},
 						onLoadSuccess:function(data) {         //加载成功后，先禁用所有的按钮
-							disabledAllStateBtn();
 
 							for(var i=0;i<data.rows.length;i++) {
 								var taskState = data.rows[i].TASK_STATE;   //获取任务状态
@@ -161,6 +134,7 @@
 								//主叫号码列表显示
 								var callerIdDescRs = data.rows[i].CALLERID_DESC;
 								callerIdDescRs = callerIdDescRs.replace(/\|/gm,'<br>');
+								//console.log("hwz---" + callerIdDescRs);
 								$("#calleriddesc_" + i).tooltip({
 									position:'top',
 									content:callerIdDescRs
