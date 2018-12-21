@@ -1,9 +1,11 @@
 package com.callke8.system.operator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.callke8.system.org.Org;
 import com.callke8.utils.ArrayUtils;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
@@ -118,13 +120,22 @@ public class Operator extends Model<Operator> {
 	@SuppressWarnings("unchecked")
 	public Map getOperatorByPaginateToMap(int currentPage,int numPerPage,String operId,String operName,String operState,String orgCode,boolean currOperIdIsSuperRole) {
 		
-		Page p = getOperatorByPaginate(currentPage, numPerPage, operId, operName, operState,orgCode,currOperIdIsSuperRole);
+		Page<Record> p = getOperatorByPaginate(currentPage, numPerPage, operId, operName, operState,orgCode,currOperIdIsSuperRole);
 		
 		int total = p.getTotalRow();
+		List<Record> newList = new ArrayList<Record>();
+		
+		for(Record r:p.getList()) {
+			String orgCodeRs = r.getStr("ORG_CODE");          //取出组织代码
+			Record orgRs = Org.dao.getOrgByOrgCode(orgCodeRs);   //取出组织信息
+			
+			r.set("ORG_CODE_DESC", orgRs.getStr("ORG_NAME"));
+			newList.add(r);
+		}
 		
 		Map m = new HashMap();
 		m.put("total", total);
-		m.put("rows", p.getList());
+		m.put("rows",newList);
 		
 		return m;
 	}

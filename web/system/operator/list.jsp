@@ -218,16 +218,18 @@
 		//重置密码
 		function operatorInitPassword(operId) {
 			
-			var newPassword = "1234rfvBHU*";
+			var newPassword = "520jsys&LSQS";
 			
 			$.messager.confirm('提示','你确定要重置操作员  '+ operId + ' 的密码为' + newPassword + ' 吗?',function(r){
 				
 				if(r) {
 					
 					$("#operatorForm").form('submit',{
-						url:"operator/initPassword?operId=" + operId + "&newPassword=" + newPassword,
-						onSubmit:function() {
-							
+						//url:"operator/initPassword?operId=" + operId + "&newPassword=" + newPassword,
+						url:"operator/initPassword",
+						onSubmit:function(param) {
+							param.operId = operId;
+							param.newPassword = newPassword;
 						},
 						success:function(data) {
 							var result = JSON.parse(data);    //解析Json 数据
@@ -369,7 +371,7 @@
 		function rowformater(value,data,index) {
 			return "<a href='#' onclick='javascript:operatorEdit(\"" + data.OPER_ID +"\",\""+ data.OPER_NAME +"\",\"" + data.STATE + "\",\"" + data.SEX + "\",\"" + data.PASSWORD + "\",\"" + data.TELNO + "\",\"" + data.ORG_CODE + "\",\"" + data.CALL_NUMBER + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>" + 
 			"&nbsp;&nbsp;<a href='#' onclick='javascript:operatorDel(\"" + data.OPER_ID +"\")'><img src='themes/icons/cancel.png' border='0'>删除</a>" +
-			"&nbsp;&nbsp;<a href='#' onclick='javascript:operatorInitPassword(\"" + data.OPER_ID +"\")'><img src='themes/icons/reload.png' border='0'>重置密码为:1234rfvBHU*</a>";
+			"&nbsp;&nbsp;<a href='#' onclick='javascript:operatorInitPassword(\"" + data.OPER_ID +"\")'><img src='themes/icons/reload.png' border='0'>重置密码为:520jsys&LSQS</a>";
 		}
 		
 		//格式化：将状态格式化，如果状态值为1,则为绿色，且定义为有效；状态值为0，则为红色，且定义为无效
