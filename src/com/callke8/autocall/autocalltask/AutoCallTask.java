@@ -101,6 +101,7 @@ public class AutoCallTask extends Model<AutoCallTask> {
 			index++;
 		}
 		
+		//System.out.println("查询的语句:select * " + sb.toString() + " ORDER BY TASK_ID DESC");
 		
 		Page<Record> p = Db.paginate(pageNumber, pageSize, "select *", sb.toString() + " ORDER BY TASK_ID DESC",ArrayUtils.copyArray(index,pars));
         
