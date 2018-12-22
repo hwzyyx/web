@@ -20,6 +20,7 @@ import com.callke8.system.calleridassign.SysCallerIdAssign;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.system.remindertype.SysReminderTypeController;
+import com.callke8.system.scheduleassign.SysScheduleAssign;
 import com.callke8.system.tasktype.SysTaskTypeController;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
@@ -830,8 +831,13 @@ public class AutoCallTaskController extends Controller implements IController {
 			}
 			Record scia = sciaList.get(0);
 			String callerId = String.valueOf(scia.getInt("CALLERID_ID"));
-			//(2)创建前，得到配置的调度ID
-			String scheduleId = ParamConfig.paramConfigMap.get("paramType_4_defaultScheduleId");
+			//(2)创建前，得到分配的调度ID
+			String scheduleId = SysScheduleAssign.dao.getScheduleForOperIdByAssigned(userCode);              //取出该账号分配的一个调度任务
+			if(BlankUtils.isBlank(scheduleId)) {
+				renderJson(returnCreateSelfTaskMap("FAILURE","失败,失败原因:当前账号没有分配调度任务!",""));
+				return;
+			}
+			//String scheduleId = ParamConfig.paramConfigMap.get("paramType_4_defaultScheduleId");
 			
 			autoCallTask = AutoCallTask.dao.createAutoCallTask("3","7",userCode,operator.getStr("ORG_CODE"),callerId,scheduleId);    //创建交警移车的外呼任务
 		}
