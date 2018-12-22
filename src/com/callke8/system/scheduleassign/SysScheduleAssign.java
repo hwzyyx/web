@@ -3,6 +3,7 @@ package com.callke8.system.scheduleassign;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.callke8.utils.BlankUtils;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Record;
@@ -88,6 +89,26 @@ public class SysScheduleAssign extends Model<SysScheduleAssign> {
 		int count = Db.update(sql, scheduleId);
 		
 		return count;
+	}
+	
+	/**
+	 * 根据传入的操作员的工号，得到该操作员已经被分配到的调度任务，并取出其中的一个
+	 * 
+	 * @param operId
+	 * @return
+	 */
+	public String getScheduleForOperIdByAssigned(String operId) {
+		
+		String scheduleId = null;   //定义一个调度任务的ID，用于返回
+		
+		List<Record> assignList = SysScheduleAssign.dao.getSysScheduleAssignByOperId(operId);
+		if(!BlankUtils.isBlank(assignList) && assignList.size() >0) {
+			Record scheduleAssign = assignList.get(0);     		   //取出第一个
+			scheduleId = scheduleAssign.getStr("SCHEDULE_ID");     //得到该调度任务的ID
+		}
+		
+		return scheduleId;
+		
 	}
 	
 }
