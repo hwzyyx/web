@@ -287,7 +287,7 @@ public class AutoCallDoTtsAndLocationJob implements Job {
 				//int count = AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneLocationAndCallOutTel(telId, provinceRs, cityRs, callOutTelRs);
 				if(count < 0) {    //如果更改号码归属地和外呼号码不成功，则将外呼记录的状态修改为 已失败（或待重呼），原因为：更改归属地异常
 					if(retried < retryTimes) {      //如果已经外呼次数小于允许的最大外呼次数，则将记录状态修改为待重呼
-						AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", autoCallTask.getInt("RETRY_INTERVAL"),autoCallTask.getInt("INTERVAL_TYPE"),"更改归属地异常");
+						AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", autoCallTask.getInt("RETRY_INTERVAL"),autoCallTask.getInt("INTERVAL_TYPE"),"4","更改归属地异常");
 					}else {                         //否则,修改为已失败
 						AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(telId, null, "4", "更改归属地异常");
 					}
@@ -299,7 +299,7 @@ public class AutoCallDoTtsAndLocationJob implements Job {
 			}else {			//如果客户的归属地无法定位，那么就直接将这条外呼号码的状态，修改为失败（或待重呼），原因定为定位归属地异常
 				
 				if(retried < retryTimes) {      //如果已经外呼次数小于允许的最大外呼次数，则将记录状态修改为待重呼
-					AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", autoCallTask.getInt("RETRY_INTERVAL"),autoCallTask.getInt("INTERVAL_TYPE"),"定位归属地异常");
+					AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", autoCallTask.getInt("RETRY_INTERVAL"),autoCallTask.getInt("INTERVAL_TYPE"),"4","定位归属地异常");
 				}else {                         //否则,修改为已失败
 					AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(telId, null, "4", "定位归属地异常");
 				}
