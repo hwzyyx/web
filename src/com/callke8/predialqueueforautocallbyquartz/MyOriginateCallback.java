@@ -29,7 +29,7 @@ public class MyOriginateCallback implements OriginateCallback {
 	 */
 	@Override
 	public void onDialing(AsteriskChannel channel) {
-		StringUtil.log(this, " onDialing(准备执行外呼并生成通道)：主叫号码:" + actt.getStr("CALLERID") + ",客户号码:" + actt.getStr("CALLOUT_TEL") + ",通道:" + channel.getName());
+		StringUtil.log(this, "MyOriginateCallback->onDialing(准备执行外呼并生成通道)：主叫号码:" + actt.getStr("CALLERID") + ",客户号码:" + actt.getStr("CALLOUT_TEL") + ",通道:" + channel.getName());
 	}
 
 	/**
@@ -37,11 +37,9 @@ public class MyOriginateCallback implements OriginateCallback {
 	 */
 	@Override
 	public void onNoAnswer(AsteriskChannel channel) {
+		System.out.println("-----channel.PROPERTY_STATE：" + channel.PROPERTY_STATE);
+		StringUtil.log(this, "MyOriginateCallback->onNoAnswer(通道未接听)：主叫号码:" + actt.getStr("CALLERID") + ",客户号码:" + actt.getStr("CALLOUT_TEL") + ",通道:" + channel.getName() + ",挂机原因:" + channel.getHangupCause());
 		
-		StringUtil.log(this, "onNoAnswer(通道未接听)：主叫号码:" + actt.getStr("CALLERID") + ",客户号码:" + actt.getStr("CALLOUT_TEL") + ",通道:" + channel.getName() + ",挂机原因:" + channel.getHangupCause());
-		
-		//关闭Asterisk连接，释放外呼资源
-		au.close();
 		
 		//执行外呼失败时，将外呼结果存储到数据表
 		AutoCallPredial.updateTelehponeStateForFailure("2",String.valueOf(channel.getHangupCause()), actt, autoCallTask);
@@ -49,6 +47,8 @@ public class MyOriginateCallback implements OriginateCallback {
 		//外呼失败，释放外呼资源
 		if(AutoCallPredial.activeChannelCount > 0) {
 			AutoCallPredial.activeChannelCount--;        //释放资源
+			//关闭Asterisk连接，释放外呼资源
+			au.close();
 		}
 	}
 
@@ -57,9 +57,8 @@ public class MyOriginateCallback implements OriginateCallback {
 	 */
 	@Override
 	public void onBusy(AsteriskChannel channel) {
-		StringUtil.log(this, "onBusy(客户忙)：主叫号码:" + actt.getStr("CALLERID") + ",客户号码:" + actt.getStr("CALLOUT_TEL") + ",通道:" + channel.getName() + ",挂机原因:" + channel.getHangupCause());
-		//关闭Asterisk连接，释放外呼资源
-		au.close();
+		System.out.println("-----channel.PROPERTY_STATE：" + channel.PROPERTY_STATE);
+		StringUtil.log(this, "MyOriginateCallback->onBusy(客户忙)：主叫号码:" + actt.getStr("CALLERID") + ",客户号码:" + actt.getStr("CALLOUT_TEL") + ",通道:" + channel.getName() + ",挂机原因:" + channel.getHangupCause());
 		
 		//执行外呼失败时，将外呼结果存储到数据表
 		AutoCallPredial.updateTelehponeStateForFailure("3",String.valueOf(channel.getHangupCause()), actt, autoCallTask);
@@ -67,6 +66,8 @@ public class MyOriginateCallback implements OriginateCallback {
 		//外呼失败，释放外呼资源
 		if(AutoCallPredial.activeChannelCount > 0) {
 			AutoCallPredial.activeChannelCount--;        //释放资源
+			//关闭Asterisk连接，释放外呼资源
+			au.close();
 		}
 	}
 
@@ -75,7 +76,7 @@ public class MyOriginateCallback implements OriginateCallback {
 	 */
 	@Override
 	public void onFailure(LiveException liveException) {
-		StringUtil.log(this, "onFailure(请求通道失败)：主叫号码:" + actt.getStr("CALLERID") + ",客户号码:" + actt.getStr("CALLOUT_TEL"));
+		StringUtil.log(this, "MyOriginateCallback->onFailure(请求通道失败)：主叫号码:" + actt.getStr("CALLERID") + ",客户号码:" + actt.getStr("CALLOUT_TEL"));
 		//关闭Asterisk连接，释放外呼资源
 		au.close();
 		
@@ -93,7 +94,7 @@ public class MyOriginateCallback implements OriginateCallback {
 	 */
 	@Override
 	public void onSuccess(AsteriskChannel channel) {
-		StringUtil.log(this, "onSuccess(呼叫成功)：主叫号码:" + actt.getStr("CALLERID") + ",客户号码:" + actt.getStr("CALLOUT_TEL"));
+		StringUtil.log(this, "MyOriginateCallback->onSuccess(呼叫成功)：主叫号码:" + actt.getStr("CALLERID") + ",客户号码:" + actt.getStr("CALLOUT_TEL"));
 		//关闭Asterisk连接，释放外呼资源
 		au.close();
 		
