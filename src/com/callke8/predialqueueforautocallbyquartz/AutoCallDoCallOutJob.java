@@ -5,7 +5,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.asteriskjava.live.AsteriskChannel;
 import org.asteriskjava.live.CallerId;
+import org.asteriskjava.live.DefaultAsteriskServer;
+import org.asteriskjava.live.LiveException;
+import org.asteriskjava.live.OriginateCallback;
 import org.asteriskjava.manager.AuthenticationFailedException;
 import org.asteriskjava.manager.ManagerConnection;
 import org.asteriskjava.manager.TimeoutException;
@@ -18,6 +22,7 @@ import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
+import com.callke8.astutils.AsteriskConfig;
 import com.callke8.astutils.AsteriskUtils;
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
@@ -183,38 +188,6 @@ public class AutoCallDoCallOutJob implements Job {
 		Map<String,String> virablesMap = new HashMap<String,String>();   //设置通道变量
 		virablesMap.put("autoCallTaskTelephoneId", String.valueOf(autoCallTaskTelephoneId));
 				
-		//不经过发送 Action 下发外呼命令，而是通过 Originate 发送外呼请求
-		//创建外呼 Action
-		/*OriginateAction action = new OriginateAction();
-		action.setChannel(channel);
-		action.setApplication(application);
-		action.setData(applicationData);
-		action.setCallerId(callerId);
-		action.setTimeout(timeout);
-		action.setVariable("autoCallTaskTelephoneId",autoCallTaskTelephoneId);
-		
-		
-		//执行发送外呼Action
-		ManagerConnection conn = au.getMangerConnection();
-		try {
-			//发送外呼 Action 动作
-			conn.sendAction(action,new SendActionCallbackForAutoCall(channel, actt,au));
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			//执行到最后，主动关闭该 job,以释放资源
-			try {
-				context.getScheduler().shutdown(); 
-			} catch (SchedulerException e) {
-				e.printStackTrace();
-			}
-		}*/
-		
-		//通过 Originate 方式执行外呼
 		au.doCallOutToApplication(channel, application, applicationData, timeout, callerId, virablesMap,new MyOriginateCallback(actt, au));
 	}
 	
