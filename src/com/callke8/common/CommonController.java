@@ -182,12 +182,12 @@ public class CommonController extends Controller {
 	public void doLogin() {
 		
 		//登录之前，先判断该客户是否有访问系统的权限
-		String clientIpAddress = getRequest().getRemoteAddr();
+		/*String clientIpAddress = getRequest().getRemoteAddr();
 		boolean isHasAccess = SysIpAddressConfig.handleIpAddressAccessControl(clientIpAddress);
 		if(!isHasAccess) {
 			render(RenderJson.error("尊敬的客户您好，你所在的 IP 地址：" + clientIpAddress + " 没有访问系统的权限!"));
 			return;
-		}
+		}*/
 		
 		String operId = getPara("operId");
 		String password = getPara("password");    //上传的密码，在前端已经过 Md5 加密,故收到密码后无须再加密
