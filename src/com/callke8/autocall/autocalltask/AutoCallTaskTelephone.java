@@ -682,7 +682,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		
 		if(!BlankUtils.isBlank(hangupCause)) {
 			sb.append(",HANGUP_CAUSE=?");
-			pars[index] = lastCallResult;
+			pars[index] = hangupCause;
 			index++;
 		}
 		
@@ -715,8 +715,10 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 			新的状态（重试状态为3）
 	 * @param retryInterval   
 	 * 			重试间隔，单位分钟
-	 * @param lastCallResult
-	 * 			最后一次外呼的结果：NOANSWER(未接);FAILURE(失败);BUSY(线忙);SUCCESS(成功)
+	  * @param lastCallResult
+	 * 			外呼状态：1（onSuccess）;2(onNoAnswer);3(onBusy);4(onFailure)
+	 * @param hangupCause
+	 * 			挂机原因：根据通道返回chnanel.getHangupCause 或是其他的错误原因
 	 * @return
 	 */
 	public boolean updateAutoCallTaskTelephoneStateToRetry(int telId,String newState,int retryInterval,int intervalType,String lastCallResult) {
