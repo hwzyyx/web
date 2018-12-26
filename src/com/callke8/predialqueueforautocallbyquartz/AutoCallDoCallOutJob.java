@@ -12,6 +12,7 @@ import org.asteriskjava.live.LiveException;
 import org.asteriskjava.live.OriginateCallback;
 import org.asteriskjava.manager.AuthenticationFailedException;
 import org.asteriskjava.manager.ManagerConnection;
+import org.asteriskjava.manager.SendActionCallback;
 import org.asteriskjava.manager.TimeoutException;
 import org.asteriskjava.manager.action.OriginateAction;
 import org.quartz.Job;
@@ -147,7 +148,7 @@ public class AutoCallDoCallOutJob implements Job {
 			connState = au.isAstConnSuccess();    //再检查一次
 			if(!connState) {    //如果还是连接失败，将直接保存其为失败状态
 				au.close();
-				AutoCallPredial.updateTelehponeStateForFailure("4","DISCONNECTION", actt, autoCallTask);    //更改状态为失败或是重试，并指定最后失败原因为 未连接
+				AutoCallPredial.updateTelehponeStateForFailure("4","402", actt, autoCallTask);    //更改状态为失败或是重试，并指定最后失败原因为 未连接
 				StringUtil.log(this, "再次重连接Asterisk后，PBX系统连接状态仍旧有异常,系统将直接更改状态为失败或是重试!");
 				
 				try {
@@ -187,8 +188,38 @@ public class AutoCallDoCallOutJob implements Job {
 		CallerId callerId = new CallerId(callerIdNumber, callerIdNumber);
 		Map<String,String> virablesMap = new HashMap<String,String>();   //设置通道变量
 		virablesMap.put("autoCallTaskTelephoneId", String.valueOf(autoCallTaskTelephoneId));
+		
+		OriginateAction action = new OriginateAction();
+		action.setChannel(channel);
+		action.setApplication(application);
+		action.setData(applicationData);
+		action.setCallerId("telId-" + autoCallTaskTelephoneId + "<" + callerIdNumber + ">");
+		action.setTimeout(timeout);
+		action.setVariables(virablesMap);
+		
+		try {
+			au.getMangerConnection().sendAction(action, new SendActionCallbackForAutoCall(channel, actt, au));
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}finally {
+			//执行到最后，主动关闭该 job,以释放资源
+			try {
+				context.getScheduler().shutdown(); 
+			} catch (SchedulerException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//au.getMangerConnection().sendAction(arg0, arg1);
+		
+		//DefaultAsteriskServer server = new DefaultAsteriskServer(au.getMangerConnection());
+		
+		//server.originateToApplicationAsync(channel, application, applicationData, timeout, callerId, virablesMap,new MyOriginateCallback(actt, au));
 				
-		au.doCallOutToApplication(channel, application, applicationData, timeout, callerId, virablesMap,new MyOriginateCallback(actt, au));
 	}
 	
 
