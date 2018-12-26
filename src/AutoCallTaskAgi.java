@@ -66,6 +66,9 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		if(!BlankUtils.isBlank(playList) && playList.size() > 0) {
 			exec("Noop","播放列表中语音文件的数量为:" + playList.size());
 			StringUtil.log(this, "[====GASYAGI===]播放列表中语音文件的数量为:" + playList.size());
+			//for(Record r:playList) {
+			//	System.out.println("语音文件Record,action:" + r.getStr("action") + ",path:" + r.getStr("path"));
+			//}
 			if(taskType.equalsIgnoreCase("3") && reminderType.equalsIgnoreCase("7")) {    //如果任务类型为3即是催缴类型，且催缴类型为 7 即是交警移车时
 				
 				execPlayForTaskType3AndReminderType7(playList,actt,autoCallTask,channel);
@@ -73,7 +76,6 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			}else {
 				//第一次必定先播放一次
 				execPlay(playList, taskId, Integer.valueOf(telId), actt.get("CUSTOMER_TEL").toString(), channel);
-				
 				if(!taskType.equals("2")) {    	  //非问卷调查任务时,需要提示重复播放
 					while(repeat(channel)) {      //如果客户需要重复时,重复播放
 						execPlay(playList, taskId, Integer.valueOf(telId), actt.get("CUSTOMER_TEL").toString(), channel);
@@ -87,8 +89,8 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		}
 		
 		//更新通话时长
-		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneBillsec(Integer.valueOf(telId), Integer.valueOf(channel.getVariable("CDR(billsec)")));
-		
+		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneBillsec(Integer.valueOf(telId), 0);
+		System.out.println("执行到了AgiException,通话正常结束....");
 		//退出之后，需要清理一下，当前的活跃通道，释放资源
 		if(AutoCallPredial.activeChannelCount > 0){
 			AutoCallPredial.activeChannelCount--;     //释放资源
@@ -165,6 +167,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 						}
 						
 					} catch (AgiException e) {
+						System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的171行!");
 						e.printStackTrace();
 					}
 				
@@ -172,6 +175,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 					try {
 						exec(action,path);
 					} catch (AgiException e) {
+						System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的178行!");
 						e.printStackTrace();
 					}
 					
@@ -232,6 +236,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 						}
 						
 					} catch (AgiException e) {
+						System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的239行!");
 						e.printStackTrace();
 					}
 				
@@ -239,6 +244,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 					try {
 						exec(action,path);
 					} catch (AgiException e) {
+						System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的247行!");
 						e.printStackTrace();
 					}
 					
@@ -266,9 +272,11 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			
 			exec("wait","1");     //休息一秒
 			
-			exec("Read","isRepeat," + voicePathSingle + "/repeat,1,s,,10");
+			//exec("Read","isRepeat," + voicePathSingle + "/repeat,1,s,,10");
 			
-			String isRepeat = channel.getVariable("isRepeat");
+			String isRepeat = channel.getData(voicePathSingle + "/repeat", 10000, 1);
+			
+			//String isRepeat = channel.getVariable("isRepeat");
 			
 			System.out.println("客户回复按键：" + isRepeat);
 			
@@ -277,6 +285,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			}
 			
 		} catch (AgiException e) {
+			System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的289行!");
 			e.printStackTrace();
 		}
 		
