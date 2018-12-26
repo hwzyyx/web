@@ -643,6 +643,21 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
+	 * 更改挂机原因代码
+	 * 
+	 * @param telId
+	 * @param hangupCause
+	 * @return
+	 */
+	public int updateAutoCallTaskTelephoneHangupCause(int telId,String hangupCause) {
+		String sql = "update ac_call_task_telephone set HANGUP_CAUSE=? where TEL_ID=?";
+		
+		int count = Db.update(sql, hangupCause,telId);
+		
+		return count;
+	}
+	
+	/**
 	 * telId
 	 * 			telId 号码ID，如果为空时修改所有的号码状态
 	 * @param oldState
@@ -1089,7 +1104,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		
 		
 		//修改数据
-		String sql3 = "update ac_call_task_telephone set STATE=1,LOAD_TIME=?,RETRIED=RETRIED+1,LAST_CALL_RESULT='' where TEL_ID in(" + ids + ")";
+		String sql3 = "update ac_call_task_telephone set STATE=1,LOAD_TIME=?,RETRIED=RETRIED+1,LAST_CALL_RESULT='',HANGUP_CAUSE='' where TEL_ID in(" + ids + ")";
 		
 		int count = Db.update(sql3,DateFormatUtils.getCurrentDate());
 		
@@ -1130,7 +1145,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		List<AutoCallTaskTelephone> autoCallTaskTelephones = find(sql2);
 		
 		//修改数据
-		String sql3 = "update ac_call_task_telephone set STATE=1,LOAD_TIME=?,RETRIED=RETRIED+1,LAST_CALL_RESULT='' where TEL_ID in(" + ids + ")";
+		String sql3 = "update ac_call_task_telephone set STATE=1,LOAD_TIME=?,RETRIED=RETRIED+1,LAST_CALL_RESULT='',HANGUP_CAUSE='' where TEL_ID in(" + ids + ")";
 		
 		int count = Db.update(sql3,DateFormatUtils.getCurrentDate());
 		
