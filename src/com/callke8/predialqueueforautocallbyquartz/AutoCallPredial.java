@@ -3,10 +3,12 @@ package com.callke8.predialqueueforautocallbyquartz;
 import java.io.File;
 import java.util.Date;
 
+import org.asteriskjava.live.DefaultAsteriskServer;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
+import com.callke8.astutils.AsteriskConfig;
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.autocall.flow.AutoFlowTTSJob;
@@ -33,6 +35,7 @@ import com.jfinal.kit.PathKit;
 public class AutoCallPredial {
 	
 	public static int activeChannelCount = 0;     //当前的活跃通道
+	public static DefaultAsteriskServer server = null;
 	
 	//构造函数
 	public AutoCallPredial() {
@@ -51,6 +54,8 @@ public class AutoCallPredial {
 		//执行到这里，表示服务器（tomcat）被重启过，需要将状态为 "已载入"记录，重置为0，执行一次数据回滚
 		int rollBackCount = AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(0, "1", "0", null);
 		StringUtil.log(this, "服务器(Tomcat)被重启，系统回滚'已载入'号码数据,此次回滚数据量为:" + rollBackCount);
+		
+		server = new DefaultAsteriskServer(AsteriskConfig.getAstHost(),AsteriskConfig.getAstPort(),AsteriskConfig.getAstUser(),AsteriskConfig.getAstPassword());
 		
 		//线程额外：在扫描任务之前，需要进行一次自动外呼呼叫流程规则的语音转换
 		Scheduler schedulerForAutoFlowTTS = QuartzUtils.createScheduler("AutoFlowTTSJob" + System.currentTimeMillis(),1);
@@ -77,6 +82,11 @@ public class AutoCallPredial {
 		Scheduler scheduler4 = QuartzUtils.createScheduler("AutoCallHandleTimeOutRecordJob" + System.currentTimeMillis(), 1);
 		scheduler4.scheduleJob(QuartzUtils.createJobDetail(AutoCallHandleTimeOutRecordJob.class),QuartzUtils.createTrigger(startTime, 30));     //由于该流程的要处理的数据不大，每30秒扫描一次即可
 		scheduler4.start();
+		
+		//线程五：挂机结果检查，通过监控DB上的 asterisk服务器(192.168.143.2)的挂机事件，然后进行分析
+		Scheduler scheduler5 = QuartzUtils.createScheduler("AutoCallHangupCauseMonitorJob" + System.currentTimeMillis(), 1);
+		scheduler5.scheduleJob(QuartzUtils.createJobDetail(AutoCallHangupCauseMonitorJob.class),QuartzUtils.createSimpleTrigger(startTime,0,1));  //执行一次
+		scheduler5.start();
 	}
 	
 	/**
@@ -98,7 +108,11 @@ public class AutoCallPredial {
 		int telId = actt.getInt("TEL_ID");                           //记录的号码ID
 		
 		if(retried < retryTimes) {      //如果已经外呼次数小于允许的最大外呼次数，则将记录状态修改为待重呼
-			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", retryInterval,intervalType,lastCallResult,hangupCause);
+			if(BlankUtils.isBlank(hangupCause)) {
+				AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", retryInterval,intervalType,lastCallResult);
+			}else {
+				AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneStateToRetry(telId, "3", retryInterval,intervalType,lastCallResult,hangupCause);
+			}
 		}else {                         //否则,修改为已失败
 			AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneState(telId, null, "4", lastCallResult,hangupCause);
 			deleteVoiceFileByTelId(telId);    //删除该记录的录音文件
