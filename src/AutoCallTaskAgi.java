@@ -89,7 +89,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		}
 		
 		//更新通话时长
-		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneBillsec(Integer.valueOf(telId), 0);
+		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneBillsec(Integer.valueOf(telId),Integer.valueOf(channel.getVariable("CDR(billsec)")));
 		System.out.println("执行到了AgiException,通话正常结束....");
 		//退出之后，需要清理一下，当前的活跃通道，释放资源
 		if(AutoCallPredial.activeChannelCount > 0){
