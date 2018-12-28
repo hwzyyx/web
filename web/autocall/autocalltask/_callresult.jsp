@@ -55,6 +55,100 @@ function reloadStatistics() {
 			var legendData = [];
 			var seriesData1 = [];
 			var seriesData2 = [];
+			var j = 0;		//seriesData1Index;
+			var k = 0;      //seriesData2Index;
+			var z = 0;      //legendIndex;
+			//alert("rs.length的数量:" + rs.length);
+			console.log(rs);
+			for(var i=0;i<rs.length;i++) {
+				var name = rs[i].name;           //名字
+				var purpose = rs[i].purpose;     //数据的用途
+				
+				var map = {};
+				map.name = rs[i].name;
+				map.value = rs[i].value;
+				
+				//如果是外呼状态的数据
+				if(purpose=='STATE') {
+					totalCount += rs[i].value;        //统计总量
+					if(name!='未处理') {            
+						seriesData1[j] = map;
+						j++;
+					}else {
+						state0Count = rs[i].value;     //取出未外呼数量
+					}
+				}
+				
+				if((purpose=='STATE' && (name=='已载入' || name=='已成功')) || (purpose=='HANGUP_CAUSE')) {
+					seriesData2[k] = map;
+					k++;
+				}
+				
+				if((purpose=='STATE' && name!='未处理') || purpose=='HANGUP_CAUSE') {
+					legendData[z] = name;
+					z++;
+				}
+				//alert("name:" + rs[i].name + ",value:" + rs[i].value + ",name:" + name);
+				
+			}
+			
+			console.log(legendData);
+			console.log(seriesData1);
+			console.log(seriesData2);
+			
+			myChart.setOption({
+				legend:{
+					data:legendData,
+					textStyle: {
+						fontSize:14
+					},
+					formatter: function(name) {
+						var pvV;
+						var ppV;
+						var space = null;
+						
+						/*if(name=='已载入') {   pvV = state1Count;  ppV = state1Rate;   space='       '}
+						else if(name=='已成功') {pvV = state2Count;  ppV = state2Rate; space='       '}
+						else if(name=='待重呼') {pvV = state3Count;  ppV = state3Rate; space='        '}
+						else if(name=='已失败') {pvV = state4Count;  ppV = state4Rate; space='        '}
+						else if(name=='无应答') {pvV = lastCallResult2Count; ppV = lastCallResult2Rate; space='       '}
+						else if(name=='客户忙') {pvV = lastCallResult3Count; ppV = lastCallResult3Rate; space='       '}
+						else if(name=='请求错误') {pvV = lastCallResult4Count; ppV = lastCallResult4Rate; space='       '}*/
+						return  name;
+					}
+				},
+				title:{
+					text:'任务名称:' + currTaskName,
+					subtext:"任务号码总量：" + (totalCount + state0Count) + ",已呼数量：" + totalCount + ",未呼数量：" + state0Count,
+				},
+				series:[{
+					data:seriesData1
+				},{
+					data:seriesData2
+				}]
+			});
+			
+			//填充汇总数据
+			$('#summaryDg').datagrid('loadData',getSummaryData());
+			
+			//修改条目中的数据
+			if(totalCount == 0) {
+				window.parent.showMessage("温馨提示：当前任务暂未查询到已外呼数据，已经执行外呼数据总量为0!未处理数据有：" + state0Count + " 条" ,"ERROR");
+			}
+		}
+		
+	});
+	
+	/*$.ajax({
+
+		url:'autoCallTask/reloadStatistics?taskId=' + currTaskId,
+		method:'post',
+		dataType:'json',
+		success:function(rs) {
+			$.messager.progress("close");
+			var legendData = [];
+			var seriesData1 = [];
+			var seriesData2 = [];
 			var j = 0;
 			var k = 0;
 			//alert("rs.length的数量:" + rs.length);
@@ -124,7 +218,7 @@ function reloadStatistics() {
 			}
 		}
 		
-	});
+	});*/
 }
 
 function summaryExport() {
@@ -224,7 +318,7 @@ function stateStyler(value,data,index) {
 	
 </script>
 
-<div id="container" style="height:450px;width:1000px;"></div>
+<div id="container" style="height:600px;width:1200px;"></div>
 
 <!-- 数据汇总区 -->
 <div class="easyui-tabs" style="width:1000px;height:210px;margin-left:10px;">
@@ -259,13 +353,6 @@ function stateStyler(value,data,index) {
 	</div>
 </div>
 
-<!-- 简单汇总 -->
-<div class="easyui-panel" title="" style="display:none;width:160px;height:100px;" data-options="style:{position:'absolute',left:432,top:230}">
-	<br/><span style="padding-left:10px;font-weight:bolder;">已呼数量：<span id="totalCountSpan"></span></span><br/>
-	<span style="padding-left:10px;font-weight:bolder;">成功数量：<span id="state2CountSpan"></span></span><br/><br/>
-	<span style="padding-left:10px;color:#00ff00;font-size: 16px;font-weight:bolder;">成功率：<span id="state2RateSpan">%</span></span>
-</div>
-
 <script type="text/javascript">
 	var dom = document.getElementById("container");
 	myChart = echarts.init(dom);
@@ -275,7 +362,7 @@ function stateStyler(value,data,index) {
 	
 	option = {
 		//color: ['#f8d013','#00ff00', '#fc00ff', '#ff0000','#07b3fa','#55cafa','#8cdcfc','#666666', '#001100'],
-		color: ['#f8d013','#00ff00', '#fc00ff', '#ff0000','#ea9595','#ec5a5a','#f10303','#666666', '#001100'],
+		color: ['#f8d013','#00ff00', '#fc00ff', '#ff0000','#fb8d8d','#fb4b4b','#fb0202','#df0202', '#bb0303','#980202','#790202','#530101','#3f0808','#1c0505'],
 		title:{
 			text:'任务名称:NULL',
 			subtext:"任务号码总量：0,已呼数量：0,未呼数量：0",
@@ -323,8 +410,8 @@ function stateStyler(value,data,index) {
 	            name:'访问来源',
 	            type:'pie',
 	            selectedMode: 'single',
-	            radius: [0, '60%'],
-				center:['500px','280px'],
+	            radius: [0, '40%'],
+				center:['600px','350px'],
 	            label: {
 	                normal: {
 	                    position: 'center',
@@ -433,8 +520,8 @@ function stateStyler(value,data,index) {
 	        {
 	            name:'访问来源',
 	            type:'pie',
-	            radius: ['65%', '75%'],
-	            center:['500px','280px'],
+	            radius: ['45%', '55%'],
+	            center:['600px','350px'],
 	            label: {
 	                normal: {
 	                	formatter: function(params) {
@@ -467,7 +554,7 @@ function stateStyler(value,data,index) {
 	                    		pnEnglish = '已成功';
 	                    	}
 	                    	
-	                    	return '{a|' + pnEnglish + '}{abg|}\n{hr|}\n  {b|' + pn + '：}' + pv + '  {per|' + pp + '%}  ';
+	                    	return '{a|' + pn + '}{abg|}\n{hr|}\n  {b|' + pn + '：}' + pv + '  {per|' + pp + '%}  ';
 	                    	
 	                    },
 	                    backgroundColor: '#eee',
