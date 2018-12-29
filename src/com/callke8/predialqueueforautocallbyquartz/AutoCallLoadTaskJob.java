@@ -9,6 +9,7 @@ import org.quartz.JobExecutionException;
 import org.quartz.SchedulerException;
 
 import com.alibaba.druid.util.StringUtils;
+import com.callke8.astutils.AsteriskConnectionPool;
 import com.callke8.autocall.autocalltask.AutoCallTask;
 import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.pridialqueueforbshbyquartz.BSHQueueMachineManager;
@@ -58,7 +59,7 @@ public class AutoCallLoadTaskJob implements Job {
 			e.printStackTrace();
 		}
 		
-		StringUtil.log(this, "==排队机中未外呼的数据量为:" + AutoCallQueueMachineManager.queueCount + "，当前活跃通道数量为:" + AutoCallPredial.activeChannelCount + ",中继并发量为:" + Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_4_trunkMaxCapacity")));
+		StringUtil.log(this, "==排队机中未外呼的数据量为:" + AutoCallQueueMachineManager.queueCount + "，当前活跃通道数量为:" + AutoCallPredial.activeChannelCount + ",中继并发量为:" + Integer.valueOf(ParamConfig.paramConfigMap.get("paramType_4_trunkMaxCapacity")) + ",Ast连接池数量为：" + AsteriskConnectionPool.getConnectionPoolSize());
 		logSb.append("线程:AutoCallLoadTaskJob(111111111): 扫描外呼任务，已激活可外呼任务共有: " + activeCallTaskList.size() + " 个;有效任务(除去无外呼号码的任务)，已激活的可外呼任务共有: " + validCallTaskList.size() + " 个。");
 		
 		//如果已经激活有效的外呼任务列表不为空时
