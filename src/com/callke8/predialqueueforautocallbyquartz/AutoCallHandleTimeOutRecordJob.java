@@ -63,7 +63,8 @@ public class AutoCallHandleTimeOutRecordJob implements Job {
 				}
 				
 				//更改记录的状态，需要将记录设置为 待重呼或是已失败
-				AutoCallPredial.updateTelehponeStateForFailure("4","TIME_OUT", actt, autoTask);
+				//AutoCallPredial.updateTelehponeStateForFailure("4","TIME_OUT", actt, autoTask);
+				AutoCallPredial.updateTelehponeStateForFailure("4","402", actt, autoTask);    //更改状态为失败或是重试，并指定最后失败原因为 超时数据
 				
 			}
 			
