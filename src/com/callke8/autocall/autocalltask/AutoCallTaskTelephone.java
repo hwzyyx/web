@@ -36,7 +36,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param state
 	 * @return
 	 */
-	public Page<Record> getAutoCallTaskTelephoneByPaginate(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String lastCallResult,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
+	public Page<Record> getAutoCallTaskTelephoneByPaginate(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String hangupCause,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[12];
@@ -66,7 +66,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		/**
 		 * 传入的 state 有可能是包括种状态，以逗号分隔，
 		 */
-		if(!BlankUtils.isBlank(state) && !state.equals("5")) {
+		if(!BlankUtils.isBlank(state) && !state.equals("empty")) {
 			if(state.contains(",")) {   //如果状态有逗号分隔
 				sb.append(" and STATE in(" + state + ")");
 			}else {
@@ -76,9 +76,9 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			}
 		}
 		
-		if(!BlankUtils.isBlank(lastCallResult) && !lastCallResult.equals("empty")) {
-			sb.append(" and LAST_CALL_RESULT=?");
-			pars[index] = lastCallResult;
+		if(!BlankUtils.isBlank(hangupCause) && !hangupCause.equals("empty")) {
+			sb.append(" and HANGUP_CAUSE=?");
+			pars[index] = hangupCause;
 			index++;
 		}
 		
@@ -133,7 +133,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param state
 	 * @return
 	 */
-	public Map<String,Object> getAutoCallTaskTelephoneByPaginateToMap(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String lastCallResult,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
+	public Map<String,Object> getAutoCallTaskTelephoneByPaginateToMap(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String hangupCause,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
 		
 		Map<String,Object> m = new HashMap<String,Object>();
 		AutoCallTask autoCallTask = null;
@@ -149,7 +149,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			retryTimes = autoCallTask.getInt("RETRY_TIMES");
 		}
 		
-		Page<Record> page = getAutoCallTaskTelephoneByPaginate(pageNumber, pageSize, taskId, customerTel, customerName,state,lastCallResult,messageState,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
+		Page<Record> page = getAutoCallTaskTelephoneByPaginate(pageNumber, pageSize, taskId, customerTel, customerName,state,hangupCause,messageState,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
 		
 		List<Record> newList = new ArrayList<Record>();
 		
@@ -157,9 +157,15 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			int retried = r.getInt("RETRIED");
 			r.set("RETRIED_DESC",retried + "/" + retryTimes);
 			
-			String lastCallResultRs = r.getStr("LAST_CALL_RESULT");
-			String lastCallResultDesc = MemoryVariableUtil.getDictName("LAST_CALL_RESULT",lastCallResultRs);
-			r.set("LAST_CALL_RESULT_DESC", lastCallResultDesc);
+			int stateRs = r.getInt("STATE");
+			r.set("STATE_DESC",MemoryVariableUtil.getDictName("AC_CALL_STATE", String.valueOf(stateRs)));
+			
+			String hangupCauseRs = r.getStr("HANGUP_CAUSE");
+			String hangupCauseDesc = MemoryVariableUtil.getDictName("AC_HANGUP_CAUSE", hangupCauseRs);
+			if(BlankUtils.isBlank(hangupCauseDesc) || stateRs == 2) {     //如果挂机事件为空或外呼状态为2，即是已呼成功时
+				hangupCauseDesc = "---";
+			}
+			r.set("HANGUP_CAUSE_DESC", hangupCauseDesc);
 			
 			String messageStateRs = String.valueOf(r.getInt("MESSAGE_STATE"));
 			String messageStateDesc = MemoryVariableUtil.getDictName("COMMON_MESSAGE_STATE", messageStateRs);
@@ -425,7 +431,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 				外呼任务设定的重试次数
 	 * @return
 	 */
-	public List<Record> getAutoCallTaskTelephonesByTaskIdAndState(String taskId,String state,String lastCallResult,String messageState,String customerTel,String customerName,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime,int retryTimes) {
+	public List<Record> getAutoCallTaskTelephonesByTaskIdAndState(String taskId,String state,String hangupCause,String messageState,String customerTel,String customerName,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime,int retryTimes) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
@@ -442,7 +448,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		/**
 		 * 传入的 state 有可能是包括种状态，以逗号分隔，
 		 */
-		if(!BlankUtils.isBlank(state)) {
+		if(!BlankUtils.isBlank(state) && !state.equals("empty")) {
 			if(state.contains(",")) {   //如果状态有逗号分隔
 				sb.append(" and STATE in(" + state + ")");
 			}else {
@@ -452,9 +458,9 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			}
 		}
 		
-		if(!BlankUtils.isBlank(lastCallResult)) {
-			sb.append(" and LAST_CALL_RESULT=?");
-			pars[index] = lastCallResult;
+		if(!BlankUtils.isBlank(hangupCause) && !hangupCause.equalsIgnoreCase("empty")) {
+			sb.append(" and HANGUP_CAUSE=?");
+			pars[index] = hangupCause;
 			index++;
 		}
 		
@@ -517,9 +523,12 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			int retried = r.getInt("RETRIED");
 			r.set("RETRIED_DESC",retried + "/" + retryTimes);
 			
-			String lastCallResultRs = r.getStr("LAST_CALL_RESULT");
-			String lastCallResultDesc = MemoryVariableUtil.getDictName("LAST_CALL_RESULT", lastCallResultRs);
-			r.set("LAST_CALL_RESULT_DESC", lastCallResultDesc);
+			String hangupCauseRs = r.getStr("HANGUP_CAUSE");
+			String hangupCauseDesc = MemoryVariableUtil.getDictName("AC_HANGUP_CAUSE", hangupCauseRs);
+			if(BlankUtils.isBlank(hangupCauseDesc) || callState.equalsIgnoreCase("2")) {
+				hangupCauseDesc = "---";
+			}
+			r.set("HANGUP_CAUSE_DESC", hangupCauseDesc);
 			
 			if(!BlankUtils.isBlank(callState)) {
 				
@@ -1303,6 +1312,143 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
+	 * 根据任务的ID取出统计数据
+	 * 
+	 * @param taskId
+	 * 			如果多任务，则传入的 taskId 应该为: 222,333,444；单任务传入 222
+	 * @param multiTask
+	 * 			是否为多任务
+	 */
+	public List<Record> getStatisticsData(String taskId,boolean multiTask) {
+		
+		//(1)取出呼叫状态的数据
+		Record stateData = getStatisticsDataForState(taskId,multiTask);
+		
+		//(2)取出挂机状态码的数据
+		Record hangupCauseData = getStatisticsDataForHangupCause(taskId,multiTask);
+		
+		//(3)取出数据字典中，外呼状态的数据字典项
+		List<Record> acCallStateList = MemoryVariableUtil.dictMap.get("AC_CALL_STATE");
+		
+		//(4)取出数据字典中，挂机状态码的数据字典项
+		List<Record> acHangupCauseList = MemoryVariableUtil.dictMap.get("AC_HANGUP_CAUSE");
+		
+		//设置一个用于返回的统计数据列表
+		List<Record> statisticsDataList = new ArrayList<Record>();
+		
+		//（5）然后再通过遍历，外呼状态的数据字典项，与取出的呼叫状态数据进行匹配，有数据的设置成数据，没有数据的，设置为0
+		for(Record dsr:acCallStateList) {
+			
+			String stateDictCode = dsr.getStr("DICT_CODE");
+			String stateDictName = dsr.getStr("DICT_NAME");
+			
+			Record sr = new Record();
+			if(BlankUtils.isBlank(stateData.get(stateDictCode))) {
+				sr.set("value",0);
+			}else {
+				sr.set("value", stateData.getInt(stateDictCode));
+			}
+			sr.set("name", stateDictName);
+			sr.set("purpose", "STATE");
+			sr.set("fieldName","state" + stateDictCode);
+			sr.set("titleName", stateDictName);
+			statisticsDataList.add(sr);
+		}
+		
+		//（6）然后再通过遍历，挂机状态的数据字典项，与取出挂机状态码的数据进行匹配，有数据的设置成数据，没有数据的，设置为0
+		for(Record dhr:acHangupCauseList) {
+			String hangupCauseDictCode = dhr.getStr("DICT_CODE");
+			String hangupCauseDictName = dhr.getStr("DICT_NAME");
+			
+			Record hr = new Record();
+			if(BlankUtils.isBlank(hangupCauseData.get(hangupCauseDictCode))) {
+				hr.set("value",0);
+			}else {
+				hr.set("value", hangupCauseData.getInt(hangupCauseDictCode));
+			}
+			hr.set("name", hangupCauseDictName);
+			hr.set("purpose", "HANGUP_CAUSE");
+			hr.set("fieldName", "hangupCause" + hangupCauseData);
+			hr.set("titleName", hangupCauseDictName);
+			statisticsDataList.add(hr);
+		}
+		
+		return statisticsDataList;
+	}
+	
+	
+	
+	/**
+	 * 根据任务取得外呼状态数据量
+	 * 
+	 * @param taskId
+	 * 			如果多任务，则传入的 taskId 应该为: 222,333,444；单任务传入 222
+	 * @param multiTask
+	 * 			是否为多任务
+	 * @return
+	 */
+	public Record getStatisticsDataForState(String taskId,boolean multiTask) {
+		
+		Record stateData = new Record();
+		
+		String sql = null;
+		List<Record> stateList = null;
+		if(multiTask) {
+			sql = "select STATE,COUNT(*) as count from ac_call_task_telephone where TASK_ID in(" + taskId + ") group by STATE";
+			stateList = Db.find(sql);
+		}else {
+			sql = "select STATE,COUNT(*) as count from ac_call_task_telephone where TASK_ID=? group by STATE";
+			stateList = Db.find(sql,taskId);
+		}
+		
+		if(!BlankUtils.isBlank(stateList) && stateList.size() > 0) {
+			for(Record r:stateList) {
+				String stateValue = String.valueOf(r.getInt("STATE"));
+				int stateCount = Integer.valueOf(r.get("count").toString());
+				stateData.set(stateValue, stateCount);
+			}
+		}
+		
+		return stateData;
+	}
+	
+	
+	/**
+	 * 根据任务取得挂机状态数据量
+	 * 
+	 * @param taskId
+	 * 			如果多任务，则传入的 taskId 应该为: 222,333,444；单任务传入 222
+	 * @param multiTask
+	 * 			是否为多任务
+	 */
+	public Record getStatisticsDataForHangupCause(String taskId,boolean multiTask) {
+		
+		Record hangupCauseData = new Record();
+		
+		String sql = null;
+		List<Record> hangupCauseList = null;
+		if(multiTask) {
+			sql = "select HANGUP_CAUSE,COUNT(*) as count from ac_call_task_telephone where TASK_ID in(" + taskId + ") and STATE in(3,4) group by HANGUP_CAUSE";
+			hangupCauseList = Db.find(sql);
+		}else {
+			sql = "select HANGUP_CAUSE,COUNT(*) as count from ac_call_task_telephone where TASK_ID=? and STATE in(3,4) group by HANGUP_CAUSE";
+			hangupCauseList = Db.find(sql,taskId);
+		}
+		
+		if(!BlankUtils.isBlank(hangupCauseList) && hangupCauseList.size() > 0) {
+			for(Record r:hangupCauseList) {
+				String hangupCauseValue = r.getStr("HANGUP_CAUSE");
+				int hangupCauseCount = Integer.valueOf(r.get("count").toString());
+				hangupCauseData.set(hangupCauseValue, hangupCauseCount);
+			}
+		}
+		
+		return hangupCauseData;
+		
+	}
+	
+	
+	/**
 	 * 取得统计数据（呼叫结果）
 	 * 
 	 * 主要返回: 已载入、已成功、待重呼、已失败、未处理  五种状态的数量
@@ -1513,6 +1659,5 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		}
 		
 	}
-	
 
 }

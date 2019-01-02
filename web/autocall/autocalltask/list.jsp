@@ -24,7 +24,7 @@
 		var currReminderType = null;
 		var isShowMore = 0;
 		var conditionState = null;
-		var conditionLastCallResult = null;
+		var conditionHangupCause = null;
 		
 		var currCreateType = 'voiceFile';
 		
@@ -49,8 +49,11 @@
 		
 		var messageStateComboboxDataFor1 = eval('${messageStateComboboxDataFor1}');
 		
-		var lastCallResultComboboxDataFor1 = eval('${lastCallResultComboboxDataFor1}');
-	
+		//var lastCallResultComboboxDataFor1 = eval('${lastCallResultComboboxDataFor1}');
+		var hangupCauseComboboxDataFor1 = eval('${hangupCauseComboboxDataFor1}');
+		
+		var stateComboboxDataFor1 = eval('${stateComboboxDataFor1}');
+		
 		var callerIdComboboxDataFor0 = eval('${callerIdComboboxDataFor0}');
 		var callerIdComboboxDataFor1 = eval('${callerIdComboboxDataFor1}');
 		
@@ -161,7 +164,8 @@
 					
 					$('#customerName').textbox('setValue','');
 					$('#customerTel').textbox('setValue','');
-					$('#state').combobox('setValue','5');
+					$('#state').combobox('setValue','empty');
+					$('#hangupCause').combobox('setValue','empty');
 					$('#startTimeForTelephone').datetimebox('setValue','');
 					
 					
@@ -186,7 +190,6 @@
 				}
 			});
     		
-    		//$('#summaryDg').datagrid('loadData','');
     		//填充汇总数据
     		$('#summaryDg').datagrid({toolbar:'#summaryDgTool'}).datagrid('loadData','');
 		});
@@ -226,7 +229,7 @@
         		customerTel:$('#customerTel').textbox('getValue'),
     			customerName:$('#customerName').textbox('getValue'),
     			state:$("#state").combobox('getValue'),
-    			lastCallResult:$("#lastCallResult").combobox('getValue'),
+    			hangupCause:$("#hangupCause").combobox('getValue'),
     			messageState:$("#messageState").combobox('getValue'),
     			startTimeForTelephone:$("#startTimeForTelephone").datebox('getValue'),
 				endTimeForTelephone:$("#endTimeForTelephone").datebox('getValue'),
@@ -238,7 +241,7 @@
 		function autoCallTaskTelephoneExport() {
 			
 			var state = $("#state").combobox('getValue');
-			var lastCallResult = $("#lastCallResult").combobox('getValue');
+			var hangupCause = $("#hangupCause").combobox('getValue');
 			var messageState = $("#messageState").combobox('getValue');
 			var customerTel = $("#customerTel").textbox('getValue');
 			var	customerName = $("#customerName").textbox('getValue');
@@ -251,7 +254,7 @@
 				onSubmit:function(param) {
 					param.taskId = currTaskId;
 					param.state = state;
-					param.lastCallResult = lastCallResult;
+					param.hangupCause = hangupCause;
 					param.messageState = messageState;
 					param.customerTel = customerTel;
 					param.customerName = customerName;
@@ -271,15 +274,14 @@
 		function autoCallTaskTelephoneExport2() {
 
 			var state = conditionState;
-			var lastCallResult = conditionLastCallResult;
-
+			var hangupCause = conditionHangupCause;
 			$("#exportForm").form('submit',{
 
 				url:"autoCallTaskTelephone/exportExcel",
 				onSubmit:function(param) {
 					param.taskId = currTaskId;
 					param.state = state;
-					param.lastCallResult = lastCallResult;
+					param.hangupCause = hangupCause;
 				},
 				success:function(data) {
 					
@@ -293,7 +295,7 @@
     		$("#autoCallTaskTelephoneDg2").datagrid('load',{
         		taskId:currTaskId,
     			state:conditionState,
-    			lastCallResult:conditionLastCallResult
+    			hangupCause:conditionHangupCause
         	});
     	}
 		
@@ -384,7 +386,7 @@
 					<th data-options="field:'SEND_MESSAGE',width:80,align:'center',formatter:sendmessageformatter">下发短信</th>
 					<th data-options="field:'CALLERID_DESC',width:150,align:'center',formatter:calleridformatter">主叫号码</th>
 					<th data-options="field:'taskStateField',width:120,align:'center',formatter:taskstaterowformatter">状态</th>
-					<th data-options="field:'validityDate',width:220,align:'center',formatter:validitydaterowformatter">有效期</th>
+					<th data-options="field:'validityDate',width:350,align:'center',formatter:validitydaterowformatter">有效期</th>
 					<th data-options="field:'scheduleDetail',width:50,align:'center',formatter:scheduledetailformatter">调度</th>
 					<th data-options="field:'RETRY_TIMES',width:80,align:'center'">呼叫总次数</th>
 					<th data-options="field:'RETRY_INTERVAL_DESC',width:100,align:'center'">重试间隔</th>
@@ -485,9 +487,8 @@
 						<th data-options="field:'CALLOUT_TEL',width:120,align:'center'">外呼号码</th>
 						<th data-options="field:'CALLERID',width:120,align:'center'">主叫号码</th>
 						<th data-options="field:'CREATE_TIME',width:200,align:'center'">创建时间</th>
-						<th data-options="field:'state_result',width:100,align:'center',formatter:telephonestateformatter">外呼结果</th>
-						<th data-options="field:'LAST_CALL_RESULT_DESC',width:100,align:'center'">呼叫状态</th>
-						<th data-options="field:'HANGUP_CAUSE',width:200,align:'center'">失败原因</th>
+						<th data-options="field:'STATE_DESC',width:100,align:'center'">外呼结果</th>
+						<th data-options="field:'HANGUP_CAUSE_DESC',width:200,align:'center'">失败原因</th>
 						<th data-options="field:'RETRIED_DESC',width:150,align:'center'">呼叫次数</th>
 						<th data-options="field:'LOAD_TIME',width:200,align:'center'">外呼时间</th>
 						<th data-options="field:'BILLSEC',width:150,align:'center'">通话时长</th>

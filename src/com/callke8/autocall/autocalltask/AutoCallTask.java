@@ -179,11 +179,11 @@ public class AutoCallTask extends Model<AutoCallTask> {
 				
 				String planStartTime = r.get("PLAN_START_TIME").toString();   //计划开始时间
 				String planEndTime = r.get("PLAN_END_TIME").toString();       //计划结束时间
-				String currTime = DateFormatUtils.getFormatDate(); //当前时间
+				String currTime = DateFormatUtils.getCurrentDate(); //当前时间
 				
-				long planStartTimeSeconds = DateFormatUtils.parseDate(planStartTime).getTime();//开始时间的秒数
-				long planEndTimeSeconds = DateFormatUtils.parseDate(planEndTime).getTime();//结束时间的秒数
-				long currentTimeSeconds = DateFormatUtils.parseDate(currTime).getTime();//当前时间的秒数
+				long planStartTimeSeconds = DateFormatUtils.parseDateTime(planStartTime).getTime();//开始时间的秒数
+				long planEndTimeSeconds = DateFormatUtils.parseDateTime(planEndTime).getTime();//结束时间的秒数
+				long currentTimeSeconds = DateFormatUtils.parseDateTime(currTime).getTime();//当前时间的秒数
 				
 				if(currentTimeSeconds>planEndTimeSeconds) {   //当前时间超过结束时间（即过期）
 					r.set("runningNotice", "<span style='color:#FF0000'>已过期</span>");
@@ -723,7 +723,9 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		
 		String sql = "select * from ac_call_task where TASK_STATE=? and PLAN_START_TIME<=? and PLAN_END_TIME>=?";
 
-		String currDate = DateFormatUtils.getFormatDate();   //当前日期 2017-01-01
+		//String currDate = DateFormatUtils.getFormatDate();   //当前日期 2017-01-01
+		
+		String currDate = DateFormatUtils.getCurrentDate();
 		
 		list = find(sql,taskState,currDate,currDate);
 		

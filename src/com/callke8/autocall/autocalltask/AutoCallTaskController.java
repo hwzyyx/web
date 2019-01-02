@@ -81,9 +81,11 @@ public class AutoCallTaskController extends Controller implements IController {
 		//短信状态 combobox , 用于客户号码的页面搜索用
 		setAttr("messageStateComboboxDataFor1", CommonController.getComboboxToString("COMMON_MESSAGE_STATE","1"));
 		
-		//外呼状态combobox, 用于显示当前记录的外呼状态
-		setAttr("lastCallResultComboboxDataFor1", CommonController.getComboboxToString("LAST_CALL_RESULT","1"));
+		//失败原因combobox, 用于显示当前记录的失败原因
+		setAttr("hangupCauseComboboxDataFor1", CommonController.getComboboxToString("AC_HANGUP_CAUSE","1"));
 		
+		//外呼结果，用于
+		setAttr("stateComboboxDataFor1", CommonController.getComboboxToString("AC_CALL_STATE","1"));
 		
 		//主叫号码
 		setAttr("callerIdComboboxDataFor1",SysCallerIdController.getSysCallerIdToComboboxByOperId(currOperId, "1"));
@@ -457,11 +459,32 @@ public class AutoCallTaskController extends Controller implements IController {
 		return archiveCallTask;
 	}
 	
+	/**
+	 * 重新加载数据统计
+	 */
+	public void reloadStatistics() {
+		String taskId = getPara("taskId");
+		
+		List<Record> dataList = AutoCallTaskTelephone.dao.getStatisticsData(taskId, false);
+		
+		renderJson(dataList);
+	}
+	
+	/**
+	 * 重新加载数据统计,为多个任务
+	 */
+	public void reloadStatisticsForMultiTask() {
+		String ids = getPara("ids");
+		
+		List<Record> dataList = AutoCallTaskTelephone.dao.getStatisticsData(ids, true);
+		
+		renderJson(dataList);
+	}
 	
 	/**
 	 * 重新加载统计数据
 	 */
-	public void reloadStatistics() {
+	public void reloadStatistics_bak20181228() {
 		
 		String taskId = getPara("taskId");
 		
@@ -576,7 +599,7 @@ public class AutoCallTaskController extends Controller implements IController {
 	/**
 	 * 重新加载统计数据->为多任务进行统计
 	 */
-	public void reloadStatisticsForMultiTask() {
+	public void reloadStatisticsForMultiTask_bak() {
 		
 		String ids = getPara("ids");
 		
@@ -660,9 +683,16 @@ public class AutoCallTaskController extends Controller implements IController {
 		String state2Count = getPara("state2Count");	rc.set("state2Data", state2Count);
 		String state3Count = getPara("state3Count");    rc.set("state3Data", state3Count);
 		String state4Count = getPara("state4Count");	rc.set("state4Data", state4Count);
-		String lastCallResult2Count = getPara("lastCallResult2Count"); rc.set("lastCallResult2Data", lastCallResult2Count);
-		String lastCallResult3Count = getPara("lastCallResult3Count"); rc.set("lastCallResult3Data", lastCallResult3Count);
-		String lastCallResult4Count = getPara("lastCallResult4Count"); rc.set("lastCallResult4Data", lastCallResult4Count);
+		
+		String hangupCause1Count = getPara("hangupCause1Count"); rc.set("hangupCause1Data", hangupCause1Count);
+		String hangupCause16Count = getPara("hangupCause16Count"); rc.set("hangupCause16Data", hangupCause16Count);
+		String hangupCause19Count = getPara("hangupCause19Count"); rc.set("hangupCause19Data", hangupCause19Count);
+		String hangupCause34Count = getPara("hangupCause34Count"); rc.set("hangupCause34Data", hangupCause34Count);
+		String hangupCause38Count = getPara("hangupCause38Count"); rc.set("hangupCause38Data", hangupCause38Count);
+		String hangupCause401Count = getPara("hangupCause401Count"); rc.set("hangupCause401Data", hangupCause401Count);
+		String hangupCause402Count = getPara("hangupCause402Count"); rc.set("hangupCause402Data", hangupCause402Count);
+		String hangupCause403Count = getPara("hangupCause403Count"); rc.set("hangupCause403Data", hangupCause403Count);
+		
 		list.add(rc);
 		
 		String totalRate = getPara("totalRate");		rr.set("totalData", totalRate + "%");
@@ -670,17 +700,23 @@ public class AutoCallTaskController extends Controller implements IController {
 		String state2Rate = getPara("state2Rate");		rr.set("state2Data", state2Rate + "%");
 		String state3Rate = getPara("state3Rate");		rr.set("state3Data", state3Rate + "%");
 		String state4Rate = getPara("state4Rate");		rr.set("state4Data", state4Rate + "%");
-		String lastCallResult2Rate = getPara("lastCallResult2Rate");   rr.set("lastCallResult2Data", lastCallResult2Rate + "%");
-		String lastCallResult3Rate = getPara("lastCallResult3Rate");   rr.set("lastCallResult3Data", lastCallResult3Rate + "%");
-		String lastCallResult4Rate = getPara("lastCallResult4Rate");   rr.set("lastCallResult4Data", lastCallResult4Rate + "%");
+		
+		String hangupCause1Rate = getPara("hangupCause1Rate");   rr.set("hangupCause1Data", hangupCause1Rate + "%");
+		String hangupCause16Rate = getPara("hangupCause16Rate");   rr.set("hangupCause16Data", hangupCause16Rate + "%");
+		String hangupCause19Rate = getPara("hangupCause19Rate");   rr.set("hangupCause19Data", hangupCause19Rate + "%");
+		String hangupCause34Rate = getPara("hangupCause34Rate");   rr.set("hangupCause34Data", hangupCause34Rate + "%");
+		String hangupCause38Rate = getPara("hangupCause38Rate");   rr.set("hangupCause38Data", hangupCause38Rate + "%");
+		String hangupCause401Rate = getPara("hangupCause401Rate");   rr.set("hangupCause401Data", hangupCause401Rate + "%");
+		String hangupCause402Rate = getPara("hangupCause402Rate");   rr.set("hangupCause402Data", hangupCause402Rate + "%");
+		String hangupCause403Rate = getPara("hangupCause403Rate");   rr.set("hangupCause403Data", hangupCause403Rate + "%");
 		
 		list.add(rr);
 		
 		String taskName = getPara("taskName");
 
 		//得到数据列表，准备以 Excel 方式导出
-		String[] headers = {"","已呼数量","已载入","已成功","待重呼","已失败","无应答","客户忙","请求错误"};
-		String[] columns = {"category","totalData","state1Data","state2Data","state3Data","state4Data","lastCallResult2Data","lastCallResult3Data","lastCallResult4Data"};
+		String[] headers = {"","已呼数量","已载入","已成功","待重呼","已失败","无法接通","关机","未接听或空号","线路拥塞","呼转服务","归属地异常","超时未处理","PBX链接异常"};
+		String[] columns = {"category","totalData","state1Data","state2Data","state3Data","state4Data","hangupCause1Data","hangupCause16Data","hangupCause19Data","hangupCause34Data","hangupCause38Data","hangupCause401Data","hangupCause402Data","hangupCause403Data"};
 		String fileName = "任务：" + taskName + "的统计汇总情况.xls";
 		String sheetName = "数据汇总信息";
 		

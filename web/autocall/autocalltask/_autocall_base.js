@@ -76,8 +76,8 @@ function autoCallTaskAdd() {
 
 	$("#PRIORITY").combobox('setValue','2');                   //默认优先级为中
 	
-	$("#PLAN_START_TIME").datebox('setValue',getCurrDate());   //设置默认任务开始时间
-	$("#PLAN_END_TIME").datebox('setValue',getDateAfter(3));   //设置默认任务结束时间
+	$("#PLAN_START_TIME").datetimebox('setValue',getCurrDate());   //设置默认任务开始时间
+	$("#PLAN_END_TIME").datetimebox('setValue',getDateAfter(3));   //设置默认任务结束时间
 	
 	$("#TASK_NAME").textbox('setValue',getCurrTimeToString());
 	
@@ -305,8 +305,8 @@ function checkOutInput() {
 	}
 
 	//检查开始时间及结束时间,确保结束时间大于开始时间
-	var planStartTime = $("#PLAN_START_TIME").datebox('getValue');
-	var planEndTime = $("#PLAN_END_TIME").datebox('getValue');
+	var planStartTime = $("#PLAN_START_TIME").datetimebox('getValue');
+	var planEndTime = $("#PLAN_END_TIME").datetimebox('getValue');
 
 	if(planStartTime > planEndTime) {
 		alert("任务期限的开始日期不能大于结束日期!");
@@ -448,11 +448,17 @@ function loadComboboxForAutoCallTaskSearch() {
 		panelHeight:'auto'
     }).combobox('loadData',messageStateComboboxDataFor1).combobox('setValue','empty');
 	
-	$("#lastCallResult").combobox({
+	$("#state").combobox({
 		valueField:'id',
 		textField:'text',
 		panelHeight:'auto'
-	}).combobox('loadData',lastCallResultComboboxDataFor1).combobox('setValue','empty');
+	}).combobox('loadData',stateComboboxDataFor1).combobox('setValue','empty');
+	
+	$("#hangupCause").combobox({
+		valueField:'id',
+		textField:'text',
+		panelHeight:'auto'
+	}).combobox('loadData',hangupCauseComboboxDataFor1).combobox('setValue','empty');
 }
 
 //加载创建外呼任务时，初始化操作, 如 任务类型、主叫号码、任务开始及结束日期
@@ -837,25 +843,6 @@ function sendmessageformatter(value,data,index) {
 	}else {
 		return "<span style='color:#ff0000'>否</span>";
 	}
-}
-
-
-function telephonestateformatter(value,data,index) {
-
-	var state = data.STATE;
-
-	if(state=='0') {
-		return "<span style='color:#00ccff'>未处理</span>";
-	}else if(state=='1') {
-		return "<span style='color:#61a0a8'>已载入</span>";
-	}else if(state=='2') {
-		return "<span style='color:#49a849'>已成功</span>";
-	}else if(state=='3') {
-		return "<span style='color:#e9bfb0'>待重呼</span>";
-	}else if(state=='4') {
-		return "<span style='color:#c23531'>已失败</span>";
-	}
-	
 }
 
 function telephonerowformatter(value,data,index) {

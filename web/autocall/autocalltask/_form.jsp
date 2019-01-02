@@ -39,9 +39,9 @@
 					</td>
 					<td>
 						<div style="padding-top:5px;">
-							<input name="autoCallTask.PLAN_START_TIME" id="PLAN_START_TIME" style="width:100px;" class="easyui-datebox" required='true' data-options="editable:false"></input> 
+							<input name="autoCallTask.PLAN_START_TIME" id="PLAN_START_TIME" style="width:200px;" class="easyui-datetimebox" required='true' data-options="editable:false"></input> 
 							&nbsp;&nbsp;&nbsp;至&nbsp;&nbsp;&nbsp; 
-							<input name="autoCallTask.PLAN_END_TIME" id="PLAN_END_TIME" style="width:100px;" class="easyui-datebox" required='true' data-options="editable:false"></input> 
+							<input name="autoCallTask.PLAN_END_TIME" id="PLAN_END_TIME" style="width:200px;" class="easyui-datetimebox" required='true' data-options="editable:false"></input> 
 				        </div>
 					</td>
 				</tr>
@@ -394,16 +394,10 @@
 							</span>
 							<span style="padding-left:20px;">
 								外呼结果：<select id="state" class="easyui-combobox" name="state" style="width:100px;">
-												<option value="5">请选择</option>
-												<option value="0">未处理</option>
-												<option value="1">已载入</option>
-												<option value="2">已成功</option>
-												<option value="3">待重呼</option>
-												<option value="4">已失败</option>
 										</select>
 							</span>
 							<span style="padding-left:20px;">
-								外呼状态：<select id="lastCallResult" class="easyui-combobox" name="state" style="width:100px;">
+								失败原因：<select id="hangupCause" class="easyui-combobox" name="hangupCause" style="width:100px;">
 										</select>
 							</span>
 							<span style="padding-left:20px;">
@@ -455,9 +449,8 @@
 							<th data-options="field:'CALLOUT_TEL',width:120,align:'center'">外呼号码</th>
 							<th data-options="field:'CALLERID',width:120,align:'center'">主叫号码</th>
 							<th data-options="field:'CREATE_TIME',width:200,align:'center'">创建时间</th>
-							<th data-options="field:'state_result',width:100,align:'center',formatter:telephonestateformatter">外呼结果</th>
-							<th data-options="field:'LAST_CALL_RESULT_DESC',width:100,align:'center'">呼叫状态</th>
-							<th data-options="field:'HANGUP_CAUSE',width:200,align:'center'">失败原因</th>
+							<th data-options="field:'STATE_DESC',width:100,align:'center'">外呼结果</th>
+							<th data-options="field:'HANGUP_CAUSE_DESC',width:200,align:'center'">失败原因</th>
 							<th data-options="field:'RETRIED_DESC',width:150,align:'center'">呼叫次数</th>
 							<th data-options="field:'LOAD_TIME',width:200,align:'center'">外呼时间</th>
 							<th data-options="field:'BILLSEC',width:150,align:'center'">通话时长</th>
