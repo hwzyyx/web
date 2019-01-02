@@ -148,7 +148,7 @@ public class AutoCallDoCallOutJob implements Job {
 			connState = au.isAstConnSuccess();    //再检查一次
 			if(!connState) {    //如果还是连接失败，将直接保存其为失败状态
 				au.close();
-				AutoCallPredial.updateTelehponeStateForFailure("4","402", actt, autoCallTask);    //更改状态为失败或是重试，并指定最后失败原因为 未连接
+				AutoCallPredial.updateTelehponeStateForFailure("4","403", actt, autoCallTask);    //更改状态为失败或是重试，并指定最后失败原因为 未连接
 				StringUtil.log(this, "再次重连接Asterisk后，PBX系统连接状态仍旧有异常,系统将直接更改状态为失败或是重试!");
 				
 				try {
