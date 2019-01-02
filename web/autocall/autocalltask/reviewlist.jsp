@@ -889,7 +889,7 @@
 					<th data-options="field:'TASK_TYPE_DESC',width:150,align:'center'">任务类型</th>
 					<th data-options="field:'CALLERID_DESC',width:150,align:'center',formatter:calleridformatter">主叫号码</th>
 					<th data-options="field:'taskStateField',width:120,align:'center',formatter:taskstaterowformatter">状态</th>
-					<th data-options="field:'validityDate',width:220,align:'center',formatter:validitydaterowformatter">有效期</th>
+					<th data-options="field:'validityDate',width:350,align:'center',formatter:validitydaterowformatter">有效期</th>
 					<th data-options="field:'scheduleDetail',width:50,align:'center',formatter:scheduledetailformatter">调度</th>
 					<th data-options="field:'RETRY_TIMES',width:80,align:'center'">重试次数</th>
 					<th data-options="field:'RETRY_INTERVAL_DESC',width:100,align:'center'">重试间隔</th>
