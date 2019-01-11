@@ -65,7 +65,6 @@ function ttsContentTextLengthLimit() {
 
 //点击新增任务按钮,打开添加任务的弹窗
 function autoCallTaskAdd() {
-	//$("#CALLERID").combobox('setValue','empty');                   //默认第一个号码
 	$("#REMINDER_TYPE").combobox('setValue','empty');              //催缴类型为1，即是电话费
 	$("#TASK_TYPE").combobox('setValue','empty');                  //默认任务类型为普通任务
 	$("#RETRY_TIMES").combobox('setValue','3');                //默认的重试次数3次
@@ -95,19 +94,10 @@ function autoCallTaskSaveAdd() {
 		return;
 	}
 	
-	//var callerId = $("#CALLERID").combobox('getValue');
-	//alert($("#CALLERID").combobox('getValue')); 
-	//alert($("#CALLERID").combobox('getValues')); 
-	//if(callerId=='empty' || callerId=='' || callerId==null) {
-	//	alert("主叫号码不能为空 ,请重新选择!");
-	//	return;
-	//}
-	
 	$('#autoCallTaskForm').form('submit',{
 			
 		url:'autoCallTask/add',
 		onSubmit:function(param) {
-			param.cids = $("#CALLERID").combobox("getValues");
 			var v = $(this).form('validate');
 			if(v) {
 				$.messager.progress({
@@ -153,7 +143,7 @@ function autoCallTaskSaveAdd() {
 }
 
 //外呼任务编辑
-function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,scheduleId,scheduleName,taskType,commonVoiceId,commonVoiceDesc,questionnaireId,questionnaireDesc,reminderType,startVoiceId,startVoiceDesc,endVoiceId,endVoiceDesc,blackListId,blackListName,retryTimes,retryInterval,intervalType,priority,sendMessage,messageContent) {
+function autoCallTaskEdit(taskId,taskName,callerId,callerIdNumber,planStartTime,planEndTime,scheduleId,scheduleName,taskType,commonVoiceId,commonVoiceDesc,questionnaireId,questionnaireDesc,reminderType,startVoiceId,startVoiceDesc,endVoiceId,endVoiceDesc,blackListId,blackListName,retryTimes,retryInterval,intervalType,priority,sendMessage,messageContent) {
 	currTaskId = taskId;
 	
 	//设置任务类型
@@ -163,6 +153,7 @@ function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,sch
 		'autoCallTask.TASK_ID':taskId,
 		'autoCallTask.TASK_NAME':taskName,
 		'autoCallTask.CALLERID':callerId,
+		'autoCallTask.CALLERID_NUMBER':callerIdNumber,
 		'autoCallTask.PLAN_START_TIME':planStartTime,
 		'autoCallTask.PLAN_END_TIME':planEndTime,
 		'autoCallTask.RETRY_TIMES':retryTimes,
@@ -173,6 +164,9 @@ function autoCallTaskEdit(taskId,taskName,callerId,planStartTime,planEndTime,sch
 		'autoCallTask.REMINDER':reminderType,
 		'autoCallTask.MESSAGE_CONTENT':messageContent
 	});
+	
+	$("#callerIdSpan").css("display","");
+	$("#callerIdGroupSpan").css("display","none");
 
 	//设置调度计划
 	$("#SCHEDULE_ID_INFO").val(scheduleId);
@@ -249,18 +243,12 @@ function autoCallTaskSaveEdit() {
 		return;
 	}
 	
-	var callerId = $("#CALLERID").combobox('getValue');
-	if(callerId=='empty' || callerId == null || callerId == '') {
-		alert("主叫号码不能为空 ,请重新选择!");
-		return;
-	}
-	
 	//alert($("#TASK_TYPE").combobox('getValue') + "---" + $('#REMINDER_TYPE').combobox('getValue'));
 	$('#autoCallTaskForm').form('submit',{
 
 		url:'autoCallTask/update',
 		onSubmit:function(param){
-			param.cids = $("#CALLERID").combobox("getValues");
+			
 			var v = $(this).form('validate');
 			if(v) {
 				$.messager.progress({
@@ -290,12 +278,6 @@ function autoCallTaskSaveEdit() {
 }
 
 function checkOutInput() {
-	
-	//var callerIdValue = $("#CALLERID").combobox("getValue");
-	//var callerIdValues = $("#CALLERID").combobox("getValues");
-	
-	//alert("callerIdValue:" + callerIdValue + ",callerIdValues:" + callerIdValues);
-	//return;
 	
 	//判断调度计划是否为空
 	var scheduleName = $("#SCHEDULE_NAME").textbox('getValue');
@@ -500,13 +482,6 @@ function loadDataForCreateAutoCallTaskSearch() {
 		}
 	}).combobox('loadData',taskTypeComboboxDataFor1).combobox('setValue','empty');
 	
-	
-	$("#CALLERID").combobox({
-		valueField:'id',
-		textField:'text',
-		panelHeight:'auto'
-	}).combobox('loadData',callerIdComboboxDataFor0);
-	
 	$("#START_DATE").datebox('setValue',getCurrDate());   	//任务开始时间
 	$("#END_DATE").datebox('setValue',getDateAfter(3));     //任务结束时间
 	
@@ -545,6 +520,23 @@ function selectResourceEvent() {
         		
 		}
     });
+	
+	$("#sys_callerid_group_Dg").datagrid({
+		onDblClickRow:function(index,row) {
+			$("#callerIdGroupSpan").css('display','');
+			
+			$('#CALLERID_GROUP_ID').val(row['GROUP_ID']);
+			$('#CALLERID_GROUP_NAME').textbox('setValue',row['GROUP_NAME']);
+			
+			//除了需要显示自己选择号码组的结果，还需要将选择号码去掉
+			$("#callerIdSpan").css('display','none');
+			$("#CALLERID").val('');
+			$("#CALLERID_NUMBER").textbox('setValue','');
+			
+			$("#callerIdGroupDlg").dialog('close');
+			//alert(row['GROUP_ID'] + "---" + row['GROUP_NAME']);
+		}
+	});
 	
 	//双击调度计划，将高度计划信息赋值
 	$("#scheduleDg").datagrid({
@@ -736,12 +728,12 @@ function initOrgCodeForAutoCallTaskSearch() {
 						}
 						
 						//主叫号码列表显示
-						var callerIdDescRs = data.rows[i].CALLERID_DESC;
+						/*var callerIdDescRs = data.rows[i].CALLERID_DESC;
 						callerIdDescRs = callerIdDescRs.replace(/\|/gm,'<br>');
 						$("#calleriddesc_" + i).tooltip({
 							position:'top',
 							content:callerIdDescRs
-						});
+						});*/
 					}
 					
 				}
@@ -834,7 +826,18 @@ function taskstaterowformatter(value,data,index) {
 }
 
 function calleridformatter(value,data,index) {
-	return "<div id='calleriddesc_" + index + "' style='width:auto;' class='easyui-panel easyui-tooltip'>主叫号码</div>";
+	//return "<div id='calleriddesc_" + index + "' style='width:auto;' class='easyui-panel easyui-tooltip'>主叫号码</div>";
+	return "<a href='#' onclick='javascript:showSelectedCallerId(\"" + data.CALLERID + "\",\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\")'>主叫号码</a>";
+	//return "<div id='calleriddesc_" + index + "' style='width:auto;' class='easyui-panel easyui-tooltip'>主叫号码</div>";
+}
+
+function showSelectedCallerId(callerId,taskId,taskName) {
+	$("#callerIdSearchBtnByOperId").css("display","none");
+	$("#callerIdSearchBtnByTaskId").css("display","");
+	$("#confirmCallerIdBtn").linkbutton('disable');
+	currTaskId = taskId;
+	callerId_findData_taskId();
+	$('#callerIdDlg').dialog("setTitle","外呼任务：" + taskName + " 选择的主叫号码列表").dialog('open');
 }
 
 function sendmessageformatter(value,data,index) {
@@ -860,7 +863,7 @@ function scheduledetailformatter(value,data,index) {
 }
 
 function rowformatter(value,data,index) {
-	return "<a href='#' onclick='javascript:autoCallTaskEdit(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\",\"" + data.CALLERID + "\",\"" + data.PLAN_START_TIME + "\",\"" + data.PLAN_END_TIME + "\",\"" + data.SCHEDULE_ID + "\",\"" + data.SCHEDULE_NAME + "\",\"" + data.TASK_TYPE + "\",\"" + data.COMMON_VOICE_ID + "\",\"" + data.COMMON_VOICE_DESC + "\",\"" + data.QUESTIONNAIRE_ID + "\",\"" + data.QUESTIONNAIRE_DESC + "\",\"" + data.REMINDER_TYPE + "\",\"" + data.START_VOICE_ID + "\",\"" + data.START_VOICE_DESC + "\",\"" + data.END_VOICE_ID + "\",\"" + data.END_VOICE_DESC + "\",\"" + data.BLACKLIST_ID + "\",\"" + data.BLACKLIST_NAME + "\",\"" + data.RETRY_TIMES + "\",\"" + data.RETRY_INTERVAL + "\",\""  + data.INTERVAL_TYPE + "\",\"" + data.PRIORITY + "\",\"" + data.SEND_MESSAGE + "\",\"" + data.MESSAGE_CONTENT + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>" + 
+	return "<a href='#' onclick='javascript:autoCallTaskEdit(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\",\"" + data.CALLERID + "\",\"" + data.CALLERID_NUMBER + "\",\"" + data.PLAN_START_TIME + "\",\"" + data.PLAN_END_TIME + "\",\"" + data.SCHEDULE_ID + "\",\"" + data.SCHEDULE_NAME + "\",\"" + data.TASK_TYPE + "\",\"" + data.COMMON_VOICE_ID + "\",\"" + data.COMMON_VOICE_DESC + "\",\"" + data.QUESTIONNAIRE_ID + "\",\"" + data.QUESTIONNAIRE_DESC + "\",\"" + data.REMINDER_TYPE + "\",\"" + data.START_VOICE_ID + "\",\"" + data.START_VOICE_DESC + "\",\"" + data.END_VOICE_ID + "\",\"" + data.END_VOICE_DESC + "\",\"" + data.BLACKLIST_ID + "\",\"" + data.BLACKLIST_NAME + "\",\"" + data.RETRY_TIMES + "\",\"" + data.RETRY_INTERVAL + "\",\""  + data.INTERVAL_TYPE + "\",\"" + data.PRIORITY + "\",\"" + data.SEND_MESSAGE + "\",\"" + data.MESSAGE_CONTENT + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>" + 
 	"<a href='#' onclick='javascript:autoCallTaskDel(\"" + data.TASK_ID +"\")'><img src='themes/icons/pencil.png' border='0'>删除</a>";
 }
 
@@ -1334,6 +1337,20 @@ function selectVoice() {
 	
 	$("#voiceDlg").dialog("setTitle","选择普通语音文件").dialog("open");
 	
+}
+
+function selectCallerId() {
+	$("#callerIdSearchBtnByOperId").css("display","");
+	$("#callerIdSearchBtnByTaskId").css("display","none");
+	$("#confirmCallerIdBtn").linkbutton('enable');
+	callerId_findData_operId();
+	$("#callerIdDlg").dialog('setTitle','选择主叫号码（分配方式）').dialog('open');
+}
+
+function selectCallerIdGroup() {
+
+	execSelectCallerIdGroup();
+	$("#callerIdGroupDlg").dialog('setTitle','选择主叫号码组').dialog('open');
 }
 
 function selectSchedule() {

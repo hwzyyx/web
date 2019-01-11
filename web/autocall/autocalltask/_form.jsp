@@ -27,9 +27,21 @@
 					</td>
 					<td>
 						<div style="padding-top:5px;">
+							<!-- 
 							<select class="easyui-combobox" style="width: 400px;" name="autoCallTask.CALLERID" id="CALLERID" data-options="multiple:true,panelHeight:'auto'" required="true">
 					        </select>
 					        <input type="checkbox" id="selectAllCallerIdCheckBox" value="1"><label for="selectAllCallerIdCheckBox">全选/取消全选</label>
+							 -->
+							<span id="callerIdSpan" style="display: none;">
+								<input type="hidden" name="autoCallTask.CALLERID" id="CALLERID"/>
+								<input style="width:300px;" name="autoCallTask.CALLERID_NUMBER" id="CALLERID_NUMBER" class="easyui-textbox" type="text" disabled="true" required="true"></input>
+							</span>
+							<span id="callerIdGroupSpan" style="display: none;">
+								<input type="hidden" name="autoCallTask.CALLERID_GROUP_ID" id="CALLERID_GROUP_ID"/>
+								<input style="width:300px;" name="autoCallTask.CALLERID_GROUP_NAME" id="CALLERID_GROUP_NAME" class="easyui-textbox" type="text" disabled="true" required="true"></input>
+							</span>
+							<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:120px" onClick="selectCallerId()">选择[分配]</a>
+							<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:120px" onClick="selectCallerIdGroup()">选择[号码组]</a> 
 				        </div>
 					</td>
 				</tr>

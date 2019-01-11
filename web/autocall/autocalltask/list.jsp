@@ -96,6 +96,8 @@
 			//tts创建语音时，对于内容的长度限制,最长限制200个字
 			ttsContentTextLengthLimit();
 			
+			initSelectCallerIdAssign();
+			
 			//事件绑定,主要是对创建语音的是通过  TTS 还是 语音文件 创建语音，然后做一些显示/隐藏 的操作
 			eventBind();
 			
@@ -423,6 +425,16 @@
 <div id="autoCallTaskDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	<!-- 包含外呼任务的表单 -->
 	<%@ include file="/autocall/autocalltask/_form.jsp" %>
+</div>
+
+<!-- 主叫号码选择窗 -->
+<div id="callerIdDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
+	 <%@ include file="/system/callerid/_selectlist.jsp"%>
+</div>
+
+<!-- 主叫号码组选择窗 -->
+<div id="callerIdGroupDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
+	 <%@ include file="/system/calleridgroup/_selectlist.jsp"%>
 </div>
 
 <!-- 调度计划选择窗 -->
