@@ -3,6 +3,7 @@ package com.callke8.system.calleridassign;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.callke8.utils.BlankUtils;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Record;
@@ -65,6 +66,47 @@ public class SysCallerIdAssign extends Model<SysCallerIdAssign> {
 		boolean b = Db.save("sys_callerid_assign", "ID", sysCallerIdAssign);
 		
 		return b;
+	}
+	
+	/**
+	 * 保存主叫号码分配,通过上传文件的方式给操作员保存主叫号码分配
+	 * 
+	 * @param callerIdAssignList
+	 * @param groupId
+	 * @return
+	 */
+	public int saveCallerIdAssign(List<Record> callerIdAssignList,String targetOperId) {
+		
+		if(BlankUtils.isBlank(targetOperId) || BlankUtils.isBlank(callerIdAssignList)) {
+			return 0;
+		}
+		
+		//(1)删除前面给这个操作员已经分配的结果
+		int deleteCount = deleteSysCallerIdAssign(targetOperId);
+		
+		//(2)批量存入主叫号码结果
+		int insertCount = batchSave(callerIdAssignList);
+		
+		return insertCount;
+	}
+	
+	/**
+	 * 批量存入分配结果
+	 * 
+	 * @param callerIdGroupAssignList
+	 * @return
+	 */
+	public int batchSave(List<Record> callerIdAssignList) {
+		
+		if(BlankUtils.isBlank(callerIdAssignList) || callerIdAssignList.size() == 0) {
+			return 0;
+		}
+		
+		String sql = "insert into sys_callerid_assign(OPER_ID,CALLERID_ID)values(?,?)";
+		
+		int[] insertData = Db.batch(sql,"OPER_ID,CALLERID_ID", callerIdAssignList, 1000);
+		
+		return insertData.length;
 	}
 	
 	/**
