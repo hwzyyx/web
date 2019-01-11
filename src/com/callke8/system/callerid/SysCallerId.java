@@ -34,7 +34,7 @@ public class SysCallerId extends Model<SysCallerId> {
 	
 	public static SysCallerId dao = new SysCallerId();
 	
-	public Page getSysCallerIdByPaginate(int pageNumber,int pageSize,String callerId,String purpose) {
+	public Page getSysCallerIdByPaginate(int pageNumber,int pageSize,String callerId,String purpose,String ids) {
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
@@ -54,15 +54,19 @@ public class SysCallerId extends Model<SysCallerId> {
 			index++;
 		}
 		
+		if(!BlankUtils.isBlank(ids) && ids.length() > 0) {
+			sb.append(" and ID in(" + ids + ")");
+		}
+		
 		Page<Record> p = Db.paginate(pageNumber, pageSize, "select *", sb.toString()+" ORDER BY ID DESC",ArrayUtils.copyArray(index, pars));
 		
 		return p;
 		
 	}
 	
-	public Map getSysCallerIdByPaginateToMap(int pageNumber,int pageSize,String callerId,String purpose) {
+	public Map getSysCallerIdByPaginateToMap(int pageNumber,int pageSize,String callerId,String purpose,String ids) {
 		
-		Page<Record> p =  getSysCallerIdByPaginate(pageNumber,pageSize,callerId,purpose);
+		Page<Record> p =  getSysCallerIdByPaginate(pageNumber,pageSize,callerId,purpose,ids);
 		
 		int total = p.getTotalRow();     //取出总数量
 		
@@ -88,6 +92,7 @@ public class SysCallerId extends Model<SysCallerId> {
 		return map;
 		
 	}
+	
 	
 	//取出所有主叫号码的列表
 	public List<Record> getAllSysCallerId() {
@@ -253,4 +258,25 @@ public class SysCallerId extends Model<SysCallerId> {
 		}
 	}
 	
+	/**
+	 * 批量将主叫号码插入到数据库
+	 * @param callerIdList
+	 * @return
+	 */
+	public int[] batchSave(ArrayList<Record> sysCallerIdList) {
+		if(BlankUtils.isBlank(sysCallerIdList) || sysCallerIdList.size()==0) {
+			return null;
+		}
+		
+		String sql = "insert into sys_callerid(CALLERID,PURPOSE,CREATE_USERCODE,CREATE_TIME)values(?,?,?,?)";
+		
+		int[] insertData = Db.batch(sql,"callerIdNumber,callerIdPurpose,CREATE_USERCODE,CREATE_TIME", sysCallerIdList, 1000);
+		
+		if(insertData.length > 0) {
+			loadSysCallerIdToMemory();
+		}
+		
+		return insertData;
+	}
+		
 }
