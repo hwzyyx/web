@@ -17,7 +17,8 @@
 		
 		var currSelectNodeId = null;    //当前选择的组织Id
 		var currOperId = null;          //当前的 OperId
-		var targetOperId = null;        //目标操作员
+		var targetOperId = null;        //目标操作员ID
+		var targetOperName = null;      //目标操作员名称
 		
 		$(function(){
 			$("#treeUl").tree({
@@ -44,7 +45,7 @@
 			});
 
 			$("#operatorDg").datagrid({
-				pageSize:10,
+				pageSize:30,
 				pagination:true,      
 				fit:true,
 				singleSelect:true,
@@ -52,14 +53,14 @@
 				rowrap:true,
 				striped: true,
 				rownumbers: true,
-				pageList:[10,15,20],
+				pageList:[20,30,50],
 				url:'operator/datagrid?orgCode=' + currSelectNodeId 
 			});
 
 			
 			$("#roleDg").datagrid({
 				title:'角色信息',
-				pageSize:10,
+				pageSize:30,
 				fit:true,
 				singleSelect:false,
 				//toolbar:"#searchtool2",
@@ -67,7 +68,7 @@
 				striped: true,
 				rownumbers: true,
 				checkbox:true,
-				pageList:[10,30,50],
+				pageList:[20,30,50],
 				url:'role/datagrid',
 				pagination:true,      
 				idField:'ROLE_CODE',
@@ -157,6 +158,17 @@
     				$("#callerIdForm").form('clear');
     			}
     		});
+			
+			$("#callerIdFile").filebox({
+				buttonText:'选择文件'
+			});
+			
+			$("#callerIdAssignFromUploadFileDlg").dialog({
+				onClose:function() {
+					$('#callerIdAssignUploadFileForm').form('clear');
+				}
+			});
+			
 		});
 		
 		function stateFormat(val,data,index){
@@ -177,7 +189,7 @@
 
 		//格式化：在每行输出 修改及删除
 		function rowformater(value,data,index) {
-			return "<a href='#' onclick='javascript:callerIdAssign(\"" + data.OPER_ID +"\",\""+ data.OPER_NAME + "\")'><img src='themes/icons/dial.png' border='0'>主叫号码分配</a>";
+			return "<a href='#' onclick='javascript:callerIdAssign(\"" + data.OPER_ID +"\",\""+ data.OPER_NAME + "\")'><img src='themes/icons/dial.png' border='0'>主叫号码分配（选择）</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' onclick='javascript:callerIdAssignFromUploadFile(\"" + data.OPER_ID +"\",\""+ data.OPER_NAME + "\")'>主叫号码分配（上传文件）</a>";
 		}
 		
 		//格式化：将状态格式化，如果状态值为1,则为绿色，且定义为有效；状态值为0，则为红色，且定义为无效
@@ -202,13 +214,48 @@
 		function callerIdAssign(operId,operName) {
 			
 			targetOperId = operId;
+			targetOperName = operName;
 			
 			$("#callerIdDg").datagrid("load",{
 				targetOperId:targetOperId
 			});
 			
-			$("#callerIdAssignDlg").dialog('setTitle',"操作员：" + operName + "(" + operId + ")的主叫号码分配").dialog('open');
+			$("#callerIdAssignDlg").dialog('setTitle',"操作员：" + targetOperName + "(" + targetOperId + ")的主叫号码分配").dialog('open');
 			
+		}
+		
+		function callerIdAssignFromUploadFile(operId,operName) {
+			targetOperId = operId;
+			targetOperName = operName;
+			$("#callerIdAssignFromUploadFileDlg").dialog('setTitle','上传文件为操作员：' + targetOperName + " 分配主叫号码").dialog('open');
+			
+		}
+		
+		function uploadCallerIdFile() {
+			
+			$('#callerIdAssignUploadFileForm').form('submit',{
+				url:'sysCallerIdAssign/uploadFile',
+				onSubmit:function(param) {
+					param.targetOperId = targetOperId
+				},
+				success:function(data) {
+					var result = JSON.parse(data); //解析Json数据
+
+					var statusCode = result.statusCode; //返回的结果类型
+					var message = result.message;       //返回执行的信息
+					
+					window.parent.showMessage(message,statusCode);
+					if(statusCode == 'success') {         //保存成功时
+						$('#callerIdAssignFromUploadFileDlg').dialog('close');
+						callerIdAssign(targetOperId,targetOperName);
+					}
+				}
+			});
+			
+		}
+		
+		function uploadCallerIdFileCancel() {
+			$("#callerIdAssignFromUploadFileDlg").dialog('close');
 		}
 		
 		//保存主叫号码的分配
@@ -292,7 +339,7 @@
 										<th data-options="field:'TELNO',width:120,align:'center'">联系电话</th>
 										<th data-options="field:'CALL_NUMBER',width:70,align:'center'">座席号码</th>
 										<th data-options="field:'CREATETIME',width:200,align:'center'">创建时间</th>
-										<th data-options="field:'id',width:150,align:'center',formatter:rowformater">操作</th>
+										<th data-options="field:'id',width:400,align:'center',formatter:rowformater">操作</th>
 									
 									</tr>        
 								</thead>
@@ -331,6 +378,14 @@
 		<form id="callerIdForm" method="post">
 			<!-- 包含表单 -->
 			<%@ include file="/system/callerid/_form.jsp"%>
+		</form>	
+	</div>
+	
+	<div id="callerIdAssignFromUploadFileDlg" class="easyui-dialog" style="width:35%;height:30%;padding:10px 20px;" modal="true" closed="true" buttons="#addCallerIdByUploadFileDlgBtn">
+
+		<form id="callerIdAssignUploadFileForm" method="post" enctype="multipart/form-data">
+			<!-- 包含表单 -->
+			<%@ include file="/system/callerid/_uploadfile_form.jsp"%>
 		</form>	
 	</div>
 	

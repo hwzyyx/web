@@ -52,6 +52,16 @@
     			}
     		});
     		
+    		$("#callerIdFile").filebox({
+				buttonText:'选择文件'
+			});
+    		
+    		$("#addCallerIdByUploadFileDlg").dialog({
+    			onClose:function() {
+    				$("#callerIdUploadFileForm").form('clear');
+    			}
+    		});
+    		
     	});
     
     	
@@ -148,6 +158,51 @@
 				}	
 			});
 		}
+		
+		function callerIdUpLoad() {
+			$("#addCallerIdByUploadFileDlg").dialog('setTitle','上传主叫号码').dialog('open');
+		}
+		
+		function uploadCallerIdFileCancel() {
+			$("#addCallerIdByUploadFileDlg").dialog('close');
+		}
+		
+		//上传号码文件
+		function uploadCallerIdFile() {
+			$("#callerIdUploadFileForm").form('submit',{
+
+				url:'sysCallerId/uploadFile',
+				onSubmit:function() {
+
+					var v = $(this).form('validate');
+					if(v) {
+						$.messager.progress({
+							msg:'系统正在处理，请稍候...',
+							interval:3000
+						});
+					}
+					    			
+					return $(this).form('validate');
+				},
+				success:function(data) {
+					$.messager.progress('close');
+					var result = JSON.parse(data); //解析Json数据
+
+					var statusCode = result.statusCode; //返回的结果类型
+					var message = result.message;       //返回执行的信息
+
+					if(statusCode == 'success') {         //保存成功时
+						findData();
+						uploadCallerIdFileCancel();
+						window.parent.showMessage(message,statusCode);						
+					}else {
+						window.parent.showMessage(message,statusCode);						
+					}
+					
+				}
+				
+			});
+		}
     	
     </script>
 </head>
@@ -192,6 +247,7 @@
 	</div>
 	<div id="opertool" style="padding:5px;">
 		<a href="#" id="easyui-add" onclick="callerIdAdd()" class="easyui-linkbutton" iconCls='icon-add' plain="true">新增主叫号码</a>
+		<a href="#" id="easyui-add" onclick="callerIdUpLoad()" class="easyui-linkbutton" iconCls='icon-add' plain="true" style="margin-left:100px;">上传主叫号码</a>
 	</div>
 	
 	<div id="addCallerIdDlg" class="easyui-dialog" style="width:40%;height:40%;padding:10px 20px;" modal="true" closed="true" buttons="#addCallerIdDlgBtn">
@@ -199,6 +255,14 @@
 		<form id="callerIdForm" method="post">
 			<!-- 包含表单 -->
 			<%@ include file="/system/callerid/_form.jsp"%>
+		</form>	
+	</div>
+	
+	<div id="addCallerIdByUploadFileDlg" class="easyui-dialog" style="width:30%;height:20%;padding:10px 20px;" modal="true" closed="true" buttons="#addCallerIdByUploadFileDlgBtn">
+
+		<form id="callerIdUploadFileForm" method="post" enctype="multipart/form-data">
+			<!-- 包含表单 -->
+			<%@ include file="/system/callerid/_uploadfile_form.jsp"%>
 		</form>	
 	</div>
 	
