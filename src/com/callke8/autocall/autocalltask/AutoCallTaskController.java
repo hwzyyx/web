@@ -17,6 +17,7 @@ import com.callke8.common.CommonController;
 import com.callke8.common.IController;
 import com.callke8.system.callerid.SysCallerIdController;
 import com.callke8.system.calleridassign.SysCallerIdAssign;
+import com.callke8.system.calleridgroup.SysCallerIdGroupAssign;
 import com.callke8.system.operator.Operator;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.system.remindertype.SysReminderTypeController;
@@ -141,12 +142,30 @@ public class AutoCallTaskController extends Controller implements IController {
 		autoCallTask.set("TASK_ID", taskId);
 		
 		//主叫号码
-		String callerId = getPara("cids");  
-		if(BlankUtils.isBlank(callerId)) {
-			render(RenderJson.error("新增外呼任务失败,主叫号码为空!"));
+		String callerId = autoCallTask.get("CALLERID");                  //取得主叫号码，通过分配选取的方式
+		int callerGroupId = BlankUtils.isBlank(autoCallTask.get("CALLERID_GROUP_ID"))?0:autoCallTask.getInt("CALLERID_GROUP_ID");    //取得主叫号码，通过选择号码组的方式
+		if(BlankUtils.isBlank(callerId) && callerGroupId == 0) {    //如果两者都为空时，返回主叫号码不能为空
+			render(RenderJson.error("新增外呼任务失败,主叫号码不能为空!"));
 			return;
 		}
-		autoCallTask.set("CALLERID",callerId);
+		if(!BlankUtils.isBlank(callerId)) {    //如果主叫号码不为空，则主叫号码直接从这里获得
+			autoCallTask.set("CALLERID",callerId);
+		}else {
+			//如果主叫号码字段为空，则从主叫号码组中取得该组分配到的主叫号码情况
+			String ids = "";
+			List<Record> sysCallerIdGroupAssignList = SysCallerIdGroupAssign.dao.getCallerIdGroupAssignByGroupId(callerGroupId);
+			for(Record sysCallerIdGroupAssign:sysCallerIdGroupAssignList) {
+				ids += sysCallerIdGroupAssign.get("CALLERID_ID") + ",";
+			}
+			if(BlankUtils.isBlank(ids) || ids.length() == 0){    //你选择的主叫号码组没有分配主叫号码
+				render(RenderJson.error("新增外呼任务失败,选择的主叫号码组没有分配任何主叫号码!"));
+				return;
+			}else {
+				//删除最后一个逗号
+				ids = ids.substring(0, ids.length()-1);
+				autoCallTask.set("CALLERID",ids);
+			}
+		}
 		
 		//先检查是否存在相同名字的外呼任务
 		String taskName = autoCallTask.get("TASK_NAME");
@@ -351,7 +370,35 @@ public class AutoCallTaskController extends Controller implements IController {
 		String startVoiceId = autoCallTask.get("START_VOICE_ID");
 		String endVoiceId = autoCallTask.get("END_VOICE_ID");
 		String blackListId = autoCallTask.get("BLACKLIST_ID");
-		String callerId = getPara("cids");
+		
+		//主叫号码
+		String callerId = autoCallTask.get("CALLERID");                  //取得主叫号码，通过分配选取的方式
+		int callerGroupId = BlankUtils.isBlank(autoCallTask.get("CALLERID_GROUP_ID"))?0:autoCallTask.getInt("CALLERID_GROUP_ID");    //取得主叫号码，通过选择号码组的方式
+		if(BlankUtils.isBlank(callerId) && callerGroupId == 0) {    //如果两者都为空时，返回主叫号码不能为空
+			render(RenderJson.error("修改外呼任务失败,主叫号码不能为空!"));
+			return;
+		}
+		
+		String ids = "";
+		if(!BlankUtils.isBlank(callerId)) {    //如果主叫号码不为空，则主叫号码直接从这里获得
+			ids = callerId;
+		}else {
+			//如果主叫号码字段为空，则从主叫号码组中取得该组分配到的主叫号码情况
+			List<Record> sysCallerIdGroupAssignList = SysCallerIdGroupAssign.dao.getCallerIdGroupAssignByGroupId(callerGroupId);
+			for(Record sysCallerIdGroupAssign:sysCallerIdGroupAssignList) {
+				ids += sysCallerIdGroupAssign.get("CALLERID_ID") + ",";
+			}
+			if(BlankUtils.isBlank(ids) || ids.length() == 0){    //你选择的主叫号码组没有分配主叫号码
+				render(RenderJson.error("修改外呼任务失败,选择的主叫号码组没有分配任何主叫号码!"));
+				return;
+			}else {
+				//删除最后一个逗号
+				ids = ids.substring(0, ids.length()-1);
+			}
+		}
+		
+		callerId = ids;
+		
 		Integer priority = Integer.valueOf(autoCallTask.get("PRIORITY").toString());
 		int sendMessage = autoCallTask.getInt("SEND_MESSAGE");
 		String messageContent = autoCallTask.getStr("MESSAGE_CONTENT");

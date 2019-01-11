@@ -134,16 +134,19 @@ public class AutoCallTask extends Model<AutoCallTask> {
 			
 			//设置主叫号码（要从sys_callerid 表中取出）
 			String callerIdRs = r.getStr("CALLERID");   //这里取出的主叫号码值，可能是多个ID值以逗号分隔拼接在一起的
-			String callerIdDesc = "";
+			String callerIdNumber = "";
 			if(!BlankUtils.isBlank(callerIdRs)) {
 				String[] ids = callerIdRs.split(",");
 				for(String id:ids) {
 					SysCallerId sysCallerId = SysCallerId.dao.getSysCallerIdById(Integer.valueOf(id));
-					callerIdDesc += sysCallerId.getStr("CALLERID") + "(" + sysCallerId.getStr("PURPOSE") + ")" + "|";
+					callerIdNumber += sysCallerId.getStr("CALLERID") + ",";
 				}
-				r.set("CALLERID_DESC", callerIdDesc);
+				if(!BlankUtils.isBlank(callerIdNumber) && callerIdNumber.length()>0) {
+					callerIdNumber = callerIdNumber.substring(0, callerIdNumber.length()-1);
+				}
+				r.set("CALLERID_NUMBER", callerIdNumber);
 			}else {
-				r.set("CALLERID_DESC", "NO SET");
+				r.set("CALLERID_NUMBER", "NO SET");
 			}
 			
 			//设置调度计划名称
