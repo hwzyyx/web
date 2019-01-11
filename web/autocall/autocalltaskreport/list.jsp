@@ -36,6 +36,9 @@
 		var messageStateComboboxDataFor1 = eval('${messageStateComboboxDataFor1}');
 	
 		$(function(){
+			
+			initSelectCallerIdAssign();
+			
 			loadSearchData();
 			
 			showSimpleColumns();     //任务列表，显示简单的列
@@ -170,8 +173,19 @@
 		
 		//主叫号码
 		function calleridformatter(value,data,index) {
-			return "<div id='calleriddesc_" + index + "' style='width:auto;' class='easyui-panel easyui-tooltip'>主叫号码</div>";
+			//return "<div id='calleriddesc_" + index + "' style='width:auto;' class='easyui-panel easyui-tooltip'>主叫号码</div>";
+			return "<a href='#' onclick='javascript:showSelectedCallerId(\"" + data.CALLERID + "\",\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\")'>主叫号码</a>";
 		}
+		
+		function showSelectedCallerId(callerId,taskId,taskName) {
+			$("#callerIdSearchBtnByOperId").css("display","none");
+			$("#callerIdSearchBtnByTaskId").css("display","");
+			$("#confirmCallerIdBtn").linkbutton('disable');
+			currTaskId = taskId;
+			callerId_findData_taskId();
+			$('#callerIdDlg').dialog("setTitle","外呼任务：" + taskName + " 选择的主叫号码列表").dialog('open');
+		}
+		
 	
 		//格式化输出任务状态
 		function taskstaterowformatter(value,data,index) {
@@ -529,6 +543,11 @@
 <!-- 外呼结果弹窗 -->
 <div id="callResultDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	<%@ include file="/autocall/autocalltaskreport/_callresult.jsp" %>
+</div>
+
+<!-- 主叫号码选择窗 -->
+<div id="callerIdDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
+	 <%@ include file="/system/callerid/_selectlist.jsp"%>
 </div>
 
 <form id="exportForm"></form>
