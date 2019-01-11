@@ -76,6 +76,7 @@ public class TxtUtils {
 		}finally {
 			try{
 				reader.close();
+				file.delete();       //读取文件后，删除文件
 			}catch(IOException e) {
 				e.printStackTrace();
 			}

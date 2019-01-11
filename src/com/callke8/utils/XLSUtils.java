@@ -22,10 +22,11 @@ public class XLSUtils {
 	public static List<Record> readXls(File file) {
 	
 		List<Record> list = new ArrayList<Record>();   //定义一个 list
+		FileInputStream fis = null;
 	
 		try {
-			
-			Workbook wb = WorkbookFactory.create(new FileInputStream(file));
+			fis = new FileInputStream(file);
+			Workbook wb = WorkbookFactory.create(fis);
 			
 			//HSSFWorkbook wb = new HSSFWorkbook(new FileInputStream(file));    //读取文件流，并创建workbook
 			
@@ -67,6 +68,15 @@ public class XLSUtils {
 			e.printStackTrace();
 		} catch (InvalidFormatException e) {
 			e.printStackTrace();
+		}finally {
+			if(!BlankUtils.isBlank(fis)) {
+				try {
+					fis.close();
+					file.delete();                //读取完之后，删除文件
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 		
 		return list;
