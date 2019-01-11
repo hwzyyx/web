@@ -2,6 +2,8 @@ package com.callke8.system.common;
 
 import com.callke8.system.callerid.SysCallerIdController;
 import com.callke8.system.calleridassign.SysCallerIdAssignController;
+import com.callke8.system.calleridgroup.SysCallerIdGroupAssignController;
+import com.callke8.system.calleridgroup.SysCallerIdGroupController;
 import com.callke8.system.dict.DictGroupController;
 import com.callke8.system.dict.DictItemController;
 import com.callke8.system.ipaddress.SysIpAddressController;
@@ -39,6 +41,8 @@ public class SystemRoute extends Routes {
 		add("/param",ParamController.class,"system/param");
 		add("/sysCallerId",SysCallerIdController.class,"system/callerid");
 		add("/sysCallerIdAssign",SysCallerIdAssignController.class,"system/callerid");
+		add("/sysCallerIdGroup",SysCallerIdGroupController.class,"system/calleridgroup");
+		add("/sysCallerIdGroupAssign",SysCallerIdGroupAssignController.class,"system/calleridgroup");
 		add("/sysTaskType",SysTaskTypeController.class,"system/tasktype");
 		add("/sysTaskTypeAssign",SysTaskTypeAssignController.class,"system/tasktype");
 		add("/sysReminderType",SysReminderTypeController.class,"system/remindertype");
