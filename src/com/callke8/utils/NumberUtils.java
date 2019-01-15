@@ -193,7 +193,9 @@ public class NumberUtils {
 	    }
 	    
 	    /**
-		 * 计算百分比,保留两位小数, 如:50.30%
+		 * 计算百分比,保留两位小数, 如:50.30% 
+		 * 
+		 * 返回不带 % 字符串
 		 * 
 		 * @param count
 		 * 			分子数量
@@ -204,7 +206,7 @@ public class NumberUtils {
 		public static String calculatePercent(int count,int totalCount) {
 			
 			if(totalCount <= 0 || count <= 0) {
-				return "0.00%";
+				return "0.00";
 			}
 			
 			DecimalFormat df = new DecimalFormat("0.0000");
