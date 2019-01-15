@@ -890,6 +890,31 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	}
 	
 	/**
+	 * 根据创建日期和创建人工号查询外呼任务
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @param operIdList
+	 * @return
+	 */
+	public List<AutoCallTask> getAutoCallTaskListByOperIdListAndCreateTime(String startTime,String endTime,String operIdList) {
+		
+		startTime = startTime + " 00:00:00";
+		endTime = endTime + " 23:59:59";
+		
+		String sql = "";
+		if(BlankUtils.isBlank(operIdList) || operIdList.length()==0) {
+			sql = "select * from ac_call_task where CREATE_TIME>? and CREATE_TIME<?";
+		}else {
+			sql = "select * from ac_call_task where CREATE_TIME>? and CREATE_TIME<? and CREATE_USERCODE in(" + operIdList + ")";
+		}
+		
+		List<AutoCallTask> list = find(sql,startTime,endTime);
+		
+		return list;
+	}
+	
+	/**
 	 * 创建外呼任务
 	 * 
 	 * @param taskType
