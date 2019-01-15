@@ -1394,10 +1394,10 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		String sql = null;
 		List<Record> stateList = null;
 		if(multiTask) {
-			sql = "select STATE,COUNT(*) as count from ac_call_task_telephone where TASK_ID in(" + taskId + ") group by STATE";
+			sql = "select STATE,COUNT(*) as count from (select STATE from ac_call_task_telephone where TASK_ID in(" + taskId + ")) as t group by STATE";
 			stateList = Db.find(sql);
 		}else {
-			sql = "select STATE,COUNT(*) as count from ac_call_task_telephone where TASK_ID=? group by STATE";
+			sql = "select STATE,COUNT(*) as count from (select STATE from ac_call_task_telephone where TASK_ID=?) as t group by STATE";
 			stateList = Db.find(sql,taskId);
 		}
 		
@@ -1427,13 +1427,17 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		
 		String sql = null;
 		List<Record> hangupCauseList = null;
+		long s = System.currentTimeMillis();
 		if(multiTask) {
-			sql = "select HANGUP_CAUSE,COUNT(*) as count from ac_call_task_telephone where TASK_ID in(" + taskId + ") and STATE in(3,4) group by HANGUP_CAUSE";
+			//(1)根据取出任务列表
+			sql = "select HANGUP_CAUSE,COUNT(*) as count from (select HANGUP_CAUSE from ac_call_task_telephone where TASK_ID in(" + taskId + ") and STATE in(3,4)) as t group by HANGUP_CAUSE";
 			hangupCauseList = Db.find(sql);
 		}else {
-			sql = "select HANGUP_CAUSE,COUNT(*) as count from ac_call_task_telephone where TASK_ID=? and STATE in(3,4) group by HANGUP_CAUSE";
+			sql = "select HANGUP_CAUSE,COUNT(*) as count from (select HANGUP_CAUSE from ac_call_task_telephone where TASK_ID=? and STATE in(3,4)) as t group by HANGUP_CAUSE";
 			hangupCauseList = Db.find(sql,taskId);
 		}
+		long e = System.currentTimeMillis();
+		System.out.println("查挂机开始时间：" + s + ",结束时间：" + e + "，查询时长:" + (e - s));
 		
 		if(!BlankUtils.isBlank(hangupCauseList) && hangupCauseList.size() > 0) {
 			for(Record r:hangupCauseList) {
@@ -1462,7 +1466,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("select STATE,COUNT(*) as count from ac_call_task_telephone where TASK_ID=?");
+		sb.append("select STATE,COUNT(*) as count from (select STATE from ac_call_task_telephone where TASK_ID=?) as t");
 		
 		sb.append(" GROUP BY STATE");
 		
@@ -1504,7 +1508,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("select LAST_CALL_RESULT,COUNT(*) as count from ac_call_task_telephone where TASK_ID=? and STATE in(3,4)");
+		sb.append("select LAST_CALL_RESULT,COUNT(*) as count from (select LAST_CALL_RESULT from ac_call_task_telephone where TASK_ID=? and STATE in(3,4)) as t");
 		
 		sb.append(" GROUP BY LAST_CALL_RESULT");
 		
@@ -1549,7 +1553,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("select LAST_CALL_RESULT,COUNT(*) as count from ac_call_task_telephone where TASK_ID in(" + taskId + ") and STATE in(3,4)");
+		sb.append("select LAST_CALL_RESULT,COUNT(*) as count from (select LAST_CALL_RESULT from ac_call_task_telephone where TASK_ID in(" + taskId + ") and STATE in(3,4)) as t");
 		
 		sb.append(" GROUP BY LAST_CALL_RESULT");
 		
@@ -1633,7 +1637,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("select STATE,COUNT(*) as count from ac_call_task_telephone where TASK_ID in(" + ids + ")");
+		sb.append("select STATE,COUNT(*) as count from (select STATE from ac_call_task_telephone where TASK_ID in(" + ids + ")) as t");
 		
 		sb.append(" GROUP BY STATE");
 		
