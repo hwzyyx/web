@@ -146,7 +146,7 @@ public class AutoCallTaskReportGroupByOperIdController extends Controller implem
 			//（1）处理外呼量的信息
 			int totalCount = dataRecord.getInt("state0Data") + dataRecord.getInt("state1Data") + dataRecord.getInt("state2Data") + dataRecord.getInt("state3Data") + dataRecord.getInt("state4Data");
 			int successCount = dataRecord.getInt("state2Data");      //成功数量
-			int failureCount = dataRecord.getInt("state2Data");      //失败数量
+			int failureCount = dataRecord.getInt("state4Data");      //失败数量
 			int calledCount = successCount + failureCount;      	 //已呼数量
 			int notCalledCount = totalCount - calledCount;           //未外数量
 			
