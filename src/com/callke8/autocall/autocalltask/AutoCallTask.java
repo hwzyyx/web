@@ -139,7 +139,9 @@ public class AutoCallTask extends Model<AutoCallTask> {
 				String[] ids = callerIdRs.split(",");
 				for(String id:ids) {
 					SysCallerId sysCallerId = SysCallerId.dao.getSysCallerIdById(Integer.valueOf(id));
-					callerIdNumber += sysCallerId.getStr("CALLERID") + ",";
+					if(!BlankUtils.isBlank(sysCallerId)) {
+						callerIdNumber += sysCallerId.getStr("CALLERID") + ",";
+					}
 				}
 				if(!BlankUtils.isBlank(callerIdNumber) && callerIdNumber.length()>0) {
 					callerIdNumber = callerIdNumber.substring(0, callerIdNumber.length()-1);
