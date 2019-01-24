@@ -65,7 +65,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		//如果播放列表不为空
 		if(!BlankUtils.isBlank(playList) && playList.size() > 0) {
 			exec("Noop","播放列表中语音文件的数量为:" + playList.size());
-			StringUtil.log(this, "[====GASYAGI===]播放列表中语音文件的数量为:" + playList.size());
+			//StringUtil.log(this, "[====GASYAGI===]播放列表中语音文件的数量为:" + playList.size());
 			//for(Record r:playList) {
 			//	System.out.println("语音文件Record,action:" + r.getStr("action") + ",path:" + r.getStr("path"));
 			//}
@@ -90,7 +90,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		
 		//更新通话时长
 		AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneBillsec(Integer.valueOf(telId),Integer.valueOf(channel.getVariable("CDR(billsec)")));
-		System.out.println("执行到了AgiException,通话正常结束....");
+		//System.out.println("执行到了AgiException,通话正常结束....");
 		//退出之后，需要清理一下，当前的活跃通道，释放资源
 		if(AutoCallPredial.activeChannelCount > 0){
 			AutoCallPredial.activeChannelCount--;     //释放资源
@@ -122,7 +122,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 						
 						//获取客户回复的按键
 						String respond = channel.getVariable("respond");
-						System.out.println("客户回复的按键是：" + respond);
+						//System.out.println("客户回复的按键是：" + respond);
 						if(!BlankUtils.isBlank(respond)) {    //如果按键不为空时,将来电再呼叫报警人电话上
 							
 							String callPoliceTel = actt.getStr("CALL_POLICE_TEL");   //报警人电话号码
@@ -135,7 +135,6 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 								
 								//取归属地
 								Record customerTelLocation = TelephoneNumberLocationUtil.getLocation(callPoliceTel);    //取得号码归属地
-								System.out.println("customerTelLocation: " + customerTelLocation);
 								if(!BlankUtils.isBlank(customerTelLocation)) {
 									callOutTel = customerTelLocation.getStr("callOutTel");                     //得到外呼号码
 								}
@@ -160,23 +159,23 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 								
 							}else {
 								exec("noop","呼转到报警人电话无效，原因：报警人电话为空");
-								System.out.println("呼转到报警人电话无效，原因：报警人电话为空");
+								//System.out.println("呼转到报警人电话无效，原因：报警人电话为空");
 							}
 							
 							
 						}
 						
 					} catch (AgiException e) {
-						System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的171行!");
-						e.printStackTrace();
+						//System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的171行!");
+						//e.printStackTrace();
 					}
 				
 				}else {   //如果PlayBack 就执行播放操作
 					try {
 						exec(action,path);
 					} catch (AgiException e) {
-						System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的178行!");
-						e.printStackTrace();
+						//System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的178行!");
+						//e.printStackTrace();
 					}
 					
 				}
@@ -236,16 +235,16 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 						}
 						
 					} catch (AgiException e) {
-						System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的239行!");
-						e.printStackTrace();
+						//System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的239行!");
+						//e.printStackTrace();
 					}
 				
 				}else {   //如果PlayBack 就执行播放操作
 					try {
 						exec(action,path);
 					} catch (AgiException e) {
-						System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的247行!");
-						e.printStackTrace();
+						//System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的247行!");
+						//e.printStackTrace();
 					}
 					
 				}
@@ -285,8 +284,8 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			}
 			
 		} catch (AgiException e) {
-			System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的289行!");
-			e.printStackTrace();
+			//System.out.println("执行到了AgiException,在AutoCallTaskAgi.java的289行!");
+			//e.printStackTrace();
 		}
 		
 		return b;
@@ -377,7 +376,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 			
 			AutoFlow autoFlow = AutoFlow.dao.getAutoFlowByReminderType(reminderType);    //根据催缴类型，取出流程规则
 			
-			System.out.println("流程规则===== ：" + autoFlow);
+			//System.out.println("流程规则===== ：" + autoFlow);
 			
 			if(!BlankUtils.isBlank(autoFlow)) {
 				//System.out.println("执行流程规则分析和判断.........");
