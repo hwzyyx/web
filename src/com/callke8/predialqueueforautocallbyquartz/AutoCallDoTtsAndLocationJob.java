@@ -52,7 +52,7 @@ public class AutoCallDoTtsAndLocationJob implements Job {
 			
 			//(1)检查传入的号码ID,是否为空。如果传入的自动外呼任务的号码的ID为空，则关闭该守护，并返回
 			if(BlankUtils.isBlank(autoCallTaskTelephoneId)) {
-				StringUtil.log(this, "线程 AutoCallDoTtsAndLocationJob[" + context.getScheduler().getSchedulerName() + "]:执行 TTS 和 Location 错误。传入的 autoCallTaskTelephoneId 为空!");
+				//StringUtil.log(this, "线程 AutoCallDoTtsAndLocationJob[" + context.getScheduler().getSchedulerName() + "]:执行 TTS 和 Location 错误。传入的 autoCallTaskTelephoneId 为空!");
 				if(AutoCallPredial.activeChannelCount > 0) {
 					AutoCallPredial.activeChannelCount--;
 				}
@@ -63,7 +63,7 @@ public class AutoCallDoTtsAndLocationJob implements Job {
 			AutoCallTaskTelephone actt = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneById(autoCallTaskTelephoneId);
 			//(2)检查任务的号码信息是否为空。如果从数据库中取出的任务号码信息为空，也同样关闭该守护，并返回
 			if(BlankUtils.isBlank(actt)) {
-				StringUtil.log(this, "线程 AutoCallDoTtsAndLocationJob[" + context.getScheduler().getSchedulerName() + "]:执行 TTS 和 Location 错误。传入的 autoCallTaskTelephoneId：" + autoCallTaskTelephoneId + " 对应的号码信息为空!");
+				//StringUtil.log(this, "线程 AutoCallDoTtsAndLocationJob[" + context.getScheduler().getSchedulerName() + "]:执行 TTS 和 Location 错误。传入的 autoCallTaskTelephoneId：" + autoCallTaskTelephoneId + " 对应的号码信息为空!");
 				if(AutoCallPredial.activeChannelCount > 0) {
 					AutoCallPredial.activeChannelCount--;
 				}
@@ -74,7 +74,7 @@ public class AutoCallDoTtsAndLocationJob implements Job {
 			//（3）检查号码定位情况
 			boolean b = checkLocation(actt);     //检查外呼记录的号码归属地情况，如果没有定位，则重新定位，并将定位结果存储到数据库中，如果定位失败，返回 false
 			if(!b) {
-				StringUtil.log(this, "线程 AutoCallDoTtsAndLocationJob[" + context.getScheduler().getSchedulerName() + "]:执行 Location 错误。系统将返回!");
+				//StringUtil.log(this, "线程 AutoCallDoTtsAndLocationJob[" + context.getScheduler().getSchedulerName() + "]:执行 Location 错误。系统将返回!");
 				if(AutoCallPredial.activeChannelCount > 0) {
 					AutoCallPredial.activeChannelCount--;
 				}
@@ -164,7 +164,7 @@ public class AutoCallDoTtsAndLocationJob implements Job {
 				
 				String plateNumber = actt.getStr("PLATE_NUMBER");    //取出车牌信息
 				String vehicleType = actt.getStr("VEHICLE_TYPE");    //取出车辆类型
-				System.out.println("车牌号码：" + plateNumber + "，车辆类型:" + vehicleType);
+				//System.out.println("车牌号码：" + plateNumber + "，车辆类型:" + vehicleType);
 				if(!BlankUtils.isBlank(plateNumber)) {                //
 					//检查车牌文件是否已经存在，不存在时，才执行转换
 					boolean voiceFileExist = checkVoiceExist(actt,"PLATE_NUMBER_VOICE_NAME",ParamConfig.paramConfigMap.get("paramType_4_voicePath"));
@@ -196,7 +196,7 @@ public class AutoCallDoTtsAndLocationJob implements Job {
 					String fileName = r.getStr("fileName");
 					String columnName = r.getStr("columnName");
 					String ttsContent = r.getStr("ttsContent");
-					System.out.println("需要转换的语音：fileName:" + fileName + ",columnName:" + columnName + ",ttsContent:" + ttsContent);
+					//System.out.println("需要转换的语音：fileName:" + fileName + ",columnName:" + columnName + ",ttsContent:" + ttsContent);
 					TTSUtils.doTTS(fileName, ttsContent, ParamConfig.paramConfigMap.get("paramType_4_voicePath"), ParamConfig.paramConfigMap.get("paramType_4_voicePathSingle"));
 					
 					AutoCallTaskTelephone.dao.setVoiceName(columnName, fileName, telId);
@@ -279,7 +279,7 @@ public class AutoCallDoTtsAndLocationJob implements Job {
 				boolean isLocalCity = customerTelLocation.getBoolean("isLocalCity");			//是否为本地号码
 				boolean isLandlineNumber = customerTelLocation.getBoolean("isLandlineNumber");	//是否为固定电话号码
 				
-				StringUtil.log(this, "客户号码：" + customerTel + " 的归属地定位信息为:" + customerTelLocation);
+				//StringUtil.log(this, "客户号码：" + customerTel + " 的归属地定位信息为:" + customerTelLocation);
 				//再根据任务的信息，取一个主叫号码出来
 				String callOutCallerIdRs = SysCallerId.dao.selectCallerId(taskId, autoCallTask.getStr("CALLERID"));    //取出一个主叫号码,对于轮循主叫号码，或是单个号码，都适用
 				
