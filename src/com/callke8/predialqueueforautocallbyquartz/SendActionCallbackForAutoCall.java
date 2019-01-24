@@ -37,7 +37,7 @@ public class SendActionCallbackForAutoCall implements SendActionCallback {
 			//如果执行的结果为 error，则可以提前将结果更改，尽快的释放外呼资源,这样子,外呼失败的记录，
 			//在 BSHHandleCallOutRecordResultJob中的操作并不一定会去更改状态了
 			AutoCallPredial.updateTelehponeStateForFailure("4",null, actt, autoCallTask);
-			StringUtil.log(this, "执行外呼 Response结果为:" + responseResult + ",外呼信息:" + actt + " 外呼失败!");
+			StringUtil.log(this, "执行外呼 Response结果为:" + responseResult + ",外呼信息:主叫号码：" + actt.getStr("CALLERID") + ",被叫号码：" + actt.getStr("CALLOUT_TEL") + " 外呼失败!");
 			
 			//返回所有的此 Response 的内容
 			
