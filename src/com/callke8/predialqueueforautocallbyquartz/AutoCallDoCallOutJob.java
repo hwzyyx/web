@@ -63,7 +63,7 @@ public class AutoCallDoCallOutJob implements Job {
 		
 		
 		try {
-			StringUtil.log(this, "线程 AutoCallDoCallOutJob[" + context.getScheduler().getSchedulerName() + "]: 外呼 Job 接到并准备一个外呼任务, ID 值：" + autoCallTaskTelephoneId + ",任务详情:" + actt);
+			StringUtil.log(this, "线程 AutoCallDoCallOutJob[" + context.getScheduler().getSchedulerName() + "]: 外呼 Job 接到并准备一个外呼任务, ID 值：" + autoCallTaskTelephoneId + ",任务详情:主叫号码：" + actt.getStr("CALLERID") + ",被叫号码：" + actt.getStr("CALLOUT_TEL"));
 		} catch (SchedulerException e2) {
 			e2.printStackTrace();
 		}
@@ -114,7 +114,7 @@ public class AutoCallDoCallOutJob implements Job {
 		//判断 Asterisk 的连接状态
 		AsteriskUtils au = new AsteriskUtils();      //创建一个 连接工具
 		boolean connState = au.isAstConnSuccess();    //连接是否成功
-		StringUtil.log(this, "系统准备执行呼叫,Asterisk服务器的连接状态为:" + connState);
+		//StringUtil.log(this, "系统准备执行呼叫,Asterisk服务器的连接状态为:" + connState);
 		
 		if(!connState) {        //如果连接状态有问题,则暂不做外呼,强制当前的conn再执行一次连接
 			StringUtil.log(this, "PBX系统连接状态有异常....");
