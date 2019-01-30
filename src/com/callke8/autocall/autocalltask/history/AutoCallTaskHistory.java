@@ -96,6 +96,5 @@ public class AutoCallTaskHistory extends Model<AutoCallTaskHistory> {
 		
 		return b;
 	}
-	
 
 }
