@@ -113,6 +113,7 @@ public class AutoCallHangupCauseMonitorJob implements ManagerEventListener,Job {
 					}
 				}
 			}
+			
 		}else if(event instanceof HangupEvent) {
 			
 			HangupEvent he = (HangupEvent)event;
@@ -140,10 +141,9 @@ public class AutoCallHangupCauseMonitorJob implements ManagerEventListener,Job {
 							uniqueIdAndTelIdMapCount--;
 						}
 						if(!BlankUtils.isBlank(telId)) {    //如果取出来的 telId 不为空时,系统将保存挂机状态
-							
-							StringUtil.log(this, DateFormatUtils.getCurrentDate() + "\t系统获取到挂机事件,对应的telId为:" + telId + ",channel:" + channel + ",hangupCause:" + hangupCause + ",hangupCauseTxt:" + hangupCauseTxt);
-							
+							//StringUtil.log(this, DateFormatUtils.getCurrentDate() + "\t系统获取到挂机事件,对应的telId为:" + telId + ",channel:" + channel + ",hangupCause:" + hangupCause + ",hangupCauseTxt:" + hangupCauseTxt);
 							AutoCallTaskTelephone.dao.updateAutoCallTaskTelephoneHangupCause(Integer.valueOf(telId), String.valueOf(hangupCause));
+							
 						}
 					}
 				}
