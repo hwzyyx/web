@@ -220,9 +220,9 @@ function stateStyler(value,data,index) {
 				<th data-options="field:'state2Data',width:100,align:'center',styler:stateStyler">已成功</th>
 				<th data-options="field:'state3Data',width:100,align:'center',styler:stateStyler">待重呼</th>
 				<th data-options="field:'state4Data',width:100,align:'center',styler:stateStyler">已失败</th>
-				<th data-options="field:'hangupCause1Data',width:100,align:'center',styler:lastCallResultStyler">无法接通</th>
+				<th data-options="field:'hangupCause1Data',width:100,align:'center',styler:lastCallResultStyler">空号</th>
 				<th data-options="field:'hangupCause16Data',width:100,align:'center',styler:lastCallResultStyler">关机</th>
-				<th data-options="field:'hangupCause19Data',width:100,align:'center',styler:lastCallResultStyler">未接听或空号</th>
+				<th data-options="field:'hangupCause19Data',width:100,align:'center',styler:lastCallResultStyler">未接听</th>
 				<th data-options="field:'hangupCause34Data',width:100,align:'center',styler:lastCallResultStyler">线路拥塞</th>
 				<th data-options="field:'hangupCause38Data',width:100,align:'center',styler:lastCallResultStyler">呼转服务</th>
 				<th data-options="field:'hangupCause401Data',width:100,align:'center',styler:lastCallResultStyler">归属地异常</th>
@@ -422,13 +422,13 @@ function stateStyler(value,data,index) {
 	                    	pp = params['percent'];
 	                    	pa = params['data']['a'];
 	                    	
-	                    	if(pn=='无法接通') {
+	                    	if(pn=='空号') {
 	                    		hangupCause1Count = pv;
 	                    		hangupCause1Rate = pp;
 	                    	}else if(pn=='关机') {
 	                    		hangupCause16Count = pv;
 	                    		hangupCause16Rate = pp;
-	                    	}else if(pn=='未接听或空号') {
+	                    	}else if(pn=='未接听') {
 	                    		hangupCause19Count = pv;
 	                    		hangupCause19Rate = pp;
 	                    	}else if(pn=='线路拥塞') {
@@ -534,16 +534,16 @@ function stateStyler(value,data,index) {
 			title += ",呼叫结果：已失败";
 			conditionState = 4;
 			conditionHangupCause = null;
-		}else if(name=='无法接通') {
-			title += ",失败原因：无法接通";
+		}else if(name=='空号') {
+			title += ",失败原因：空号";
 			conditionState = "3,4";
 			conditionHangupCause = 1;
 		}else if(name=='关机') {
 			title += ",失败原因：关机";
 			conditionState = "3,4";
 			conditionHangupCause = 16;
-		}else if(name=='未接听或空号') {
-			title += ",失败原因：未接听或空号";
+		}else if(name=='未接听') {
+			title += ",失败原因：未接听";
 			conditionState = "3,4";
 			conditionHangupCause = 19;
 		}else if(name=='线路拥塞') {

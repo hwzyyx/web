@@ -762,7 +762,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		String taskName = getPara("taskName");
 
 		//得到数据列表，准备以 Excel 方式导出
-		String[] headers = {"","已呼数量","已载入","已成功","待重呼","已失败","无法接通","关机","未接听或空号","线路拥塞","呼转服务","归属地异常","超时未处理","PBX链接异常"};
+		String[] headers = {"","已呼数量","已载入","已成功","待重呼","已失败","空号","关机","未接听","线路拥塞","呼转服务","归属地异常","超时未处理","PBX链接异常"};
 		String[] columns = {"category","totalData","state1Data","state2Data","state3Data","state4Data","hangupCause1Data","hangupCause16Data","hangupCause19Data","hangupCause34Data","hangupCause38Data","hangupCause401Data","hangupCause402Data","hangupCause403Data"};
 		String fileName = "任务：" + taskName + "的统计汇总情况.xls";
 		String sheetName = "数据汇总信息";
