@@ -139,8 +139,9 @@ public class AutoCallTaskResultController extends Controller implements IControl
 		List<Record> list = new ArrayList<Record>();     
 		
 		String taskId = getPara("taskId");    //取出任务ID
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");
 		
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,isSearchHistoryCallTask);
 		
 		String questionnaireId = autoCallTask.get("QUESTIONNAIRE_ID");       //取出问卷ID
 		
