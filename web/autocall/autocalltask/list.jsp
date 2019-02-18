@@ -25,6 +25,7 @@
 		var isShowMore = 0;
 		var conditionState = null;
 		var conditionHangupCause = null;
+		var isSearchHistoryCallTask = 0;          //是否为查询历史任务,0为否，1为是
 		
 		var currCreateType = 'voiceFile';
 		
@@ -72,6 +73,19 @@
 					$("#MESSAGE_CONTENT").textbox("setValue",null);
 					$('#messageContentTr').css("display","none");
 				}
+			});
+			
+			$("#isSearchHistoryCallTaskCheckBox").change(function(){
+				if($("#isSearchHistoryCallTaskCheckBox").prop('checked')) {
+					//alart("被选中了");
+					isSearchHistoryCallTask = 1;
+					$('#easyui-add').linkbutton('disable');
+				}else {
+					//alert("没有被选中");
+					isSearchHistoryCallTask = 0;
+					$('#easyui-add').linkbutton('enable');
+				}
+				findData();
 			});
 			
 			$("#selectAllCallerIdCheckBox").change(function(){
@@ -220,7 +234,8 @@
 				taskType:taskType,
 				reminderType:reminderType,
 				taskState:taskState,
-				sendMessage:sendMessage
+				sendMessage:sendMessage,
+				isSearchHistoryCallTask:isSearchHistoryCallTask
 			});
 			
 		}
@@ -235,7 +250,8 @@
     			messageState:$("#messageState").combobox('getValue'),
     			startTimeForTelephone:$("#startTimeForTelephone").datebox('getValue'),
 				endTimeForTelephone:$("#endTimeForTelephone").datebox('getValue'),
-				dateTimeType:dateTimeType
+				dateTimeType:dateTimeType,
+				isSearchHistoryCallTask:isSearchHistoryCallTask
         	});
     	}
 		
@@ -263,6 +279,7 @@
 					param.startTimeForTelephone = startTimeForTelephone;
 					param.endTimeForTelephone = endTimeForTelephone;
 					param.dateTimeType = dateTimeType;
+					param.isSearchHistoryCallTask = isSearchHistoryCallTask;   //是否为历史任务
 				},
 				success:function(data) {
 					
@@ -297,7 +314,8 @@
     		$("#autoCallTaskTelephoneDg2").datagrid('load',{
         		taskId:currTaskId,
     			state:conditionState,
-    			hangupCause:conditionHangupCause
+    			hangupCause:conditionHangupCause,
+    			isSearchHistoryCallTask:isSearchHistoryCallTask
         	});
     	}
 		
@@ -350,6 +368,10 @@
 					</span>
 					<span style="padding-left:20px;">
 						选择组织：<select class="easyui-combotree" id="orgCode" name="orgCode" style="width:130px;" data-options="panelHeight:'auto',multiple:true"></select>
+					</span>
+					<span style="padding-left:40px;">
+						<input type="checkbox" id="isSearchHistoryCallTaskCheckBox" value="1"><label for="isSearchHistoryCallTaskCheckBox">历史任务</label>
+						<span style="color:red;margin-left: 20px;">*查询已归档任务</span>
 					</span>
 				</td>
 				

@@ -20,6 +20,7 @@
 		var currTaskId = null;
 		var currTaskName = null;
 		var taskCount = 0;
+		var isSearchHistoryCallTask = 0;          //是否为查询历史任务,0为否，1为是
 	
 		//获取后台传来的数据
 	    var orgComboTreeData = eval('${orgComboTreeData}');
@@ -42,6 +43,17 @@
 			loadSearchData();
 			
 			showSimpleColumns();     //任务列表，显示简单的列
+			
+			$("#isSearchHistoryCallTaskCheckBox").change(function(){
+				if($("#isSearchHistoryCallTaskCheckBox").prop('checked')) {
+					//alart("被选中了");
+					isSearchHistoryCallTask = 1;
+				}else {
+					//alert("没有被选中");
+					isSearchHistoryCallTask = 0;
+				}
+				findData();
+			});
 			
 			$('#summaryDg').datagrid({toolbar:'#summaryDgTool'}).datagrid('loadData','');
 		});
@@ -243,7 +255,8 @@
 				taskType:taskType,
 				reminderType:reminderType,
 				taskState:taskState,
-				sendMessage:sendMessage
+				sendMessage:sendMessage,
+				isSearchHistoryCallTask:isSearchHistoryCallTask
 			});
 			
 		}
@@ -474,6 +487,10 @@
 					</span>
 					<span style="padding-left:20px;">
 						选择组织：<select class="easyui-combotree" id="orgCode" name="orgCode" style="width:180px;" data-options="panelHeight:'auto',multiple:true"></select>
+					</span>
+					<span style="padding-left:40px;">
+						<input type="checkbox" id="isSearchHistoryCallTaskCheckBox" value="1"><label for="isSearchHistoryCallTaskCheckBox">历史任务</label>
+						<span style="color:red;margin-left: 20px;">*查询已归档任务</span>
 					</span>
 				</td>
 				
