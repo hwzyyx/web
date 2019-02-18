@@ -64,7 +64,7 @@ public class LaunchDialService implements Runnable {
 		timeout = 30 * 1000;
 		
 		//取出任务信息
-		autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+		autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,null);
 		String callerIdInfo = autoCallTask.get("CALLERID");   //主叫的ID信息
 		String callerIdNumber = MemoryVariableUtil.getDictName("CALLERID", callerIdInfo);
 		
