@@ -47,7 +47,7 @@ public class AutoCallTaskAgi extends BaseAgiScript {
 		AutoCallTaskTelephone actt = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneById(telId);     //取出号码信息
 		
 		String taskId = actt.get("TASK_ID");    //获得任务的 ID
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);                  //取得任务信息
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,null);                  //取得任务信息
 		
 		List<Record> playList = new ArrayList<Record>();    //定义一个List,用于存储播放列表
 		
