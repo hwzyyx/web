@@ -34,7 +34,7 @@ public class AutoCallHandleTimeOutRecordJob implements Job {
 		
 		String before8MinuteDateTime = DateFormatUtils.getBeforeSecondDateTime(480);     //480秒前的时间（即是8分钟前的时间），格式为: yyyy-MM-dd HH:mm:ss
 		//System.out.println("8分钟前的时间为：" + before8MinuteDateTime);
-		List<Record> list = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(null,"1",null,null,null,null,null,null, null,before8MinuteDateTime,0);
+		List<Record> list = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(null,"1",null,null,null,null,null,null, null,before8MinuteDateTime,0,null);
 		if(!BlankUtils.isBlank(list) && list.size()>0) {    
 			StringUtil.log(this, "处理超时数据线程AutoCallHandleTimeOutRecordJob:处理状态为1,但已超过（8分钟）的记录，此次取出 " + list.size() + " 条数据进行处理!" );
 			for(Record record:list) {
@@ -46,7 +46,7 @@ public class AutoCallHandleTimeOutRecordJob implements Job {
 				String loadTime = record.getDate("LOAD_TIME").toString();
 				int retried = record.getInt("RETRIED");
 				
-				AutoCallTask autoTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);   //任务
+				AutoCallTask autoTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,null);   //任务
 				AutoCallTaskTelephone actt = new AutoCallTaskTelephone();
 				actt.set("TEL_ID", telId);
 				actt.set("TASK_ID", taskId);

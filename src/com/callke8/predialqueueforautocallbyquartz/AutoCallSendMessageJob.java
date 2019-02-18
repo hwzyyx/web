@@ -49,7 +49,7 @@ public class AutoCallSendMessageJob implements Job {
 		
 		//(2)取出任务信息
 		String taskId = actt.getStr("TASK_ID");     				//取出任务 ID
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);    //取得任务
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,null);    //取得任务
 		if(BlankUtils.isBlank(autoCallTask)) {    //如果任务也为空，则直接返回退出
 			try {
 				context.getScheduler().shutdown();

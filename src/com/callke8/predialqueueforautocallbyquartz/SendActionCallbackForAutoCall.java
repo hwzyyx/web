@@ -19,7 +19,7 @@ public class SendActionCallbackForAutoCall implements SendActionCallback {
 	public SendActionCallbackForAutoCall(String channel,AutoCallTaskTelephone actt,AsteriskUtils au) {
 		this.channel = channel;
 		this.actt = actt;
-		this.autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(actt.getStr("TASK_ID"));
+		this.autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(actt.getStr("TASK_ID"),null);
 		this.au = au;
 	}
 	

@@ -53,7 +53,7 @@ public class AutoCallDoCallOutJob implements Job {
 			return; 
 		}			
 		
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(actt.getStr("TASK_ID"));    //取出任务信息
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(actt.getStr("TASK_ID"),null);    //取出任务信息
 		if(BlankUtils.isBlank(autoCallTask)) { 	//如果任务不存在了，也直接返回，不执行外呼	
 			if(AutoCallPredial.activeChannelCount > 0){
 				AutoCallPredial.activeChannelCount--;     //释放资源

@@ -22,7 +22,7 @@ public class MyOriginateCallback implements OriginateCallback {
 	 */
 	public MyOriginateCallback(AutoCallTaskTelephone actt,AsteriskUtils au) {
 		this.actt = actt;
-		this.autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(actt.getStr("TASK_ID"));
+		this.autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(actt.getStr("TASK_ID"),null);
 		this.au = au;
 		//this.server = server;
 	}

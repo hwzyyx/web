@@ -129,7 +129,7 @@ public class AutoCallDoTtsAndLocationJob implements Job {
 		if(BlankUtils.isBlank(actt)) {    return; }    //如果记录无法查询出来，很可以该记录已经被删除，直接返回 false 即可
 		
 		String taskId = actt.getStr("TASK_ID");      //取出 taskId
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);    //取出任务
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,null);    //取出任务
 		
 		String taskType = autoCallTask.getStr("TASK_TYPE");              //任务类型：1：普通外呼  2：调查问卷外呼   3：催缴外呼
 		String reminderType = autoCallTask.getStr("REMINDER_TYPE");      //催缴类型的催缴: 1:电费模板   2：水费模板  3：电话费模板 4：燃气费模板  5：物业费模板  6：车辆违章  7：交警移车  8：社保催缴
@@ -267,7 +267,7 @@ public class AutoCallDoTtsAndLocationJob implements Job {
 			String customerTel = actt.getStr("CUSTOMER_TEL");		 //取出客户号码（上传时的号码）
 			int retried = actt.getInt("RETRIED");                    //已外呼次数
 			
-			AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);     //取出任务的信息
+			AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,null);     //取出任务的信息
 			int retryTimes = autoCallTask.getInt("RETRY_TIMES");                              //任务设置的最大外呼次数
 			
 			Record customerTelLocation = TelephoneNumberLocationUtil.getLocation(customerTel);    //取得号码归属地
