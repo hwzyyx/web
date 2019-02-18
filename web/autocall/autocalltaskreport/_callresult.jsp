@@ -65,7 +65,7 @@ function reloadStatistics() {
 	
 	$.ajax({
 
-		url:'autoCallTask/reloadStatisticsForMultiTask?ids=' + ids,
+		url:'autoCallTask/reloadStatisticsForMultiTask?isSearchHistoryCallTask=' + isSearchHistoryCallTask + '&ids=' + ids,
 		method:'post',
 		dataType:'json',
 		success:function(rs) {
