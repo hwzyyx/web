@@ -36,13 +36,18 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param state
 	 * @return
 	 */
-	public Page<Record> getAutoCallTaskTelephoneByPaginate(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String hangupCause,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
+	public Page<Record> getAutoCallTaskTelephoneByPaginate(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String hangupCause,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime,String isSearchHistoryCallTask) {
+		
+		String tableName = "ac_call_task_telephone";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[12];
 		int index = 0;
 		
-		sb.append("from ac_call_task_telephone where 1=1");
+		sb.append("from " + tableName + " where 1=1");
 		
 		if(!BlankUtils.isBlank(taskId)) {   //任务ID不为空
 			
@@ -133,7 +138,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param state
 	 * @return
 	 */
-	public Map<String,Object> getAutoCallTaskTelephoneByPaginateToMap(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String hangupCause,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime) {
+	public Map<String,Object> getAutoCallTaskTelephoneByPaginateToMap(int pageNumber,int pageSize,String taskId,String customerTel,String customerName,String state,String hangupCause,String messageState,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime,String isSearchHistoryCallTask) {
 		
 		Map<String,Object> m = new HashMap<String,Object>();
 		AutoCallTask autoCallTask = null;
@@ -145,11 +150,11 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			
 			return m;
 		}else {
-			autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);    //取得任务的信息
+			autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,isSearchHistoryCallTask);    //取得任务的信息
 			retryTimes = autoCallTask.getInt("RETRY_TIMES");
 		}
 		
-		Page<Record> page = getAutoCallTaskTelephoneByPaginate(pageNumber, pageSize, taskId, customerTel, customerName,state,hangupCause,messageState,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
+		Page<Record> page = getAutoCallTaskTelephoneByPaginate(pageNumber, pageSize, taskId, customerTel, customerName,state,hangupCause,messageState,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime,isSearchHistoryCallTask);
 		
 		List<Record> newList = new ArrayList<Record>();
 		
@@ -218,11 +223,18 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 根据外呼任务ID，删除所有号码
 	 * 
 	 * @param taskId
+	 * @param isSearchHistoryCallTask
+	 * 			   是否为历史任务的号码
 	 * @return
 	 */
-	public int deleteByTaskId(String taskId) {
+	public int deleteByTaskId(String taskId,String isSearchHistoryCallTask) {
 		
-		String sql = "delete from ac_call_task_telephone where TASK_ID=?";
+		String tableName = "ac_call_task_telephone";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
+		
+		String sql = "delete from " + tableName + " where TASK_ID=?";
 		
 		int count = Db.update(sql,taskId);
 		
@@ -235,9 +247,16 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 批量删除号码
 	 * 
 	 * @param ids
+	 * @param isSearchHistoryCallTask
+	 * 				是否为历史任务
 	 * @return
 	 */
-	public int batchDelete(String ids) {
+	public int batchDelete(String ids,String isSearchHistoryCallTask) {
+		
+		String tableName = "ac_call_task_telephone";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
 		
 		if(BlankUtils.isBlank(ids)) {
 			return 0;
@@ -253,7 +272,7 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 			list.add(tel);
 		}
 		
-		String sql = "delete from ac_call_task_telephone where TEL_ID=?";
+		String sql = "delete from " + tableName + " where TEL_ID=?";
 		
 		int[] delData = Db.batch(sql,"TEL_ID",list,200);
 		
@@ -301,11 +320,18 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 根据外呼任务ID,得到号码的数量
 	 * 
 	 * @param taskId
+	 * @param isSearchHistoryCallTask
+	 * 			 是否查询历史任务
 	 * @return
 	 */
-	public int getTelephoneCountByTaskId(String taskId) {
+	public int getTelephoneCountByTaskId(String taskId,String isSearchHistoryCallTask) {
 		
-		String sql = "select count(*) as count from ac_call_task_telephone where TASK_ID=?";
+		String tableName = "ac_call_task_telephone";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
+		
+		String sql = "select count(*) as count from " + tableName + " where TASK_ID=?";
 		
 		Record r = Db.findFirst(sql, taskId);
 		
@@ -374,15 +400,22 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 			任务ID
 	 * @param states
 	 * 			状态集，用逗号分隔
+	 * @param isSearchHistoryCallTask
+	 * 			是否查询历史任务
 	 * @return
 	 */
-	public int getTelephoneCountByNotInState(String taskId,String states) {
+	public int getTelephoneCountByNotInState(String taskId,String states,String isSearchHistoryCallTask) {
+		
+		String tableName = "ac_call_task_telephone";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
 		int index = 0;
 		
-		sb.append("select count(*) as count from ac_call_task_telephone where 1=1");
+		sb.append("select count(*) as count from " + tableName + " where 1=1");
 		
 		if(!BlankUtils.isBlank(taskId)) {
 			sb.append(" and TASK_ID=?");
@@ -429,15 +462,22 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param loadTimeEndTime
 	 * @param retryTimes
 	 * 				外呼任务设定的重试次数
+	 * @param isSearchHistoryCallTask
+	 * 				是否历史任务
 	 * @return
 	 */
-	public List<Record> getAutoCallTaskTelephonesByTaskIdAndState(String taskId,String state,String hangupCause,String messageState,String customerTel,String customerName,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime,int retryTimes) {
+	public List<Record> getAutoCallTaskTelephonesByTaskIdAndState(String taskId,String state,String hangupCause,String messageState,String customerTel,String customerName,String createTimeStartTime,String createTimeEndTime,String loadTimeStartTime,String loadTimeEndTime,int retryTimes,String isSearchHistoryCallTask) {
+		
+		String tableName = "ac_call_task_telephone";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[5];
 		int index = 0; 
 		
-		sb.append("select * from ac_call_task_telephone where 1=1 ");
+		sb.append("select * from " + tableName + " where 1=1 ");
 		
 		if(!BlankUtils.isBlank(taskId)) {
 			sb.append(" and TASK_ID=?");
@@ -993,11 +1033,18 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 根据流水号，取得外呼号码
 	 * 
 	 * @param serialNumber
+	 * @param isSearchHistoryCallTask
+	 * 			是否查询历史任务
 	 * @return
 	 */
-	public AutoCallTaskTelephone getAutoCallTaskTelephoneBySerialNumber(String serialNumber) {
+	public AutoCallTaskTelephone getAutoCallTaskTelephoneBySerialNumber(String serialNumber,String isSearchHistoryCallTask) {
 		
-		String sql = "select * from ac_call_task_telephone where SERIAL_NUMBER=?";
+		String tableName = "ac_call_task_telephone";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
+		
+		String sql = "select * from " + tableName + " where SERIAL_NUMBER=?";
 		
 		AutoCallTaskTelephone actt = findFirst(sql,serialNumber);
 		
@@ -1312,20 +1359,23 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
-	 * 根据任务的ID取出统计数据
+	 * * 根据任务的ID取出统计数据
 	 * 
 	 * @param taskId
 	 * 			如果多任务，则传入的 taskId 应该为: 222,333,444；单任务传入 222
 	 * @param multiTask
 	 * 			是否为多任务
+	 * @param isSearchHistoryCallTask
+	 * 			是否查询历史任务
+	 * @return
 	 */
-	public List<Record> getStatisticsData(String taskId,boolean multiTask) {
+	public List<Record> getStatisticsData(String taskId,boolean multiTask,String isSearchHistoryCallTask) {
 		
 		//(1)取出呼叫状态的数据
-		Record stateData = getStatisticsDataForState(taskId,multiTask);
+		Record stateData = getStatisticsDataForState(taskId,multiTask,isSearchHistoryCallTask);
 		
 		//(2)取出挂机状态码的数据
-		Record hangupCauseData = getStatisticsDataForHangupCause(taskId,multiTask);
+		Record hangupCauseData = getStatisticsDataForHangupCause(taskId,multiTask,isSearchHistoryCallTask);
 		
 		//(3)取出数据字典中，外呼状态的数据字典项
 		List<Record> acCallStateList = MemoryVariableUtil.dictMap.get("AC_CALL_STATE");
@@ -1385,19 +1435,27 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 			如果多任务，则传入的 taskId 应该为: 222,333,444；单任务传入 222
 	 * @param multiTask
 	 * 			是否为多任务
+	 * @param isSearchHistoryCallTask
+	 * 			是否为查询历史任务
 	 * @return
 	 */
-	public Record getStatisticsDataForState(String taskId,boolean multiTask) {
+	public Record getStatisticsDataForState(String taskId,boolean multiTask,String isSearchHistoryCallTask) {
+		
+		String tableName = "ac_call_task_telephone";
+		
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
 		
 		Record stateData = new Record();
 		
 		String sql = null;
 		List<Record> stateList = null;
 		if(multiTask) {
-			sql = "select STATE,COUNT(*) as count from (select STATE from ac_call_task_telephone where TASK_ID in(" + taskId + ")) as t group by STATE";
+			sql = "select STATE,COUNT(*) as count from (select STATE from " + tableName + " where TASK_ID in(" + taskId + ")) as t group by STATE";
 			stateList = Db.find(sql);
 		}else {
-			sql = "select STATE,COUNT(*) as count from (select STATE from ac_call_task_telephone where TASK_ID=?) as t group by STATE";
+			sql = "select STATE,COUNT(*) as count from (select STATE from " + tableName + " where TASK_ID=?) as t group by STATE";
 			stateList = Db.find(sql,taskId);
 		}
 		
@@ -1420,8 +1478,16 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 			如果多任务，则传入的 taskId 应该为: 222,333,444；单任务传入 222
 	 * @param multiTask
 	 * 			是否为多任务
+	 * @param isSearchHistoryCallTask
+	 * 			是否为查询历史任务
 	 */
-	public Record getStatisticsDataForHangupCause(String taskId,boolean multiTask) {
+	public Record getStatisticsDataForHangupCause(String taskId,boolean multiTask,String isSearchHistoryCallTask) {
+		
+		String tableName = "ac_call_task_telephone";
+		
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
 		
 		Record hangupCauseData = new Record();
 		
@@ -1430,10 +1496,10 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		long s = System.currentTimeMillis();
 		if(multiTask) {
 			//(1)根据取出任务列表
-			sql = "select HANGUP_CAUSE,COUNT(*) as count from (select HANGUP_CAUSE from ac_call_task_telephone where TASK_ID in(" + taskId + ") and STATE in(3,4)) as t group by HANGUP_CAUSE";
+			sql = "select HANGUP_CAUSE,COUNT(*) as count from (select HANGUP_CAUSE from " + tableName + " where TASK_ID in(" + taskId + ") and STATE in(3,4)) as t group by HANGUP_CAUSE";
 			hangupCauseList = Db.find(sql);
 		}else {
-			sql = "select HANGUP_CAUSE,COUNT(*) as count from (select HANGUP_CAUSE from ac_call_task_telephone where TASK_ID=? and STATE in(3,4)) as t group by HANGUP_CAUSE";
+			sql = "select HANGUP_CAUSE,COUNT(*) as count from (select HANGUP_CAUSE from " + tableName + " where TASK_ID=? and STATE in(3,4)) as t group by HANGUP_CAUSE";
 			hangupCauseList = Db.find(sql,taskId);
 		}
 		long e = System.currentTimeMillis();
@@ -1548,12 +1614,19 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * @param startTime
 	 * @param endTime
 	 * @param channelSource
+	 * @param isSearchHistoryCallTask
+	 * 				是否查询历史任务
 	 */
-	public void getStatisticsDataForLastCallResultMultiTask(Record data,String taskId) {
+	public void getStatisticsDataForLastCallResultMultiTask(Record data,String taskId,String isSearchHistoryCallTask) {
+		
+		String tableName = "ac_call_task_telephone";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
 		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("select LAST_CALL_RESULT,COUNT(*) as count from (select LAST_CALL_RESULT from ac_call_task_telephone where TASK_ID in(" + taskId + ") and STATE in(3,4)) as t");
+		sb.append("select LAST_CALL_RESULT,COUNT(*) as count from (select LAST_CALL_RESULT from " + tableName + " where TASK_ID in(" + taskId + ") and STATE in(3,4)) as t");
 		
 		sb.append(" GROUP BY LAST_CALL_RESULT");
 		
@@ -1633,11 +1706,17 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 
 	 * @param data
 	 */
-	public void getStatisticsDataForStateMultiTask(Record data,String ids) {
+	public void getStatisticsDataForStateMultiTask(Record data,String ids,String isSearchHistoryCallTask) {
+		
+		String tableName = "ac_call_task_telephone";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
+		
 		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("select STATE,COUNT(*) as count from (select STATE from ac_call_task_telephone where TASK_ID in(" + ids + ")) as t");
+		sb.append("select STATE,COUNT(*) as count from (select STATE from " + tableName + " where TASK_ID in(" + ids + ")) as t");
 		
 		sb.append(" GROUP BY STATE");
 		

@@ -38,6 +38,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		String startTimeForTelephone = getPara("startTimeForTelephone");
 		String endTimeForTelephone = getPara("endTimeForTelephone");
 		String dateTimeType = getPara("dateTimeType");     //取得查询时间类型，0表示时间区段为以创建时间为查询区间，1表示以外呼时间为查询区间
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");
 		
 		if(BlankUtils.isBlank(dateTimeType)) {
 			dateTimeType = "0";
@@ -59,7 +60,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneByPaginateToMap(pageNumber, pageSize, taskId, customerTel, customerName,state,hangupCause,messageState,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime);
+		Map map = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneByPaginateToMap(pageNumber, pageSize, taskId, customerTel, customerName,state,hangupCause,messageState,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime,isSearchHistoryCallTask);
 		
 		System.out.println("取AutoCallTaskTelephoneController datagrid的结束时间:" + DateFormatUtils.getTimeMillis());
 		renderJson(map);
@@ -71,6 +72,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 	public void add() {
 
 		String taskId = getPara("taskId");       //得到任务的Id
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");
 		//String taskType = getPara("taskType");   //得到任务类型
 		AutoCallTaskTelephone actt = getModel(AutoCallTaskTelephone.class,"autoCallTaskTelephone");
 		
@@ -80,7 +82,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		String customerTel = actt.get("CUSTOMER_TEL");
 		
 		//根据taskId,先取出任务信息
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,isSearchHistoryCallTask);
 		if(BlankUtils.isBlank(autoCallTask)) {
 			render(RenderJson.error("新增号码失败,外呼任务已经不存在，可能已被删除!"));
 			return;
@@ -356,6 +358,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		
 		String taskId = getPara("taskId");
 		String numberId = getPara("numberId");
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");
 		
 		//如果任务Id或号码组Id为空时，反回错误
 		if(BlankUtils.isBlank(taskId) || BlankUtils.isBlank(numberId)) {
@@ -373,7 +376,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		}
 		
 		//根据任务ID,取出任务信息，然后取出黑名单判断用
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,isSearchHistoryCallTask);
 		if(BlankUtils.isBlank(autoCallTask)) {
 			render("操作失败,任务不存在,请查证后再操作!");
 			return;
@@ -462,7 +465,9 @@ public class AutoCallTaskTelephoneController extends Controller implements
 	@Override
 	public void delete() {
 		String ids = getPara("ids");    //要删除的号码ID
-		int count = AutoCallTaskTelephone.dao.batchDelete(ids);
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");     //是否为历史任务
+		
+		int count = AutoCallTaskTelephone.dao.batchDelete(ids,isSearchHistoryCallTask);
 		
 		render(RenderJson.success("成功删除的数据量为:" + count));
 	}
@@ -498,7 +503,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		//(1)在修改之前,该号码是否在黑名单中
 		String taskId = getPara("taskId");    //得到任务ID
 		//根据任务ID，取出任务信息
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);   
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,null);   
 		boolean checkRs = checkBlackList(customerTel,autoCallTask);
 		if(checkRs) {
 			render(RenderJson.error("修改后的号码在黑名单中,修改失败!"));
@@ -635,7 +640,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		StringBuilder sb = new StringBuilder();
 		
 		//先根据任务ID，取出任务的信息，主要是用于做黑名单判断用
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,null);
 		if(BlankUtils.isBlank(autoCallTask)) {
 			sb.append("操作失败,任务不存在,请查证后再操作!");
 			return sb.toString();
@@ -1147,6 +1152,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 		String startTimeForTelephone = getPara("startTimeForTelephone");
 		String endTimeForTelephone = getPara("endTimeForTelephone");
 		String dateTimeType = getPara("dateTimeType");     //取得查询时间类型，0表示时间区段为以创建时间为查询区间，1表示以外呼时间为查询区间 
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");
 		
 		String createTimeStartTime = null;
 		String createTimeEndTime = null;
@@ -1165,7 +1171,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 			createTimeEndTime = endTimeForTelephone;
 		}
 		
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,isSearchHistoryCallTask);
 		String taskType = autoCallTask.get("TASK_TYPE");          //任务类型
 		String reminderType = autoCallTask.get("REMINDER_TYPE");  //催缴类型
 		int retryTimes = autoCallTask.getInt("RETRY_TIMES");
@@ -1175,7 +1181,7 @@ public class AutoCallTaskTelephoneController extends Controller implements
 			state = null;
 		}
 		
-		List<Record> list = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(taskId, state,hangupCause,messageState,customerTel,customerName,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime,retryTimes);
+		List<Record> list = AutoCallTaskTelephone.dao.getAutoCallTaskTelephonesByTaskIdAndState(taskId, state,hangupCause,messageState,customerTel,customerName,createTimeStartTime,createTimeEndTime,loadTimeStartTime,loadTimeEndTime,retryTimes,isSearchHistoryCallTask);
 		
 		String fileName = "export.xls";
 		String sheetName = "号码列表";

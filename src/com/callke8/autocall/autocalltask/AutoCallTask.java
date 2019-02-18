@@ -47,13 +47,19 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * @param endTime
 	 * @return
 	 */
-	public Page<Record> getAutoCallTaskByPaginate(int pageNumber,int pageSize,String taskName,String taskType,String reminderType,String taskState,String createUserCode,String sendMessage,String startTime,String endTime) {
+	public Page<Record> getAutoCallTaskByPaginate(int pageNumber,int pageSize,String taskName,String taskType,String reminderType,String taskState,String createUserCode,String sendMessage,String startTime,String endTime,String isSearchHistoryCallTask) {
+		
+		String tableName = "ac_call_task";
 		
 		StringBuilder sb = new StringBuilder();
 		Object[] pars = new Object[8];
 		int index = 0;
 		
-		sb.append("from ac_call_task where 1=1");
+		//如果查询历史任务时
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_history";
+		}
+		sb.append("from " + tableName + " where 1=1");
 		
 		if(!BlankUtils.isBlank(taskName)) {
 			sb.append(" and TASK_NAME like ?");
@@ -108,9 +114,9 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		return p;
 	}
 	
-	public Map getAutoCallTaskByPaginateToMap(int pageNumber,int pageSize,String taskName,String taskType,String reminderType,String taskState,String createUserCode,String sendMessage,String startTime,String endTime) {
+	public Map getAutoCallTaskByPaginateToMap(int pageNumber,int pageSize,String taskName,String taskType,String reminderType,String taskState,String createUserCode,String sendMessage,String startTime,String endTime,String isSearchHistoryCallTask) {
 		
-		Page<Record> p = getAutoCallTaskByPaginate(pageNumber, pageSize, taskName,taskType,reminderType,taskState,createUserCode,sendMessage,startTime, endTime);
+		Page<Record> p = getAutoCallTaskByPaginate(pageNumber, pageSize, taskName,taskType,reminderType,taskState,createUserCode,sendMessage,startTime, endTime,isSearchHistoryCallTask);
 		
 		int total = p.getTotalRow();   //取出总数据量
 		
@@ -262,8 +268,8 @@ public class AutoCallTask extends Model<AutoCallTask> {
 			
 			//设置呼叫完成率（已呼数量/全部数量）,其中的已呼数量：是指状态为 不为 0(新建)、1(已载入),3(待重呼)
 			String taskId = r.get("TASK_ID");
-			int totalCount = AutoCallTaskTelephone.dao.getTelephoneCountByTaskId(taskId);     			//取得任务的号码数量
-			int finishCount = AutoCallTaskTelephone.dao.getTelephoneCountByNotInState(taskId, "0,1,3");	//取得不为: 0(新建)、1(已载入),3(待重呼)的数量,即表示已经完成的数量
+			int totalCount = AutoCallTaskTelephone.dao.getTelephoneCountByTaskId(taskId,isSearchHistoryCallTask);     			//取得任务的号码数量
+			int finishCount = AutoCallTaskTelephone.dao.getTelephoneCountByNotInState(taskId, "0,1,3",isSearchHistoryCallTask);	//取得不为: 0(新建)、1(已载入),3(待重呼)的数量,即表示已经完成的数量
 			r.set("FINISH_RATE", NumberUtils.calculatePercent(finishCount, totalCount));                //设置呼叫完成情况
 			
 			//是否下发短信
@@ -462,14 +468,22 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * 根据外呼任务Id删除任务
 	 * 
 	 * @param taskId
+	 * @param isSearchHistoryCallTask
+	 * 			 是否删除历史任务
+	 * 
 	 * @return
 	 */
-	public boolean deleteByTaskId(String taskId) {
+	public boolean deleteByTaskId(String taskId,String isSearchHistoryCallTask) {
+		
+		String tableName = "ac_call_task";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_history";
+		}
 		
 		boolean b = false;
 		int count = 0;
 		
-		String sql = "delete from ac_call_task where TASK_ID=?";
+		String sql = "delete from " + tableName + " where TASK_ID=?";
 		
 		count = Db.update(sql, taskId);
 		
@@ -484,15 +498,17 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * 根据传入的外呼任务对象删除任务
 	 * 
 	 * @param autoCallTask
+	 * @param isSearchHistoryCallTask
+	 * 			 是否删除历史任务
 	 * @return
 	 */
-	public boolean delete(AutoCallTask autoCallTask) {
+	public boolean delete(AutoCallTask autoCallTask,String isSearchHistoryCallTask) {
 		
 		boolean b = false;
 		
 		String taskId = autoCallTask.get("TASK_ID");
 		
-		b = deleteByTaskId(taskId);
+		b = deleteByTaskId(taskId,isSearchHistoryCallTask);
 		
 		return b;
 	}
@@ -515,12 +531,18 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * 根据任务ID查找外呼任务
 	 * 
 	 * @param taskId
+	 * @param isSearchHistoryCallTask
+	 * 			是否历史任务
 	 * @return
 	 */
-	public AutoCallTask getAutoCallTaskByTaskId(String taskId) {
+	public AutoCallTask getAutoCallTaskByTaskId(String taskId,String isSearchHistoryCallTask) {
 		
+		String tableName = "ac_call_task";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_history";
+		}
 		
-		AutoCallTask autoCallTask = findFirst("select * from ac_call_task where TASK_ID=?", taskId);
+		AutoCallTask autoCallTask = findFirst("select * from " + tableName + " where TASK_ID=?", taskId);
 		
 		return autoCallTask;
 		
@@ -837,7 +859,7 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * 
 	 * @return
 	 */
-	public Record getStatisticsDataForMultiTask(String ids) {
+	public Record getStatisticsDataForMultiTask(String ids,String isSearchHistoryCallTask) {
 		
 		Record data = new Record();
 		data.set("state0Data",0);
@@ -854,12 +876,12 @@ public class AutoCallTask extends Model<AutoCallTask> {
 		/**
 		 * (1)取出统计结果（呼叫结果），0：未处理;1：已载入;2：已成功;3：待重呼;4：已失败;
 		 */
-		AutoCallTaskTelephone.dao.getStatisticsDataForStateMultiTask(data, ids);
+		AutoCallTaskTelephone.dao.getStatisticsDataForStateMultiTask(data, ids,isSearchHistoryCallTask);
 		
 		/**
 		 * (2)取出统计结果(呼叫状态)，1：呼叫成功; 2：无应答; 3：客户忙; 4：请求错误
 		 */
-		AutoCallTaskTelephone.dao.getStatisticsDataForLastCallResultMultiTask(data, ids);
+		AutoCallTaskTelephone.dao.getStatisticsDataForLastCallResultMultiTask(data, ids,isSearchHistoryCallTask);
 		
 		return data;
 	}
@@ -899,16 +921,21 @@ public class AutoCallTask extends Model<AutoCallTask> {
 	 * @param operIdList
 	 * @return
 	 */
-	public List<AutoCallTask> getAutoCallTaskListByOperIdListAndCreateTime(String startTime,String endTime,String operIdList) {
+	public List<AutoCallTask> getAutoCallTaskListByOperIdListAndCreateTime(String startTime,String endTime,String operIdList,String isSearchHistoryCallTask) {
+		
+		String tableName = "ac_call_task";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_history";
+		}
 		
 		startTime = startTime + " 00:00:00";
 		endTime = endTime + " 23:59:59";
 		
 		String sql = "";
 		if(BlankUtils.isBlank(operIdList) || operIdList.length()==0) {
-			sql = "select * from ac_call_task where CREATE_TIME>? and CREATE_TIME<?";
+			sql = "select * from " + tableName + " where CREATE_TIME>? and CREATE_TIME<?";
 		}else {
-			sql = "select * from ac_call_task where CREATE_TIME>? and CREATE_TIME<? and CREATE_USERCODE in(" + operIdList + ")";
+			sql = "select * from " + tableName + " where CREATE_TIME>? and CREATE_TIME<? and CREATE_USERCODE in(" + operIdList + ")";
 		}
 		
 		List<AutoCallTask> list = find(sql,startTime,endTime);

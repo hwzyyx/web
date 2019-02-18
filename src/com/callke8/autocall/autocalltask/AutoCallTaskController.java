@@ -106,6 +106,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		String taskState = getPara("taskState");
 		String orgCode = getPara("orgCode");
 		String sendMessage = getPara("sendMessage");
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");   //是否查询历史任务
 		
 		String createUserCode = null;    //创建的用户ID
 		if(!BlankUtils.isBlank(orgCode)) {
@@ -118,7 +119,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		Integer pageSize = BlankUtils.isBlank(getPara("rows"))?1:Integer.valueOf(getPara("rows"));
 		Integer pageNumber = BlankUtils.isBlank(getPara("page"))?1:Integer.valueOf(getPara("page"));
 		
-		Map map = AutoCallTask.dao.getAutoCallTaskByPaginateToMap(pageNumber, pageSize, taskName,taskType,reminderType,taskState,createUserCode,sendMessage, startTime, endTime);
+		Map map = AutoCallTask.dao.getAutoCallTaskByPaginateToMap(pageNumber, pageSize, taskName,taskType,reminderType,taskState,createUserCode,sendMessage, startTime, endTime,isSearchHistoryCallTask);
 		
 		System.out.println("取AutoCallTaskController datagrid的开始时间:" + DateFormatUtils.getTimeMillis());
 		renderJson(map);
@@ -220,8 +221,9 @@ public class AutoCallTaskController extends Controller implements IController {
 	public void delete() {
 
 		String taskId = getPara("taskId");
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");   //是否历史任务
 		
-		AutoCallTask act = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+		AutoCallTask act = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,isSearchHistoryCallTask);
 		
 		//删除之前，先判断外呼任务是否存在
 		if(BlankUtils.isBlank(act)) {
@@ -232,11 +234,11 @@ public class AutoCallTaskController extends Controller implements IController {
 		
 		//同时还要判断当前的任务的状态
 		
-		boolean b = AutoCallTask.dao.deleteByTaskId(taskId);
+		boolean b = AutoCallTask.dao.deleteByTaskId(taskId,isSearchHistoryCallTask);
 		
 		if(b) {
 			//然后删除任务的号码
-			AutoCallTaskTelephone.dao.deleteByTaskId(taskId);
+			AutoCallTaskTelephone.dao.deleteByTaskId(taskId,isSearchHistoryCallTask);
 			
 			render(RenderJson.success("删除成功!"));
 		}else {
@@ -261,7 +263,7 @@ public class AutoCallTaskController extends Controller implements IController {
 			return;
 		}
 		
-		AutoCallTask act = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);   //根据任务ID，从数据库中取出任务信息
+		AutoCallTask act = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,null);   //根据任务ID，从数据库中取出任务信息
 		if(BlankUtils.isBlank(act)) {    //如果取出的任务为空
 			render(RenderJson.error("操作失败,外呼任务已被删除或被归档为历史任务!"));
 			return;
@@ -465,7 +467,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		
 		String taskId = getPara("taskId");   //得到任务ID
 		
-		AutoCallTask act = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+		AutoCallTask act = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,null);
 		
 		if(BlankUtils.isBlank(act)) {
 			render(RenderJson.error("操作失败,外呼任务已被删除或被归档为历史任务!"));
@@ -498,8 +500,8 @@ public class AutoCallTaskController extends Controller implements IController {
 			AutoCallTaskTelephone.dao.archiveAutoCallTaskTelephone(taskId);
 			
 			//然后删除原外呼任务及外呼号码
-			AutoCallTask.dao.deleteByTaskId(taskId);
-			AutoCallTaskTelephone.dao.deleteByTaskId(taskId);
+			AutoCallTask.dao.deleteByTaskId(taskId,null);
+			AutoCallTaskTelephone.dao.deleteByTaskId(taskId,null);
 		}
 		
 		
@@ -511,8 +513,9 @@ public class AutoCallTaskController extends Controller implements IController {
 	 */
 	public void reloadStatistics() {
 		String taskId = getPara("taskId");
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");
 		
-		List<Record> dataList = AutoCallTaskTelephone.dao.getStatisticsData(taskId, false);
+		List<Record> dataList = AutoCallTaskTelephone.dao.getStatisticsData(taskId, false,isSearchHistoryCallTask);
 		
 		renderJson(dataList);
 	}
@@ -522,8 +525,9 @@ public class AutoCallTaskController extends Controller implements IController {
 	 */
 	public void reloadStatisticsForMultiTask() {
 		String ids = getPara("ids");
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");
 		
-		List<Record> dataList = AutoCallTaskTelephone.dao.getStatisticsData(ids, true);
+		List<Record> dataList = AutoCallTaskTelephone.dao.getStatisticsData(ids, true,isSearchHistoryCallTask);
 		
 		renderJson(dataList);
 	}
@@ -649,10 +653,11 @@ public class AutoCallTaskController extends Controller implements IController {
 	public void reloadStatisticsForMultiTask_bak() {
 		
 		String ids = getPara("ids");
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");
 		
 		System.out.println("要查询的所有的任务ID:" + ids);
 		
-		Record data = AutoCallTask.dao.getStatisticsDataForMultiTask(ids);
+		Record data = AutoCallTask.dao.getStatisticsDataForMultiTask(ids,isSearchHistoryCallTask);
 		
 		List<Record> list = new ArrayList<Record>();
 		
@@ -963,6 +968,7 @@ public class AutoCallTaskController extends Controller implements IController {
 		String serialNumber = null;		   //流水号，唯一标识符
 		String userCode = null;            //账号
 		String pwd = null;                 //密码
+		String isSearchHistoryCallTask = "0";   //非历史表
 		
 		String type = getRequest().getMethod();     //请求方式(GET|POST)
 		
@@ -1036,7 +1042,11 @@ public class AutoCallTaskController extends Controller implements IController {
 		}
 		
 		//（3）取得结果，并返回结果
-		AutoCallTaskTelephone actt = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneBySerialNumber(serialNumber);
+		AutoCallTaskTelephone actt = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneBySerialNumber(serialNumber,isSearchHistoryCallTask);   //先查看在非历史表中，是否有记录
+		if(BlankUtils.isBlank(actt)) {    //如果为空，再在历史表中，查询一次是否有相关记录
+			isSearchHistoryCallTask = "1";
+			actt = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneBySerialNumber(serialNumber,isSearchHistoryCallTask);   //先查看在非历史表中，是否有记录
+		}
 		if(BlankUtils.isBlank(actt)) {    //如果取回的记录为空，表示数据已经被删除或是其他的原因无法查询到记录
 			renderJson(returnGetResultMap("FAILURE","失败,失败原因：该流水号对应的外呼任务不存在!",null));
 			System.out.println("getResult():失败,失败原因：该流水号对应的外呼任务不存在!");
@@ -1057,7 +1067,7 @@ public class AutoCallTaskController extends Controller implements IController {
 			}else if(state==2) {          //外呼成功
 				
 				String taskId = actt.getStr("TASK_ID");
-				AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);    //取出任务
+				AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,isSearchHistoryCallTask);    //取出任务
 				String callerId = autoCallTask.getStr("CALLERID");                               //主叫对应的ID
 				String displayNumber = MemoryVariableUtil.getDictName("CALLERID", callerId);     //主叫号码
 				
