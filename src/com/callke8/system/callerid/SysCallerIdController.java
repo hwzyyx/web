@@ -62,7 +62,7 @@ public class SysCallerIdController extends Controller implements IController  {
 		
 		String ids = "";
 		if(!BlankUtils.isBlank(taskId)) {    //表示需要查询传入的自动外呼任务已经选择的主叫号码
-			AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+			AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,null);
 			ids = autoCallTask.getStr("CALLERID");
 		}else {
 			String operId = String.valueOf(getSession().getAttribute("currOperId"));    //当前登录的用户
@@ -98,7 +98,7 @@ public class SysCallerIdController extends Controller implements IController  {
 		String callerId = getPara("callerId");
 		String purpose = getPara("purpose");
 		
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(autoCallTaskId);
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(autoCallTaskId,null);
 		
 		String ids = autoCallTask.getStr("CALLERID");
 		
