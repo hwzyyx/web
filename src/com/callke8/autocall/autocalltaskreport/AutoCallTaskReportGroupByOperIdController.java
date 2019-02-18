@@ -40,6 +40,7 @@ public class AutoCallTaskReportGroupByOperIdController extends Controller implem
 		String startTime = getPara("startTime");
 		String endTime = getPara("endTime");
 		String orgCodes = getPara("orgCodes");    //传入组织代码
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");
 		
 		String operIdList = null;    //创建的用户ID
 		if(!BlankUtils.isBlank(orgCodes)) {
@@ -48,7 +49,7 @@ public class AutoCallTaskReportGroupByOperIdController extends Controller implem
 		
 		//Map m = getReportData(startTime,endTime,operIdList);
 		//Map m = new HashMap();
-		List<Record> dataList = getReportData(startTime,endTime,operIdList);
+		List<Record> dataList = getReportData(startTime,endTime,operIdList,isSearchHistoryCallTask);
 		
 		Map m = new HashMap();
 		m.put("total",m.size());
@@ -84,16 +85,16 @@ public class AutoCallTaskReportGroupByOperIdController extends Controller implem
 	 * 
 	 * @return
 	 */
-	public List<Record> getReportData(String startTime,String endTime,String operIdList) {
+	public List<Record> getReportData(String startTime,String endTime,String operIdList,String isSearchHistoryCallTask) {
 		
 		//创建一个 List,根据操作员ID 对应的 任务ID列表
 		List<Record> dataList = new ArrayList<Record>();
 		
 		//(1)根据取出任务列表
 		long s = System.currentTimeMillis();
-		List<AutoCallTask> taskList = AutoCallTask.dao.getAutoCallTaskListByOperIdListAndCreateTime(startTime, endTime, operIdList);
+		List<AutoCallTask> taskList = AutoCallTask.dao.getAutoCallTaskListByOperIdListAndCreateTime(startTime, endTime, operIdList,isSearchHistoryCallTask);
 		long e = System.currentTimeMillis();
-		System.out.println("查任务列表开始时间：" + s + ",结束时间：" + e + "，查询时长:" + (e - s));
+		//System.out.println("查任务列表开始时间：" + s + ",结束时间：" + e + "，查询时长:" + (e - s));
 		
 		
 		//如果查询回来的任务列表为空，则直接返回一个空的 dataList
@@ -141,7 +142,7 @@ public class AutoCallTaskReportGroupByOperIdController extends Controller implem
 			dataRecord.set("state4Data", 0);
 			
 			//主要返回: 已载入（state1Data）、已成功(state2Data)、待重呼(state3Data)、已失败(state4Data)、未处理(state0Data)  五种状态的数量
-			AutoCallTaskTelephone.dao.getStatisticsDataForStateMultiTask(dataRecord,taskIdList);
+			AutoCallTaskTelephone.dao.getStatisticsDataForStateMultiTask(dataRecord,taskIdList,isSearchHistoryCallTask);
 			
 			//（1）处理外呼量的信息
 			int totalCount = dataRecord.getInt("state0Data") + dataRecord.getInt("state1Data") + dataRecord.getInt("state2Data") + dataRecord.getInt("state3Data") + dataRecord.getInt("state4Data");
