@@ -18,12 +18,24 @@
 	<script type="text/javascript">
 	
 		var orgComboTreeData = eval('${orgComboTreeData}');
+		var isSearchHistoryCallTask = 0;          //是否为查询历史任务,0为否，1为是
 	
 		$(function(){
 			$('#startTime').datebox('setValue',getCurrMonthDay1());
 			$('#endTime').datebox('setValue',getCurrDate());
 			
 			initOrgCodeForAutoCallTaskSearch();
+			
+			$("#isSearchHistoryCallTaskCheckBox").change(function(){
+				if($("#isSearchHistoryCallTaskCheckBox").prop('checked')) {
+					//alart("被选中了");
+					isSearchHistoryCallTask = 1;
+				}else {
+					//alert("没有被选中");
+					isSearchHistoryCallTask = 0;
+				}
+				findData();
+			});
 			
 		});
 		
@@ -55,7 +67,8 @@
 						queryParams:{
 							startTime:$('#startTime').datebox('getValue'),
 							endTime:$('#endTime').datebox('getValue'),
-							orgCodes:orgCodes
+							orgCodes:orgCodes,
+							isSearchHistoryCallTask:isSearchHistoryCallTask
 						}
 					});
 				}
@@ -86,7 +99,8 @@
 			$("#autoCallTaskReportDg").datagrid("reload",{
 				startTime:$('#startTime').datebox('getValue'),
 				endTime:$('#endTime').datebox('getValue'),
-				orgCodes:orgCodes
+				orgCodes:orgCodes,
+				isSearchHistoryCallTask:isSearchHistoryCallTask
 			});
 		}
 		
@@ -107,6 +121,12 @@
 					<span style="padding-left:20px;">
 						选择组织：<select class="easyui-combotree" id="orgCode" name="orgCode" style="width:130px;" required="true" data-options="panelHeight:'auto',multiple:true"></select>
 					</span>
+					
+					<span style="padding-left:40px;">
+						<input type="checkbox" id="isSearchHistoryCallTaskCheckBox" value="1"><label for="isSearchHistoryCallTaskCheckBox">历史任务</label>
+						<span style="color:red;margin-left: 20px;">*查询已归档任务</span>
+					</span>
+					
 					<span style="padding-left:40px;">
 						<a href="javascript:findData()" class="easyui-linkbutton" style="width:100px;" data-options="iconCls:'icon-search'">查询</a>
 					</span>
