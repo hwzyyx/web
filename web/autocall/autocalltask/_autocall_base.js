@@ -238,6 +238,13 @@ function autoCallTaskEdit(taskId,taskName,callerId,callerIdNumber,planStartTime,
 //外呼任务编辑保存
 function autoCallTaskSaveEdit() {
 
+	//先检查外呼任务编辑，是否针对历史任务编辑，如果是历史任务列表时，不允许编辑
+	if(isSearchHistoryCallTask==1) {    //如果为历史任务时，不允许编辑
+		alert("修改失败：任务列表为历史任务列表，不允许执行任务内容修改!");
+		return;
+	}
+	
+	
 	var chedkRs = checkOutInput();   //输入校验,主要是检查输入项是否为空
 	if(!chedkRs) {
 		return;
@@ -246,7 +253,7 @@ function autoCallTaskSaveEdit() {
 	//alert($("#TASK_TYPE").combobox('getValue') + "---" + $('#REMINDER_TYPE').combobox('getValue'));
 	$('#autoCallTaskForm').form('submit',{
 
-		url:'autoCallTask/update',
+		url:'autoCallTask/update?isSearchHistoryCallTask=' + isSearchHistoryCallTask,
 		onSubmit:function(param){
 			
 			var v = $(this).form('validate');
@@ -337,7 +344,7 @@ function autoCallTaskDel(taskId) {
 			});
 
 			$.ajax({
-				url:'autoCallTask/delete?taskId=' + taskId,
+				url:'autoCallTask/delete?taskId=' + taskId + '&isSearchHistoryCallTask=' + isSearchHistoryCallTask,
 				method:'POST',
 				dataType:'json',
 				success:function(rs) {
@@ -358,6 +365,13 @@ function autoCallTaskDel(taskId) {
 
 //上传号码文件
 function uploadPhoneFile() {
+	
+	//如果为历史任务列表时，不允许上传号码
+	if(isSearchHistoryCallTask==1) {
+		alert("上传号码失败：当前任务为历史任务，不允许上传号码!");
+		return;
+	}
+	
 	$("#uploadTelephoneForm").form('submit',{
 
 		url:'autoCallTaskTelephone/uploadFile?taskId=' + currTaskId,
@@ -609,7 +623,8 @@ function initAutoCallTaskTelephoneList() {
 			messageState:$("#messageState").combobox('getValue'),
 			startTimeForTelephone:$("#startTimeForTelephone").datebox('getValue'),
 			endTimeForTelephone:$("#endTimeForTelephone").datebox('getValue'),
-			dateTimeType:dateTimeType
+			dateTimeType:dateTimeType,
+			isSearchHistoryCallTask:isSearchHistoryCallTask
 		}
 	});
 }
@@ -674,7 +689,8 @@ function initOrgCodeForAutoCallTaskSearch() {
 					startTime:startTime,
 					endTime:endTime,
 					taskType:taskType,
-					taskState:taskState
+					taskState:taskState,
+					isSearchHistoryCallTask:isSearchHistoryCallTask
 				},
 				onSelect:function(index,data) {
 					var taskId = data.TASK_ID;         //取出任务ID
@@ -883,7 +899,13 @@ function changeState(action) {
 	var node = $("#autoCallTaskDg").datagrid("getSelected");   //取得当前选中的记录
 	if(node==null) {
 		$.messager.alert('警告','操作失败:请先选择任务','error');
-	}  
+		return;
+	}
+
+	if(isSearchHistoryCallTask==1) {    //如果当前查询的是历史任务,则不允许其修改状态
+		$.messager.alert('警告','操作失败:当前任务列表为历史任务(已归档)，不允许改变状态!','error');
+		return;
+	}
 
 	var taskId = node.TASK_ID;
 	var taskName = node.TASK_NAME;
@@ -1427,6 +1449,12 @@ function cancel() {
 //=========单个增加号码操作-======
 function autoCallTaskTelephoneAdd() {
 
+	//如果为历史任务列表时，不允许上传号码
+	if(isSearchHistoryCallTask==1) {
+		alert("上传号码失败：当前任务为历史任务，不允许增加号码!");
+		return;
+	}
+	
 	$("#autoCallTaskTelephoneSaveBtn").attr("onclick","autoCallTaskTelephoneSaveAdd()");
 	
 	$("#autoCallTaskTelephoneDlg").dialog('setTitle','新增号码').dialog('open');
@@ -1452,6 +1480,13 @@ function autoCallTaskTelephoneEdit(telId,customerTel,customerName,period,display
 	$("#ILLEGAL_REASON").textbox('setValue',illegalReason);			 //违法理由
 	$("#COMPANY").textbox('setValue',company);						 //公司
 	*/
+	
+	//如果为历史任务列表时，不允许编辑号码
+	if(isSearchHistoryCallTask==1) {
+		alert("上传号码失败：当前任务为历史任务，不允许修改号码!");
+		return;
+	}
+	
 	$("#autoCallTaskTelephoneSaveBtn").attr("onclick","autoCallTaskTelephoneSaveEdit()");
 
 	$("#autoCallTaskTelephoneForm").form('load',{
@@ -1480,6 +1515,12 @@ function autoCallTaskTelephoneEdit(telId,customerTel,customerName,period,display
 
 //自动外呼号码的添加保存
 function autoCallTaskTelephoneSaveAdd(){
+	
+	//如果为历史任务列表时，不允许上传号码
+	if(isSearchHistoryCallTask==1) {
+		alert("上传号码失败：当前任务为历史任务，不允许增加号码!");
+		return;
+	}
 
 	$("#autoCallTaskTelephoneForm").form('submit',{
 		
@@ -1517,7 +1558,13 @@ function autoCallTaskTelephoneSaveAdd(){
 
 //外呼号码的修改保存
 function autoCallTaskTelephoneSaveEdit(){
-
+	
+	//如果为历史任务列表时，不允许编辑号码
+	if(isSearchHistoryCallTask==1) {
+		alert("上传号码失败：当前任务为历史任务，不允许修改号码!");
+		return;
+	}
+	
 	$("#autoCallTaskTelephoneForm").form('submit',{
 
 		url:'autoCallTaskTelephone/update?taskId=' + currTaskId,
@@ -1565,7 +1612,7 @@ function autoCallTaskTelephoneDel() {
 				msg:'系统正在处理，请稍候...'
 			});
 			$.ajax({
-				url:'autoCallTaskTelephone/delete?&ids=' + getTelephoneSelectedRows(),
+				url:'autoCallTaskTelephone/delete?isSearchHistoryCallTask=' + isSearchHistoryCallTask + '&ids=' + getTelephoneSelectedRows(),
 				method:'POST',
 				dataType:'json',
 				success:function(rs) {
@@ -1596,6 +1643,12 @@ function getTelephoneSelectedRows() {
 
 //通过号码组方式上传号码
 function uploadPhoneByNumber() {
+	
+	//如果为历史任务列表时，不允许上传号码
+	if(isSearchHistoryCallTask==1) {
+		alert("上传号码失败：当前任务为历史任务，不允许上传号码!");
+		return;
+	}
 
 	var numberId = $("#NUMBER_ID").val();
 
