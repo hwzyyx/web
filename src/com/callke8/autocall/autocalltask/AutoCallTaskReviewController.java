@@ -52,11 +52,12 @@ public class AutoCallTaskReviewController extends Controller {
 		String taskId = getPara("taskId");
 		String reviewResult = getPara("reviewResult");
 		String reviewAdvice = getPara("review.reviewAdvice");
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");
 		
 		//System.out.println("taskId:" + taskId + ",reviewResult:" + reviewResult + ",reviewAdvice:" + reviewAdvice);
 		
 		
-		AutoCallTask act = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+		AutoCallTask act = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,isSearchHistoryCallTask);
 		if(BlankUtils.isBlank(act)) {   //如果任务为空
 			render(RenderJson.error("审核失败,外呼任务不存在,已被删除或是被归档!"));
 			return;
@@ -82,15 +83,16 @@ public class AutoCallTaskReviewController extends Controller {
 		StringBuilder msg = new StringBuilder();
 		
 		String taskId = getPara("taskId");
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");
 		
 		//取出任务信息
-		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId);
+		AutoCallTask autoCallTask = AutoCallTask.dao.getAutoCallTaskByTaskId(taskId,isSearchHistoryCallTask);
 		//Schedule schedule = Schedule.dao.getScheduleById(autoCallTask.get("SCHEDULE_ID").toString());   //取出调度任务
 		SysSchedule schedule = SysSchedule.dao.getScheduleById(autoCallTask.get("SCHEDULE_ID").toString());    //取出调度任务
 		int dateType = schedule.getInt("DATETYPE");     //日期类型 1:每天; 2：星期
 		String dateTypeDetail = schedule.get("DATETYPE_DETAIL");   //得到生效的星期天数,数据以逗分隔,如 1,2,3,4,7(即周一，周二，周3，周四，周日)
 		
-		int count = AutoCallTaskTelephone.dao.getTelephoneCountByTaskId(taskId);
+		int count = AutoCallTaskTelephone.dao.getTelephoneCountByTaskId(taskId,isSearchHistoryCallTask);
 		
 		//创建一个<table> 用于显示问卷标题信息
 		msg.append("<table border='0' cellspacing='0' cellpadding='0' style='width:100%'>");
