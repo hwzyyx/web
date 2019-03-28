@@ -30,6 +30,10 @@ import com.callke8.call.calltelephone.CallTelephone;
 import com.callke8.call.calltelephone.CallerLocation;
 import com.callke8.call.common.CallRoute;
 import com.callke8.call.incoming.InComing;
+import com.callke8.cnn.cnncallindata.CnnCallinData;
+import com.callke8.cnn.cnndata.CnnData;
+import com.callke8.cnn.cnnvoice.CnnVoice;
+import com.callke8.cnn.common.CnnRoute;
 import com.callke8.fastagi.blacklist.BlackList;
 import com.callke8.fastagi.blacklist.BlackListInterceptRecord;
 import com.callke8.fastagi.common.FastagiRoute;
@@ -43,6 +47,8 @@ import com.callke8.report.common.ReportRoute;
 import com.callke8.system.callerid.SysCallerId;
 import com.callke8.system.callerid.SysCallerIdController;
 import com.callke8.system.calleridassign.SysCallerIdAssign;
+import com.callke8.system.calleridgroup.SysCallerIdGroup;
+import com.callke8.system.calleridgroup.SysCallerIdGroupAssign;
 import com.callke8.system.common.SystemRoute;
 import com.callke8.system.dict.DictGroup;
 import com.callke8.system.dict.DictItem;
@@ -143,6 +149,8 @@ public class CommonConfig extends JFinalConfig {
 		arp.addMapping("sys_param", Param.class);
 		arp.addMapping("sys_callerid", SysCallerId.class);
 		arp.addMapping("sys_callerid_assign", SysCallerIdAssign.class);
+		arp.addMapping("sys_callerid_group", SysCallerIdGroup.class);
+		arp.addMapping("sys_callerid_group_assign", SysCallerIdGroupAssign.class);
 		arp.addMapping("sys_task_type", SysTaskType.class);
 		arp.addMapping("sys_task_type_assign", SysTaskTypeAssign.class);
 		arp.addMapping("sys_reminder_type", SysReminderType.class);
@@ -191,6 +199,11 @@ public class CommonConfig extends JFinalConfig {
 		//博世家电数据表
 		arp.addMapping("bsh_orderlist", BSHOrderList.class);
 		arp.addMapping("bsh_voice", BSHVoice.class);
+		
+		//改号通知数据表
+		arp.addMapping("cnn_data", CnnData.class);
+		arp.addMapping("cnn_callin_data", CnnCallinData.class);
+		arp.addMapping("cnn_voice", CnnVoice.class);
 		
 	}
 	
@@ -287,6 +300,7 @@ public class CommonConfig extends JFinalConfig {
 		me.add(new FastagiRoute());
 		me.add(new AutoCallRoute());
 		me.add(new BSHRoute());
+		me.add(new CnnRoute());
 	}
 
 }
