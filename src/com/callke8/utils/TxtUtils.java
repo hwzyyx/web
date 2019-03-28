@@ -58,6 +58,8 @@ public class TxtUtils {
 				String splitIdentify = ",";
 				if(str.contains("|")) {
 					splitIdentify = "\\|";
+				}else if(str.contains("@_@")) {
+					splitIdentify = "@_@";
 				}
 				String[] strs = str.split(splitIdentify);
 				
