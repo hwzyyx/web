@@ -13,6 +13,7 @@ import com.callke8.autocall.autocalltaskreport.AutoCallTaskReportController;
 import com.callke8.autocall.autocalltaskreport.AutoCallTaskReportGroupByOperIdController;
 import com.callke8.autocall.autonumber.AutoNumberController;
 import com.callke8.autocall.autonumber.AutoNumberTelephoneController;
+import com.callke8.autocall.flow.AutoFlowController;
 import com.callke8.autocall.questionnaire.QuestionController;
 import com.callke8.autocall.questionnaire.QuestionItemController;
 import com.callke8.autocall.questionnaire.QuestionnaireController;
@@ -44,6 +45,7 @@ public class AutoCallRoute extends Routes {
 		add("/autoNumberTelephone",AutoNumberTelephoneController.class,"/autocall/number");
 		add("/autoCallTaskReport",AutoCallTaskReportController.class,"/autocall/autocalltaskreport");
 		add("/autoCallTaskReportGroupByOperId",AutoCallTaskReportGroupByOperIdController.class,"/autocall/autocalltaskreport");
+		add("/autoFlow",AutoFlowController.class,"/autocall/flow");
 	}
 
 }
