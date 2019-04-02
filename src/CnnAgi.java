@@ -88,7 +88,7 @@ public class CnnAgi extends BaseAgiScript {
 		}
 		
 		boolean b = CnnCallinData.dao.add(cnnCallinData);
-		
+		channel.hangup();      //执行切断通道操作
 	}
 	
 	/**
