@@ -418,7 +418,7 @@
 					<th data-options="field:'CREATE_USERCODE_DESC',width:150,align:'center'">创建人</th>
 					<!-- th data-options="field:'ORG_CODE_DESC',width:150,align:'center'">部门(组织)名字</th -->
 					<th data-options="field:'CREATE_TIME',width:180,align:'center'">创建时间</th>
-					<th data-options="field:'id',width:100,align:'center',formatter:rowformatter">操作</th>
+					<th data-options="field:'id',width:200,align:'center',formatter:rowformatter">操作</th>
 				</tr>
 				
 			</thead>
@@ -504,6 +504,11 @@
 <!-- 外呼结果弹窗 -->
 <div id="callResultDlg" class="easyui-dialog" style="width:80%;height:80%;padding:5px;" modal="true" closed="true">
 	<%@ include file="/autocall/autocalltask/_callresult.jsp" %>
+</div>
+
+<!-- 外呼调查结果弹窗 -->
+<div id="autoCallTaskSurveyResultDlg" class="easyui-dialog" style="width:60%;height:80%;padding:5px;" modal="true" closed="true">
+	<%@ include file="/autocall/autocalltask/_surveyresult.jsp" %>
 </div>
 
 <!-- 任务号码列表 -->

@@ -879,8 +879,17 @@ function scheduledetailformatter(value,data,index) {
 }
 
 function rowformatter(value,data,index) {
-	return "<a href='#' onclick='javascript:autoCallTaskEdit(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\",\"" + data.CALLERID + "\",\"" + data.CALLERID_NUMBER + "\",\"" + data.PLAN_START_TIME + "\",\"" + data.PLAN_END_TIME + "\",\"" + data.SCHEDULE_ID + "\",\"" + data.SCHEDULE_NAME + "\",\"" + data.TASK_TYPE + "\",\"" + data.COMMON_VOICE_ID + "\",\"" + data.COMMON_VOICE_DESC + "\",\"" + data.QUESTIONNAIRE_ID + "\",\"" + data.QUESTIONNAIRE_DESC + "\",\"" + data.REMINDER_TYPE + "\",\"" + data.START_VOICE_ID + "\",\"" + data.START_VOICE_DESC + "\",\"" + data.END_VOICE_ID + "\",\"" + data.END_VOICE_DESC + "\",\"" + data.BLACKLIST_ID + "\",\"" + data.BLACKLIST_NAME + "\",\"" + data.RETRY_TIMES + "\",\"" + data.RETRY_INTERVAL + "\",\""  + data.INTERVAL_TYPE + "\",\"" + data.PRIORITY + "\",\"" + data.SEND_MESSAGE + "\",\"" + data.MESSAGE_CONTENT + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>" + 
+	
+	var taskTypeValue = data.TASK_TYPE;
+	
+	if(taskTypeValue=="2") {       //如果taskType 为2，即是调查类外呼时，增加查看调查结果
+		return "<a href='#' onclick='javascript:autoCallTaskEdit(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\",\"" + data.CALLERID + "\",\"" + data.CALLERID_NUMBER + "\",\"" + data.PLAN_START_TIME + "\",\"" + data.PLAN_END_TIME + "\",\"" + data.SCHEDULE_ID + "\",\"" + data.SCHEDULE_NAME + "\",\"" + data.TASK_TYPE + "\",\"" + data.COMMON_VOICE_ID + "\",\"" + data.COMMON_VOICE_DESC + "\",\"" + data.QUESTIONNAIRE_ID + "\",\"" + data.QUESTIONNAIRE_DESC + "\",\"" + data.REMINDER_TYPE + "\",\"" + data.START_VOICE_ID + "\",\"" + data.START_VOICE_DESC + "\",\"" + data.END_VOICE_ID + "\",\"" + data.END_VOICE_DESC + "\",\"" + data.BLACKLIST_ID + "\",\"" + data.BLACKLIST_NAME + "\",\"" + data.RETRY_TIMES + "\",\"" + data.RETRY_INTERVAL + "\",\""  + data.INTERVAL_TYPE + "\",\"" + data.PRIORITY + "\",\"" + data.SEND_MESSAGE + "\",\"" + data.MESSAGE_CONTENT + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>" + 
+		"<a href='#' onclick='javascript:autoCallTaskDel(\"" + data.TASK_ID +"\")'><img src='themes/icons/cancel.png' style='margin-left:10px;' border='0'>删除</a>" + "  <a href='#' onclick='javascript:autoCallTaskShowSurveyResult(\"" + data.TASK_ID + "\",\"" + data.QUESTIONNAIRE_ID + "\")'><img src='themes/icons/statistics.png' style='margin-left:10px;' border='0'>调查结果</a>";
+	}else {
+		
+		return "<a href='#' onclick='javascript:autoCallTaskEdit(\"" + data.TASK_ID + "\",\"" + data.TASK_NAME + "\",\"" + data.CALLERID + "\",\"" + data.CALLERID_NUMBER + "\",\"" + data.PLAN_START_TIME + "\",\"" + data.PLAN_END_TIME + "\",\"" + data.SCHEDULE_ID + "\",\"" + data.SCHEDULE_NAME + "\",\"" + data.TASK_TYPE + "\",\"" + data.COMMON_VOICE_ID + "\",\"" + data.COMMON_VOICE_DESC + "\",\"" + data.QUESTIONNAIRE_ID + "\",\"" + data.QUESTIONNAIRE_DESC + "\",\"" + data.REMINDER_TYPE + "\",\"" + data.START_VOICE_ID + "\",\"" + data.START_VOICE_DESC + "\",\"" + data.END_VOICE_ID + "\",\"" + data.END_VOICE_DESC + "\",\"" + data.BLACKLIST_ID + "\",\"" + data.BLACKLIST_NAME + "\",\"" + data.RETRY_TIMES + "\",\"" + data.RETRY_INTERVAL + "\",\""  + data.INTERVAL_TYPE + "\",\"" + data.PRIORITY + "\",\"" + data.SEND_MESSAGE + "\",\"" + data.MESSAGE_CONTENT + "\")'><img src='themes/icons/pencil.png' border='0'>编辑</a>" + 
 	"<a href='#' onclick='javascript:autoCallTaskDel(\"" + data.TASK_ID +"\")'><img src='themes/icons/pencil.png' border='0'>删除</a>";
+	}
 }
 
 function disabledAllStateBtn() {
