@@ -1030,6 +1030,27 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	}
 	
 	/**
+	 * 根据telId列表 查询 号码信息
+	 * 
+	 * @param telIdList
+	 * @param isSearchHistoryCallTask
+	 * @return
+	 */
+	public List<Record> getAutoCallTaskTelephoneByTelIdList(String telIdList,String isSearchHistoryCallTask ) {
+		
+		String tableName = "ac_call_task_telephone";
+		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
+			tableName = "ac_call_task_telephone_history";
+		}
+		
+		String sql = "select * from " + tableName + " where TEL_ID in(" + telIdList + ")";
+		
+		List<Record> list = Db.find(sql);
+		
+		return list;
+	}
+	
+	/**
 	 * 根据流水号，取得外呼号码
 	 * 
 	 * @param serialNumber
