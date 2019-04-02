@@ -1,10 +1,12 @@
 package com.callke8.autocall.questionnaire;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import com.callke8.autocall.autocalltask.AutoCallTask;
+import com.callke8.autocall.autocalltask.AutoCallTaskTelephone;
 import com.callke8.autocall.autocalltask.history.AutoCallTaskHistory;
 import com.callke8.autocall.voice.Voice;
 import com.callke8.common.CommonController;
@@ -13,9 +15,12 @@ import com.callke8.system.operator.Operator;
 import com.callke8.system.param.ParamConfig;
 import com.callke8.utils.BlankUtils;
 import com.callke8.utils.DateFormatUtils;
+import com.callke8.utils.ExcelExportUtil;
 import com.callke8.utils.MemoryVariableUtil;
+import com.callke8.utils.NumberUtils;
 import com.callke8.utils.RenderJson;
 import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Record;
 
 public class QuestionnaireController extends Controller implements IController {
 
@@ -232,8 +237,142 @@ public class QuestionnaireController extends Controller implements IController {
 		}
 		
 		msg.append("</table>");
-		
+		System.out.println(msg.toString());
 		render(RenderJson.success(msg.toString()));
+		
+	}
+	
+	
+	/**
+	 * 问卷调查结果情况
+	 */
+	public void surveyResultPreview() {
+		
+		StringBuilder msg = new StringBuilder();   //新建信息变量
+		
+		String questionnaireId = getPara("questionnaireId");
+		String taskId = getPara("taskId");                        //取得任务的ID
+		
+		//根据上传的问卷ID,查询出问卷信息
+		Questionnaire questionnaire = Questionnaire.dao.getQuestionnaireById(questionnaireId);
+		
+		if(BlankUtils.isBlank(questionnaire)) {
+			render(RenderJson.success("暂无法预览问卷!"));
+			return;
+		}
+		
+		//从问卷信息中,取出问卷标题
+		String questionnaireDesc = questionnaire.get("QUESTIONNAIRE_DESC");
+		
+		//根据卷ID,取出问题集
+		List<Question> questionList = Question.dao.getQuestionByQuestionnaireId(questionnaireId); 
+		
+		//创建一个<table> 用于显示问卷标题信息
+		msg.append("<table border='0' cellspacing='0' cellpadding='0' style='width:100%'>");
+		msg.append("<tr><td style='padding-top:10px;' align='center'>");
+		msg.append("&nbsp;&nbsp;<span style='font-weight:bolder;font-size:14px'>" + questionnaireDesc + "</span>");
+		msg.append("<HR style='FILTER:alpha(opacity=100,finishopacity=0,style=3);margin-left:3px;' width='95%' color=#cccccc SIZE=1>");
+		msg.append("</td></tr>");
+		
+		int qId = 1;   //问题顺序
+		for(Question question:questionList)  {
+			System.out.println(question);
+			
+			String questionId = question.get("QUESTION_ID");       //取出问题ID
+			String questionDesc = question.get("QUESTION_DESC");   //取出问题内容
+			String voiceId = question.get("VOICE_ID");             //取出语音ID
+			
+			Voice voice = Voice.dao.getVoiceByVoiceId(voiceId);    //查询语音信息
+			
+			//设置试听的路径
+			String path =  ParamConfig.paramConfigMap.get("paramType_4_voicePath") + "/" + voice.get("FILE_NAME") + "." + voice.get("MIME_TYPE");
+			
+			List<QuestionItem> questionItemList = QuestionItem.dao.getQuestionItemByQuestionId(questionId); //根据问题ID,取出问题的所有的选项
+			
+			//在显示问题之前,先计算这个问题的有效回复的数量（所谓有效回复，是指在回复结果表中，属于该任务，且回复的结果与问题选项对应，如果回复的不是问题选项就不算有效回复）
+			int validRespondCount = 0;   //默认设置有效回复数量为0
+			String itemCodeList = "";
+			for(QuestionItem questionItem:questionItemList) {
+				itemCodeList += String.valueOf(questionItem.get("ITEM_CODE")) + ",";
+			}
+			
+			if(!BlankUtils.isBlank(itemCodeList)) {    //如果itemCode 不为空时，去掉最后一个 逗号
+				itemCodeList = itemCodeList.substring(0, itemCodeList.length()-1);
+			}
+			
+			if(!BlankUtils.isBlank(itemCodeList)) {    //如果不为空时，我们去数据库查询有效的回复数量
+				System.out.println("itemCodeList:=====" + itemCodeList);
+				validRespondCount = QuestionnaireRespond.dao.getValidRespondCount(taskId, questionId, itemCodeList);    //取得有效回复数量
+			}
+			
+			//显示问题(开始)
+			//-------------------------
+			msg.append("<tr><td style='padding-top:5px;'>");
+			msg.append("&nbsp;&nbsp;" + qId + "." + questionDesc + "(数量：" + validRespondCount  + ")");
+			//显示音乐播放器(结束)
+			msg.append("</td></tr>");
+			//显示问题(结束)
+			
+			msg.append("<tr><td style='padding-top:5px;'>");
+			//显示问题的选项
+			for(QuestionItem questionItem:questionItemList) {
+				
+				String itemCode = String.valueOf(questionItem.get("ITEM_CODE"));
+				String itemDesc = questionItem.get("ITEM_DESC");
+				
+				//查询和返回当前问题选项的回复数量，并计算与有效回复数量的占比情况
+				String itemCountAndPercent = "";     //定义一个变量，存储当前选择的数量和百分比 
+				if(validRespondCount==0) {   //如果有效数量为0，就没有必要去查询
+					itemCountAndPercent = "<span style='margin-left:100px;'>(数量：0,占比：0%)</span>";
+				}else {
+					int itemRespondCount = QuestionnaireRespond.dao.getValidRespondCount(taskId, questionId,itemCode);
+					//计算百分比
+					String percent = NumberUtils.calculatePercent(itemRespondCount, validRespondCount);
+					itemCountAndPercent = "<span style='margin-left:100px;'>(数量：" + itemRespondCount + ",占比：" + percent + "%)</span>";
+				}
+				
+				String urlInfo = "<a href='#' onclick='javascript:exportTelDataToExcel(" + taskId + "," + questionId + "," + itemCode + ")'>导出</a>";
+				
+				msg.append("&nbsp;&nbsp;&nbsp;&nbsp;<input name='question" + qId + "' id='question" + qId + itemCode + "' type='radio'/>&nbsp;<label for='question" +qId + itemCode + "'>" + itemDesc + itemCountAndPercent + "</label>&nbsp;&nbsp;&nbsp;&nbsp;" + urlInfo + "<br/>" );
+			}
+			msg.append("</td></tr>");
+			qId++;
+		}
+		
+		msg.append("</table>");
+		System.out.println(msg.toString());
+		render(RenderJson.success(msg.toString()));
+		
+	}
+	
+	/**
+	 * 导出号码数据到Excel
+	 */
+	public void exportTelData() {
+		
+		String taskId = getPara("taskId");                  // 任务Id
+		String questionId = getPara("questionId");          // 题目ID
+		String respond = getPara("respond");				// 回复按钮
+		String isSearchHistoryCallTask = getPara("isSearchHistoryCallTask");       //是否查询历史任务
+		
+		//先根据上传的条件，去回复结果表里查询 telId 列表, 以逗号分隔： 123,1223,343
+		String telIdList = QuestionnaireRespond.dao.getTelIdListByCondition(taskId, questionId, respond);
+		List<Record> autoCallTaskTelephoneList = new ArrayList<Record>();
+		if(!BlankUtils.isBlank(telIdList)) {
+			autoCallTaskTelephoneList = AutoCallTaskTelephone.dao.getAutoCallTaskTelephoneByTelIdList(telIdList, isSearchHistoryCallTask);
+		}
+		
+		String fileName = "export.xls";
+		String sheetName = "调查回复对应客户号码表";
+		
+		ExcelExportUtil export = new ExcelExportUtil(autoCallTaskTelephoneList, getResponse());
+		
+		String[] headers = {"客户姓名","电话号码","省份","城市","外呼时间","通话时长"};
+		String[] columns = {"CUSTOMER_NAME","CUSTOMER_TEL","PROVINCE","CITY","LOAD_TIME","BILLSEC"};
+		
+		export.headers(headers).columns(columns).cellWidth(100).sheetName(sheetName);
+		
+		export.fileName(fileName).execExport();
 		
 	}
 

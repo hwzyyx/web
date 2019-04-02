@@ -185,4 +185,58 @@ public class QuestionnaireRespond extends Model<QuestionnaireRespond> {
 		
 	}
 	
+	/**
+	 * 取得有效回复的数量
+	 * 
+	 * @param taskId
+	 * 				任务ID
+	 * @param questionId
+	 * 				问题ID
+	 * @param itemCodeList
+	 * 				传入的问题对应的选项的对应按键，如果回复的结果与选择的 ItemCode 相同，就表示是有效的回复
+	 * @return
+	 */
+	public int getValidRespondCount(String taskId, String questionId, String itemCodeList) {
+		
+		String sql = "select count(*) as count from ac_questionnaire_respond where TASK_ID=? and QUESTION_ID=? and RESPOND in(" + itemCodeList + ")";
+		
+		Record r = Db.findFirst(sql, taskId,questionId);
+		
+		int count = 0;
+		
+		if(!BlankUtils.isBlank(r)) {
+			count = Integer.valueOf(r.get("count").toString());
+		}
+		
+		return count;
+	}
+
+	/**
+	 * 根据条件，取出该任务的对应题目的对应回复按键的号码ID
+	 * 
+	 * @param taskId
+	 * @param questionId
+	 * @param respond
+	 * @return
+	 */
+	public String getTelIdListByCondition(String taskId,String questionId,String respond) {
+		
+		String sql = "select TEL_ID from ac_questionnaire_respond where TASK_ID=? and QUESTION_ID=? and RESPOND=?";
+		
+		List<Record> list = Db.find(sql,taskId,questionId,respond);
+		
+		String telIdList = "";
+		
+		for(Record r:list) {
+			int telId = r.getInt("TEL_ID");
+			telIdList += telId + ",";
+		}
+		
+		if(!BlankUtils.isBlank(telIdList)) {     //去掉最后一个逗号
+			telIdList = telIdList.substring(0,telIdList.length()-1);
+		}
+		
+		return telIdList;
+	}
+	
 }
