@@ -18,6 +18,11 @@ public class AutoFlow extends Model<AutoFlow>  {
 		sb.append("from ac_flow where 1=1");
 
 		//条件判断暂时不自动添加
+		if(!BlankUtils.isBlank(flowName)) {
+			sb.append(" and FLOW_NAME like ?");
+			pars[index] = "%" + flowName + "%";
+			index++;
+		}
 
 		Page<Record> p = Db.paginate(pageNumber, pageSize, "select *", sb.toString()+" ORDER BY REMINDER_TYPE ASC",ArrayUtils.copyArray(index, pars));
 		return p;

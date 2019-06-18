@@ -186,21 +186,43 @@ public class QuestionnaireRespond extends Model<QuestionnaireRespond> {
 	}
 	
 	/**
-	 * 取得有效回复的数量
+	 * 取得回复的数量
 	 * 
 	 * @param taskId
 	 * 				任务ID
 	 * @param questionId
 	 * 				问题ID
 	 * @param itemCodeList
-	 * 				传入的问题对应的选项的对应按键，如果回复的结果与选择的 ItemCode 相同，就表示是有效的回复
+	 * 				如果不为空：传入的问题对应的选项的对应按键，如果回复的结果与选择的 ItemCode 相同，就表示是有效的回复
+	 * 				如果为空，则表示返回该任务的该问题的所有回复数量
 	 * @return
 	 */
-	public int getValidRespondCount(String taskId, String questionId, String itemCodeList) {
+	public int getRespondCount(String taskId, String questionId, String itemCodeList) {
 		
-		String sql = "select count(*) as count from ac_questionnaire_respond where TASK_ID=? and QUESTION_ID=? and RESPOND in(" + itemCodeList + ")";
+		StringBuilder sb = new StringBuilder();
+		Object[] pars = new Object[10];
+		int index = 0;
 		
-		Record r = Db.findFirst(sql, taskId,questionId);
+		sb.append("select count(*) as count from ac_questionnaire_respond where 1=1");
+		
+		if(!BlankUtils.isBlank(taskId)) {
+			sb.append(" and TASK_ID=?");
+			pars[index] = taskId;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(questionId)) {
+			sb.append(" and QUESTION_ID=?");
+			pars[index] = questionId;
+			index++;
+		}
+		
+		if(!BlankUtils.isBlank(itemCodeList)) {
+			sb.append(" and RESPOND in(" + itemCodeList + ")");
+		}
+		
+		
+		Record r = Db.findFirst(sb.toString(), taskId,questionId);
 		
 		int count = 0;
 		
@@ -224,6 +246,34 @@ public class QuestionnaireRespond extends Model<QuestionnaireRespond> {
 		String sql = "select TEL_ID from ac_questionnaire_respond where TASK_ID=? and QUESTION_ID=? and RESPOND=?";
 		
 		List<Record> list = Db.find(sql,taskId,questionId,respond);
+		
+		String telIdList = "";
+		
+		for(Record r:list) {
+			int telId = r.getInt("TEL_ID");
+			telIdList += telId + ",";
+		}
+		
+		if(!BlankUtils.isBlank(telIdList)) {     //去掉最后一个逗号
+			telIdList = telIdList.substring(0,telIdList.length()-1);
+		}
+		
+		return telIdList;
+	}
+	
+	/**
+	 * 根据条件，取出该任务的对应题目的非传入的 回复结果
+	 * 
+	 * @param taskId
+	 * @param questionId
+	 * @param respond
+	 * @return
+	 */
+	public String getTelIdListByConditionForNotIntRespond(String taskId,String questionId,String itemCodeList) {
+		
+		String sql = "select TEL_ID from ac_questionnaire_respond where TASK_ID=? and QUESTION_ID=? and RESPOND not in(" + itemCodeList + ")";
+		
+		List<Record> list = Db.find(sql,taskId,questionId);
 		
 		String telIdList = "";
 		

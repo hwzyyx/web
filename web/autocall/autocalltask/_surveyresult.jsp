@@ -35,14 +35,20 @@
 	
 	
 	//导出客户回复结果的数据
-	function exportTelDataToExcel(taskId,questionId,respond) {
-		//alert("taskId=" + taskId + ",questionId=" + questionId + ",respond:" + respond);
+	//respondType: 1 表示是有效回复; 2 表示导出无效回复。
+	function exportTelDataToExcel(taskId,questionnaireId,respondType) {
+		//alert("taskId=" + taskId + ",questionnaireId=" + questionnaireId + ",respondType=" + respondType + );
+		//alert("aaaa");
+		var methodName = "exportTelData";
+		if(respondType!="1") {
+			methodName = "exportTelDataForInvalid";
+		}
+		
 		$("#exportForm").form('submit',{
-			url:"questionnaire/exportTelData",
+			url:"questionnaire/" + methodName,
 			onSubmit:function(param) {
 				param.taskId = taskId;
-				param.questionId = questionId;
-				param.respond = respond;
+				param.questionnaireId = questionnaireId;
 				param.isSearchHistoryCallTask = isSearchHistoryCallTask;
 			},
 			success:function(data) {

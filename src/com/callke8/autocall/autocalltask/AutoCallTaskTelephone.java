@@ -1034,9 +1034,13 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 	 * 
 	 * @param telIdList
 	 * @param isSearchHistoryCallTask
+	 * @param questionDesc
+	 * 			问题内容
+	 * @param itemDesc
+	 * 			选项内容
 	 * @return
 	 */
-	public List<Record> getAutoCallTaskTelephoneByTelIdList(String telIdList,String isSearchHistoryCallTask ) {
+	public List<Record> getAutoCallTaskTelephoneByTelIdList(String telIdList,String isSearchHistoryCallTask,String questionDesc,String itemDesc) {
 		
 		String tableName = "ac_call_task_telephone";
 		if(!BlankUtils.isBlank(isSearchHistoryCallTask) && isSearchHistoryCallTask.equals("1")) {
@@ -1046,6 +1050,13 @@ public class AutoCallTaskTelephone extends Model<AutoCallTaskTelephone> {
 		String sql = "select * from " + tableName + " where TEL_ID in(" + telIdList + ")";
 		
 		List<Record> list = Db.find(sql);
+		List<Record> newList = new ArrayList<Record>();
+		
+		for(Record r:list) {
+			r.set("QUESTION_DESC",questionDesc);
+			r.set("ITEM_DESC", itemDesc);
+			newList.add(r);
+		}
 		
 		return list;
 	}

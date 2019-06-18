@@ -338,6 +338,7 @@
 						<th data-options="field:'CUSTOMER_NEW_TEL',width:200,align:'center'">客户新号码</th>
 						<th data-options="field:'CUSTOMER_NAME',width:200,align:'center'">客户姓名</th>
 						<th data-options="field:'FLAG',width:120,align:'center',formatter:flagformatter">（中/英）标识</th>
+						<th data-options="field:'CHANGE_TIME',width:200,align:'center'">修改时间</th>
 						<th data-options="field:'CREATE_USERCODE_DESC',width:200,align:'center'">创建人</th>
 						<th data-options="field:'CREATE_TIME',width:200,align:'center'">创建时间</th>
 						<th data-options="field:'rowColumn',width:150,align:'center',formatter:rowformatter">操作</th>
@@ -363,7 +364,7 @@
 		</form>
 	</div>
 	
-	<div id="uploadFileDlg" class="easyui-dialog" style="width:30%;height:20%;padding:10px 20px;" modal="true" closed="true" buttons="#uploadFileDlgBtn">
+	<div id="uploadFileDlg" class="easyui-dialog" style="width:60%;height:50%;padding:10px 20px;" modal="true" closed="true" buttons="#uploadFileDlgBtn">
 
 		<form id="uploadFileForm" method="post" enctype="multipart/form-data">
 			<!-- 包含表单 -->
